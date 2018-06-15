@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- MINIMAL VERSION으로 명시 -->
+<mapper>
+	<db type="POG">
+		<!-- export fkey [create | drop] ddl from PostgreSQL -->
+		<select id="GET_PG_FK_DDL">
+			SELECT psat1.schemaname AS "SCHEMA_NM",
+				pc.conname AS "CONSTRAINT_NAME",
+				'R' AS "CONSTRAINT_TYPE",
+				psat1.relname AS "TABLE_NAME",
+				psat2.relname AS "R_TABLE_NAME",
+	            'ALTER TABLE "' || psat1.schemaname || '"."' || psat1.relname || '" DROP CONSTRAINT "' || pc.conname || '";' AS DROP_DDL_SCRIPT,
+	            'ALTER TABLE "' || psat1.schemaname || '"."' || psat1.relname || '" ADD CONSTRAINT "' || pc.conname || '" ' || pg_get_constraintdef(pc.oid) || ';' AS CREATE_DDL_SCRIPT
+			FROM pg_constraint pc
+				JOIN pg_stat_all_tables psat1 ON psat1.relid = pc.conrelid
+				JOIN pg_stat_all_tables psat2 ON psat2.relid = pc.confrelid
+		</select>
+		<!-- export [index | pkey] [create | drop] DDL from PostgreSQL -->
+		<select id="GET_PG_IDX_DDL">
+			SELECT	CASE WHEN EXISTS (SELECT oid FROM pg_constraint pc WHERE pc.conindid = pi.indexrelid)
+						THEN 'ALTER TABLE "' || psat.schemaname || '"."'|| psat.relname || '" ADD CONSTRAINT "' || i.relname || '" ' 
+							|| pg_get_constraintdef((SELECT oid FROM pg_constraint pc WHERE pc.conrelid = pi.indrelid AND pc.conindid = pi.indexrelid)) 
+							|| CASE WHEN i.reltablespace != 0::oid THEN ' USING INDEX TABLESPACE "' || t.spcname || '"' ELSE '' END
+						ELSE CASE WHEN strpos(pg_get_indexdef(pi.indexrelid), 'WHERE') > 0 THEN regexp_replace(pg_get_indexdef(pi.indexrelid), 'WHERE', 'TABLESPACE "' || t.spcname || '" WHERE' ) 
+							ELSE pg_get_indexdef(pi.indexrelid) || ' TABLESPACE "' || t.spcname || '"' END 
+					END || ';' AS "CREATE_DDL_SCRIPT",
+					CASE WHEN EXISTS (SELECT oid FROM pg_constraint pc WHERE pc.conindid = pi.indexrelid) 
+					THEN 'ALTER TABLE "' || psat.schemaname || '"."'|| psat.relname || '" DROP CONSTRAINT "' || i.relname else 'DROP INDEX "' || i.relname END || '";' as "DROP_DDL_SCRIPT"
+			FROM	pg_stat_all_tables psat
+					JOIN pg_index pi ON pi.indrelid = psat.relid
+					JOIN pg_class c ON c.oid = pi.indrelid
+					JOIN pg_class i ON i.oid = pi.indexrelid
+					JOIN information_schema.role_table_grants rtg ON psat.schemaname = rtg.table_schema AND psat.relname = rtg.table_name				     
+					LEFT JOIN pg_namespace n ON n.oid = c.relnamespace
+					LEFT JOIN pg_tablespace t ON t.oid = CASE WHEN i.reltablespace = 0::oid THEN (SELECT dattablespace FROM pg_database WHERE datname=current_database()) ELSE i.reltablespace END
+			WHERE	rtg.privilege_type = 'SELECT' AND rtg.table_schema = current_schema()
+			ORDER BY psat.relname, i.relname;
+		</select>
+		<!-- get current schema from PostgreSQL -->
+		<select id="GET_PG_CURRENT_SCHEMA">
+			select current_schema() as schema;
+		</select>
+	</db>
+</mapper>

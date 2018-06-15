@@ -1,0 +1,60 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<groupId>eXperDB</groupId>
+	<artifactId>DB2PG</artifactId>
+	<version>1.1.1</version>
+	<packaging>pom</packaging>
+	<name>eXperDB-DB2PG</name>
+	<repositories>
+		<repository>
+			<id>releases</id>
+			<url>http://222.110.153.159/nexus/content/repositories/releases</url>
+		</repository>
+		<repository>
+			<id>K4M-REPO</id>
+			<name>K4M Repo</name>
+			<url>http://222.110.153.159/nexus/content/repositories/K4M-REPO/</url>
+		</repository>
+		<repository>
+			<id>K4M-3rd</id>
+			<name>K4M 3rd</name>
+			<url>http://222.110.153.159/nexus/content/repositories/K4M-3rd/</url>
+		</repository>
+		<repository>
+			<id>K4M-maven-restlet</id>
+			<name>Public online Restlet repository</name>
+			<url>http://222.110.153.159/nexus/content/repositories/K4M-maven-restlet/</url>
+		</repository>
+		<repository>
+			<id>central</id>
+			<name>Maven Central Repo</name>
+			<url>http://repo1.maven.org/maven2</url>
+		</repository>
+		<repository>
+			<id>ops4j</id>
+			<name>ops4j Repository</name>
+			<url>http://repository.ops4j.org/maven2/</url>
+		</repository>
+		<repository>
+			<id>oracle</id>
+			<name>ORACLE JDBC Repository</name>
+			<url>http://maven.jahia.org/maven2</url>
+		</repository>
+		<repository>
+			<id>riptano</id>
+			<name>riptano</name>
+			<url>http://mvn.riptano.com/content/repositories/public</url>
+		</repository>
+		<repository>
+			<id>mvnrepository</id>
+			<name>mvnrepository</name>
+			<url>http://mvnrepository.com/artifact</url>
+		</repository>
+	</repositories>
+	<modules>
+		<module>db2pg</module>
+		<module>common</module>
+		<module>convert</module>
+	</modules>
+</project>

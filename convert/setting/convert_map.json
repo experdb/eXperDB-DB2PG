@@ -1,0 +1,131 @@
+{
+	"comment": {
+		"postgres": "#",
+		"mysql": [
+			"--"
+		]
+	},
+	"string": {
+		"postgres": "'",
+		"mysql": [
+			"\""
+		]
+	},
+	"classify_string": {
+		"postgres": "\"",
+		"mysql": [
+			"`"
+		]
+	},
+	"integer_case_1": {
+		"postgres": "SMALLINT",
+		"mysql": [
+			"^(?i)TINYINT\\s*\\(?[0-9]*\\)\\s*UNSIGNED?$",
+			"^(?i)SMALLINT$\\(?[0-9]*\\)?$",
+            "^(?i)TINYINT\\s*\\(?[0-9]*\\)?$"
+		]
+	},
+	"integer_case_2": {
+		"postgres": "INTEGER",
+		"mysql": [
+			"^(?i)MEDIUMINT\\s*\\(?[0-9]*\\)?$",
+			"^(?i)SMALLINT\\s*\\(?[0-9]*\\)\\s*UNSIGNED?$",
+			"^(?i)MEDIUMINT\\s*\\(?[0-9]*\\)\\s*UNSIGNED?$",
+            "^(?i)INT\\s*\\(?[0-9]*\\)?$",
+            "^(?i)INTEGER\\s*\\(?[0-9]*\\)?$"
+		]
+	},
+	"integer_case_3": {
+		"postgres": "BIGINT",
+		"mysql": [
+			"^(?i)INT\\s*\\(?[0-9]*\\)\\s*UNSIGNED?$",
+            "^(?i)INTEGER\\s*\\(?[0-9]*\\)\\s*UNSIGNED?$",
+            "^(?i)BIGINT\\s*\\(?[0-9]*\\)?$"
+		]
+	},
+	"integer_case_4": {
+		"postgres": "NUMERIC(20)",
+		"mysql": [
+			"^(?i)BIGINT\\s*\\(?[0-9]*\\)\\s*UNSIGNED?$"
+		]
+	},
+	"real_case_1": {
+		"postgres": "REAL",
+		"mysql": [
+			"^(?i)FLOAT$",
+			"^(?i)FLOAT UNSIGNED$"
+		]
+	},
+	"real_case_2": {
+		"postgres": "DOUBLE PRECISION",
+		"mysql": [
+			"^(?i)DOUBLE$"
+		]
+	},
+	"bool_case": {
+		"postgres": "BOOLEAN",
+		"mysql": [
+			"^(?i)BOOL$",
+			"^(?i)BIT\\s*\\(1\\)$",
+			"^(?i)TINYINT\\s*\\(1\\)$",
+			"^(?i)TINYINT\\s*\\(1\\) UNSIGNED$"
+		]
+	},
+	"text_case": {
+		"postgres": "TEXT",
+		"mysql": [
+			"^(?i)TINYTEXT$",
+			"^(?i)MEDIUMTEXT$",
+			"^(?i)LONGTEXT$"
+		]
+	},
+	"bytea_case": {
+		"postgres": "BYTEA",
+		"mysql": [
+			"^(?i)BINARY\\s*\\(?[0-9]*\\)?$",
+			"^(?i)VARBINARY\\s*\\(?[0-9]*\\)?$",
+			"^(?i)TINYBLOB$",
+			"^(?i)BLOB$",
+			"^(?i)MEDIUMBLOB$",
+			"^(?i)LONGBLOB$"
+		]
+	},
+	"date_case_1": {
+		"postgres": "TIME WITHOUT TIME ZONE",
+		"mysql": [
+			"^(?i)TIME$"
+		]
+	},
+	"date_case_2": {
+		"postgres": "TIMESTAMP WITHOUT TIME ZONE",
+		"mysql": [
+			"^(?i)DATETIME$"
+		]
+	},
+    "date_case_3": {
+		"postgres": "SMALLINT",
+		"mysql": [
+            "^(?i)SMALLINT\\s*\\(?[0-9]*\\)?$"
+		]
+	},
+    "date_case_4": {
+		"postgres": "DATE",
+		"mysql": [
+            "^(?i)YEAR\\s*\\(?[0-9]*\\)?$"
+		]
+	},
+	"decimal_case_1": {
+	    "postgres": "DECIMAL",
+	    "mysql": [
+	        "^(?i)DEC\\s*\\(?[0-9]*,[0-9]*\\)?$",
+	        "^(?i)DECIMAL\\s*\\(?[0-9]*,[0-9]*\\)?$",
+	        "^(?i)NUMERIC\\s*\\(?[0-9]*,[0-9]*\\)?$"
+	    ]
+	},
+	"fixed_case": {
+		"postgres": "DECIMAL",
+	    "mysql": [
+	        "^(?i)FIXED\\s*\\(?[0-9]*,[0-9]*\\)?$"
+	    ]
+	}
+}

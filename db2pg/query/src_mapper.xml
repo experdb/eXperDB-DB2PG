@@ -1,0 +1,166 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- MINIMAL VERSION으로 명시 -->
+<mapper>
+
+	<db type="ORA">
+		<select id="GET_TABLE_NAMES">
+			SELECT OBJECT_NAME FROM ALL_OBJECTS 
+			WHERE OWNER=#{OWNER} 
+				AND OBJECT_NAME NOT IN ('TOAD_PLAN_TABLE','PLAN_TABLE') 
+				AND OBJECT_NAME NOT LIKE 'MDRT%'
+				AND OBJECT_NAME NOT LIKE 'MDXT%'
+				${TABLE_ONLY}
+		</select>
+		<select id="GET_SOURCE_TABLE_DATA">
+			SELECT * FROM ${SCHEMA}${TABLE} ${WHERE}
+		</select>
+	</db>
+	
+	<db type="MSS">
+		<select id="GET_TABLE_NAMES">
+			SELECT TABLE_NAME FROM information_schema.tables WHERE TABLE_SCHEMA=#{TABLE_SCHEMA}
+		</select>
+		<select id="GET_SOURCE_TABLE_DATA">
+			SELECT * FROM ${SCHEMA}${TABLE} ${WHERE}
+		</select>
+	</db>
+	
+	<db type="ASE">
+		<select id="GET_TABLE_NAMES">
+			SELECT name AS table_name FROM sysobjects WHERE type='U' AND user_name(uid)=#{USER_NAME}
+		</select>
+		<select id="GET_SOURCE_TABLE_DATA">
+			SELECT * FROM ${SCHEMA}${TABLE} ${WHERE}
+		</select>
+	</db>
+	
+	<db type="MYSQL">
+		<select id="GET_TABLE_NAMES">
+			SELECT table_name
+ 			 FROM information_schema.tables
+ 			WHERE table_schema=#{TABLE_SCHEMA} ${TABLE_ONLY}
+		</select>
+		<select id="GET_SOURCE_TABLE_DATA">
+			SELECT * FROM ${SCHEMA}${TABLE} ${WHERE}
+		</select>
+		
+		<select id="GET_CREATE_TABLE">
+			SHOW CREATE TABLE ${SCHEMA}${TABLE}
+		</select>
+		<select id="GET_TABLE_INFORM">
+			SELECT table_schema, table_name, table_type, auto_increment, table_comment
+ 			 FROM information_schema.tables
+ 			WHERE table_schema=#{TABLE_SCHEMA} ${TABLE_ONLY} ${TABLE_LIST}
+		</select>
+		<select id="GET_COLUMN_INFORM">
+			SELECT column_name, ordinal_position, column_default, is_nullable
+			       , data_type, numeric_precision, numeric_scale, column_type
+			       , column_comment, extra
+			  FROM information_schema.COLUMNS 
+			 WHERE table_schema=#{TABLE_SCHEMA}
+			       AND table_name=#{TABLE_NAME}
+		</select>
+		<select id="GET_CONSTRAINT_INFORM">
+		SELECT con.*, refcon.match_option, refcon.update_rule, refcon.delete_rule
+			FROM (SELECT con.*,idx.index_type
+						  FROM (SELECT kcu.*,con.constraint_type
+						          FROM (SELECT constraint_schema, constraint_name, table_schema, table_name, column_name,
+						                       ordinal_position, position_in_unique_constraint, 
+						                       referenced_table_schema, referenced_table_name, referenced_column_name
+						                  FROM information_schema.key_column_usage 
+						                 WHERE table_schema=#{TABLE_SCHEMA}) kcu 
+						                INNER JOIN 
+						               (SELECT constraint_schema, constraint_name, table_schema, table_name, constraint_type
+						                  FROM information_schema.table_constraints
+						                 WHERE table_schema=#{TABLE_SCHEMA}) con
+						                   ON kcu.constraint_schema=con.constraint_schema 
+						                      AND kcu.constraint_name=con.constraint_name
+						                      AND kcu.table_schema=con.table_schema
+						                      AND kcu.table_name=con.table_name) con
+						       LEFT OUTER JOIN          
+						       (SELECT table_schema, table_name, non_unique, index_schema, index_name, seq_in_index, 
+						               column_name, nullable, index_type, comment, index_comment
+						          FROM information_schema.statistics 
+						         WHERE table_schema=#{TABLE_SCHEMA}) idx
+						          ON con.table_schema=idx.table_schema
+						             AND con.table_name=idx.table_name
+						             AND con.constraint_schema=idx.index_schema
+						             AND con.constraint_name=idx.index_name
+						             AND con.column_name=idx.column_name) con
+				 LEFT OUTER JOIN (SELECT constraint_schema, constraint_name, match_option, update_rule, delete_rule, 
+			                       table_name, referenced_table_name
+			                  	    FROM information_schema.referential_constraints) refcon
+			       ON con.constraint_schema=refcon.constraint_schema
+			          AND con.constraint_name=refcon.constraint_name
+			          AND con.table_name=refcon.table_name
+			          AND con.referenced_table_name=refcon.referenced_table_name
+			  WHERE con.table_name=#{TABLE_NAME}
+		</select>
+<!-- 		<select id="GET_CONSTRAINT_INFORM"> -->
+<!-- 			SELECT con.*,idx.index_type -->
+<!-- 			  FROM (SELECT kcu.*,con.constraint_type -->
+<!-- 			          FROM (SELECT constraint_schema, constraint_name, table_schema, table_name, column_name, -->
+<!-- 			                       ordinal_position, position_in_unique_constraint,  -->
+<!-- 			                       referenced_table_schema, referenced_table_name, referenced_column_name -->
+<!-- 			                  FROM information_schema.key_column_usage  -->
+<!-- 			                 WHERE table_schema=#{TABLE_SCHEMA}) kcu  -->
+<!-- 			                INNER JOIN  -->
+<!-- 			               (SELECT constraint_schema, constraint_name, table_schema, table_name, constraint_type -->
+<!-- 			                  FROM information_schema.table_constraints -->
+<!-- 			                 WHERE table_schema=#{TABLE_SCHEMA}) con -->
+<!-- 			                   ON kcu.constraint_schema=con.constraint_schema  -->
+<!-- 			                      AND kcu.constraint_name=con.constraint_name -->
+<!-- 			                      AND kcu.table_schema=con.table_schema -->
+<!-- 			                      AND kcu.table_name=con.table_name) con -->
+<!-- 			       LEFT OUTER JOIN           -->
+<!-- 			       (SELECT table_schema, table_name, non_unique, index_schema, index_name, seq_in_index,  -->
+<!-- 			               column_name, nullable, index_type, comment, index_comment -->
+<!-- 			          FROM information_schema.statistics  -->
+<!-- 			         WHERE table_schema=#{TABLE_SCHEMA}) idx -->
+<!-- 			          ON con.table_schema=idx.table_schema -->
+<!-- 			             AND con.table_name=idx.table_name -->
+<!-- 			             AND con.constraint_schema=idx.index_schema -->
+<!-- 			             AND con.constraint_name=idx.index_name -->
+<!-- 			             AND con.column_name=idx.column_name -->
+<!-- 			 WHERE con.table_name=#{TABLE_NAME} -->
+<!-- 		</select> -->
+		<select id="GET_KEY_INFORM">
+			SELECT DISTINCT s.*
+			  FROM information_schema.statistics s
+			       LEFT OUTER JOIN information_schema.table_constraints t 
+			         ON t.table_schema = s.table_schema 
+			            AND t.table_name = s.table_name
+			            AND s.index_name = t.constraint_name 
+			 WHERE t.constraint_name IS NULL
+			       AND s.table_schema=#{TABLE_SCHEMA}
+			       AND s.table_name=#{TABLE_NAME}
+		</select>
+	</db>
+	<db type="CUB">
+		<select id="GET_TABLE_NAMES">
+			SELECT class_name AS table_name FROM db_class WHERE is_system_class='NO' AND class_type='CLASS' ORDER BY class_name ASC;
+		</select>
+		<select id="GET_CONSTRAINT_INFORM">
+			SELECT i.index_name, i.is_unique, i.is_reverse, i.is_primary_key, i.is_foreign_key, i.key_count
+			           , ik.key_attr_name, ik.asc_desc, ik.key_order
+			FROM (SELECT class_name,  index_name, is_unique, is_reverse, is_primary_key, is_foreign_key, key_count
+			            FROM db_index WHERE class_name=#{TABLE_NAME} ORDER BY index_name) i 
+			      INNER JOIN 
+			           (SELECT key_attr_name, asc_desc, key_order, key_prefix_length,class_name,index_name
+			             FROM db_index_key ORDER BY key_order) ik
+			      ON i.class_name=ik.class_name AND i.index_name=ik.index_name
+		</select>
+		<select id="GET_COLUMN_INFORM">
+			SELECT a.attr_name, a.attr_type, a.from_class_name,
+						a.data_type, a.prec, a.scale, a.is_nullable, 
+						a.domain_class_name, a.default_value, a.def_order
+			 FROM db_attribute a
+			WHERE a.class_name=#{TABLE_NAME}
+			ORDER BY a.def_order
+		</select>
+		<select id="GET_AUTOINCREMENT_INFORM">
+			SELECT owner.name, db_serial.* FROM db_serial WHERE class_name=#{TABLE_NAME}
+		</select>
+	</db>
+	
+</mapper>
