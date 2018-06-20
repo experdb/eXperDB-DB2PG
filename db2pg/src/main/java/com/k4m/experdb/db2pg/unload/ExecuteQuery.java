@@ -254,7 +254,8 @@ public class ExecuteQuery implements Runnable{
 			case Types.CHAR: case Types.NCHAR:
 				String str = null;
 				if(ConfigInfo.SRC_IS_ASCII) {
-					str = new String(rs.getString(index).getBytes(ConfigInfo.ASCII_ENCODING),ConfigInfo.FILE_CHARACTERSET);
+					//str = new String(rs.getString(index).getBytes(ConfigInfo.ASCII_ENCODING),ConfigInfo.FILE_CHARACTERSET);
+					str = new String(rs.getBytes(index), ConfigInfo.SRC_DB_CHARSET);
 				} else {
 					str = rs.getString(index);
 				}
