@@ -7,8 +7,8 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.PrintStream;
-import java.io.UnsupportedEncodingException;
 import java.math.BigDecimal;
 import java.nio.ByteBuffer;
 import java.nio.channels.GatheringByteChannel;
@@ -280,32 +280,38 @@ public class ExecuteQuery implements Runnable{
 				Clob clob = rs.getClob(index);
 				
 				if (clob != null) {
-					BufferedReader reader = new BufferedReader(clob.getCharacterStream());
+					BufferedReader reader = null;
+					if ( ConfigInfo.SRC_IS_ASCII ) {
+						reader = new BufferedReader(new InputStreamReader(clob.getAsciiStream(),ConfigInfo.SRC_DB_CHARSET));
+					} else {
+						reader = new BufferedReader(clob.getCharacterStream());
+					}
 					char[] buffer = new char[ConfigInfo.CLOB_BUFFER_SIZE];
 					int n = 0;
 					
 					if (ConfigInfo.BASIC_BUFFER_SIZE > clob.length() + bf.length()) { 
 						StringBuffer sb = new StringBuffer();
 						while((n = reader.read(buffer)) != -1){
-							sb.append(convAscii(buffer, 0, n));
+							sb.append(buffer, 0, n);
 						}
-						
+						reader.close();
 						return DevUtils.replaceEach(sb.toString(), DevUtils.BackSlashSequence, DevUtils.BackSlashSequenceReplace);
 					} else {
 						if(bf.length()>0) {
-							ByteBuffer tmpByteBuffer = ByteBuffer.allocateDirect(ConfigInfo.SRC_IS_ASCII?ConfigInfo.BASIC_BUFFER_SIZE*2*4:ConfigInfo.BASIC_BUFFER_SIZE*2);
+							ByteBuffer tmpByteBuffer = ByteBuffer.allocateDirect(ConfigInfo.BASIC_BUFFER_SIZE*2);
 							divideProcessing(ConfigInfo.BASIC_BUFFER_SIZE, bf, tmpByteBuffer, outChannel, ConfigInfo.FILE_CHARACTERSET);
 						}
 						
-						ByteBuffer bb = ByteBuffer.allocateDirect(ConfigInfo.SRC_IS_ASCII?buffer.length*4:buffer.length);
+						ByteBuffer bb = ByteBuffer.allocateDirect(buffer.length*4);
 						
 						while((n = reader.read(buffer)) != -1){
-							String s = convAscii(buffer, 0, n);
+							String s = new String(Arrays.copyOfRange(buffer, 0, n));
 							bb.put(s.getBytes(ConfigInfo.FILE_CHARACTERSET));
 							bb.flip();
 			        		outChannel.write(bb);
 			        		bb.clear();
 						}
+						reader.close();
 						return "";
 					}
 				}
@@ -352,6 +358,7 @@ public class ExecuteQuery implements Runnable{
 						}
 						buffeOutr.close();	
 					}
+					in.close();
 				
 					return "";	
 				}
@@ -395,6 +402,7 @@ public class ExecuteQuery implements Runnable{
 					
 					
 					buffeOutr.close();	
+					in.close();
 					return "";
 				}
 				
@@ -424,31 +432,34 @@ public class ExecuteQuery implements Runnable{
 				NClob nclob = rs.getNClob(index);
 				
 				if (nclob != null) {
-					BufferedReader reader = new BufferedReader(nclob.getCharacterStream());
+					BufferedReader reader = null;
+					reader = new BufferedReader(nclob.getCharacterStream());
 					char[] buffer = new char[ConfigInfo.CLOB_BUFFER_SIZE];
 					int n = 0;
 					
 					if (ConfigInfo.BASIC_BUFFER_SIZE > nclob.length() + bf.length()) { 
 						StringBuffer sb = new StringBuffer();
 						while((n = reader.read(buffer)) != -1){
-							sb.append(convAscii(buffer, 0, n));				
+							sb.append(buffer, 0, n);		
 						}
+						reader.close();
 						return DevUtils.replaceEach(sb.toString(), DevUtils.BackSlashSequence, DevUtils.BackSlashSequenceReplace);
 					} else {
 						if(bf.length()>0) {
-							ByteBuffer tmpByteBuffer = ByteBuffer.allocateDirect(ConfigInfo.SRC_IS_ASCII?ConfigInfo.BASIC_BUFFER_SIZE*2*4:ConfigInfo.BASIC_BUFFER_SIZE*2);
+							ByteBuffer tmpByteBuffer = ByteBuffer.allocateDirect(ConfigInfo.BASIC_BUFFER_SIZE*2);
 							divideProcessing(ConfigInfo.BASIC_BUFFER_SIZE, bf, tmpByteBuffer, outChannel, ConfigInfo.FILE_CHARACTERSET);
 						}
 						
-						ByteBuffer bb = ByteBuffer.allocateDirect(ConfigInfo.SRC_IS_ASCII?buffer.length*4:buffer.length);
+						ByteBuffer bb = ByteBuffer.allocateDirect(buffer.length*4);
 						
 						while((n = reader.read(buffer)) != -1){
-							String s = convAscii(buffer, 0, n);
+							String s = new String(Arrays.copyOfRange(buffer, 0, n));
 							bb.put(s.getBytes(ConfigInfo.FILE_CHARACTERSET));
 							bb.flip();
 			        		outChannel.write(bb);
 			        		bb.clear();
 						}
+						reader.close();
 						return "";
 					}
 				}
@@ -462,16 +473,6 @@ public class ExecuteQuery implements Runnable{
 		} catch(Exception e){
 			throw e;
 		}
-	}
-	
-	protected String convAscii(char[] original, int from, int to) throws UnsupportedEncodingException {
-		String str = null;
-		if(ConfigInfo.SRC_IS_ASCII) {
-			str = new String(new String(original,from,to).getBytes(ConfigInfo.ASCII_ENCODING),ConfigInfo.FILE_CHARACTERSET);
-		} else {
-			str = new String(original, from, to);
-		}
-		return str;
 	}
 	
 	protected void divideProcessing (int bufferSize, StringBuffer bf, ByteBuffer bb, GatheringByteChannel outChannel, String charset) throws IOException {
