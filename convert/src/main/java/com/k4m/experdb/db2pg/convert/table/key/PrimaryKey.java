@@ -2,8 +2,6 @@ package com.k4m.experdb.db2pg.convert.table.key;
 
 import java.util.ArrayList;
 
-import com.k4m.experdb.db2pg.convert.table.Column;
-import com.k4m.experdb.db2pg.convert.table.key.exception.TableKeyException;
 
 
 public class PrimaryKey extends Key<PrimaryKey> { 

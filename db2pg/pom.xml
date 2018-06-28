@@ -4,7 +4,6 @@
 
 	<groupId>com.k4m</groupId>
 	<artifactId>db2pg</artifactId>
-	<version>1.1.2</version>
 	<packaging>jar</packaging>
 	<parent>
 		<groupId>eXperDB</groupId>
@@ -184,6 +183,14 @@
 			<resource>
 				<directory>${basedir}/query</directory>
 			</resource>
+			<resource>
+				<directory>${basedir}/src/main/java/com/k4m/experdb/db2pg/sample</directory>
+				<includes>
+					<include>db2pg.config</include>
+					<include>queries.xml</include>
+				</includes>
+				<targetPath>com/k4m/experdb/db2pg/sample/</targetPath>
+			</resource>
 		</resources>
 		<plugins>
 			<plugin>
@@ -231,6 +238,7 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-assembly-plugin</artifactId>
+				<version>2.6</version>
 				<executions>
 					<execution>
 						<id>assemble</id>
@@ -249,6 +257,37 @@
 							</descriptorRefs>
 						</configuration>
 					</execution>
+				</executions>
+				<configuration>
+					<descriptors>
+						<descriptor>assembly.xml</descriptor>
+					</descriptors>
+					<tarLongFileMode>posix</tarLongFileMode>
+				</configuration>
+			</plugin>
+			<plugin>
+				<artifactId>maven-resources-plugin</artifactId>
+				<version>3.1.0</version>
+				<executions>
+					<execution>
+						<id>copy-scripts</id>
+						<phase>install</phase>
+						<goals>
+							<goal>copy-resources</goal>
+						</goals>
+						<configuration>
+							<outputDirectory>${project.build.directory}</outputDirectory>
+							<resources>
+								<resource>
+									<directory>${basedir}</directory>
+									<includes>
+										<include>db2pg.bat</include>
+										<include>db2pg.sh</include>
+									</includes>
+								</resource>
+							</resources>
+						</configuration>
+					</execution>				
 				</executions>
 			</plugin>
 		</plugins>
