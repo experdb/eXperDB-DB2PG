@@ -1,9 +1,5 @@
 package com.k4m.experdb.db2pg.common;
 
-import java.io.InputStream;
-import java.net.URI;
-import java.net.URISyntaxException;
-
 
 public class DevUtils {
 	public final static String[] BackSlashSequence = {"\0","\\","\t","\r","\n", "\b", "\013"};

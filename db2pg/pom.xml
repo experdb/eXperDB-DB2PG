@@ -4,12 +4,11 @@
 
 	<groupId>com.k4m</groupId>
 	<artifactId>db2pg</artifactId>
-	<version>1.1.1</version>
 	<packaging>jar</packaging>
 	<parent>
 		<groupId>eXperDB</groupId>
 		<artifactId>DB2PG</artifactId>
-		<version>1.1.1</version>
+		<version>1.1.2</version>
 	</parent>
 	<name>db2pg</name>
 	<url>http://maven.apache.org</url>
@@ -24,16 +23,6 @@
 	</properties>
 
 	<dependencies>
-		<dependency>
-			<groupId>com.k4m.experdb.db2pg</groupId>
-			<artifactId>convert</artifactId>
-			<version>1.0.0</version>
-		</dependency>
-		<dependency>
-			<groupId>com.k4m.experdb.db2pg</groupId>
-			<artifactId>common</artifactId>
-			<version>1.0.0</version>
-		</dependency>
 		<!-- Oracle SDO API -->
 		<dependency>
 			<groupId>oracle.spatial</groupId>
@@ -153,6 +142,11 @@
 			<artifactId>tibero5-jdbc</artifactId>
 			<version>1</version>
 		</dependency>
+		<dependency>
+			<groupId>mysql</groupId>
+			<artifactId>mysql-connector-java</artifactId>
+			<version>5.1.44</version>
+		</dependency>
 
 		<!-- Logger -->
 		<dependency>
@@ -183,6 +177,14 @@
 			</resource>
 			<resource>
 				<directory>${basedir}/query</directory>
+			</resource>
+			<resource>
+				<directory>${basedir}/src/main/java/com/k4m/experdb/db2pg/sample</directory>
+				<includes>
+					<include>db2pg.config</include>
+					<include>queries.xml</include>
+				</includes>
+				<targetPath>com/k4m/experdb/db2pg/sample/</targetPath>
 			</resource>
 		</resources>
 		<plugins>
@@ -229,8 +231,34 @@
 				</configuration>
 			</plugin>
 			<plugin>
+				<artifactId>maven-resources-plugin</artifactId>
+				<version>3.1.0</version>
+				<executions>
+					<execution>
+						<id>copy-scripts</id>
+						<phase>package</phase>
+						<goals>
+							<goal>copy-resources</goal>
+						</goals>
+						<configuration>
+							<outputDirectory>${project.build.directory}</outputDirectory>
+							<resources>
+								<resource>
+									<directory>${basedir}</directory>
+									<includes>
+										<include>db2pg.bat</include>
+										<include>db2pg.sh</include>
+									</includes>
+								</resource>
+							</resources>
+						</configuration>
+					</execution>				
+				</executions>
+			</plugin>
+			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-assembly-plugin</artifactId>
+				<version>2.6</version>
 				<executions>
 					<execution>
 						<id>assemble</id>
@@ -250,6 +278,12 @@
 						</configuration>
 					</execution>
 				</executions>
+				<configuration>
+					<descriptors>
+						<descriptor>assembly.xml</descriptor>
+					</descriptors>
+					<tarLongFileMode>posix</tarLongFileMode>
+				</configuration>
 			</plugin>
 		</plugins>
 	</build>

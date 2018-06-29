@@ -17,7 +17,6 @@ import com.k4m.experdb.db2pg.convert.table.key.UniqueKey;
 import com.k4m.experdb.db2pg.convert.table.key.exception.TableKeyException;
 import com.k4m.experdb.db2pg.convert.type.COMMAND_TYPE;
 import com.k4m.experdb.db2pg.convert.type.DDL_TYPE;
-import com.k4m.experdb.db2pg.convert.vo.ConvertVO;
 import com.k4m.experdb.db2pg.convert.vo.DDLStringVO;
 
 public class PgDDLMaker<T> {

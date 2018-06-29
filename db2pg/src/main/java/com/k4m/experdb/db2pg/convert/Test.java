@@ -27,12 +27,12 @@ import com.k4m.experdb.db2pg.db.DBCPPoolManager;
 import com.k4m.experdb.db2pg.db.datastructure.DBConfigInfo;
 import com.k4m.experdb.db2pg.db.datastructure.exception.DBTypeNotFoundException;
 
-public class App {
+public class Test {
 	public static void main(String[] args) {
-		new App();
+		new Test();
 	}
 	
-	public App() {
+	public Test() {
 		try {
 			
 			ConvertMapper<?> convertMapper = ConvertMapper.makeConvertMapper(MySqlConvertMapper.class);
@@ -133,9 +133,9 @@ public class App {
 			fch.close();
 			fos.close();
 		} catch (MapperNotFoundException e) {
-			LogUtils.error(e.getMessage(), App.class,e);
+			LogUtils.error(e.getMessage(), Test.class,e);
 		} catch (DBTypeNotFoundException e) {
-			LogUtils.error(e.getMessage(), App.class,e);
+			LogUtils.error(e.getMessage(), Test.class,e);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

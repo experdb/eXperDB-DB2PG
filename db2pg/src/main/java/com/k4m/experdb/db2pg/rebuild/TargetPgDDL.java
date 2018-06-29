@@ -7,7 +7,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.k4m.experdb.db2pg.common.Constant;
-import com.k4m.experdb.db2pg.common.DevUtils;
 import com.k4m.experdb.db2pg.common.LogUtils;
 import com.k4m.experdb.db2pg.config.ConfigInfo;
 import com.k4m.experdb.db2pg.db.DBCPPoolManager;
