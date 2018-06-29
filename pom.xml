@@ -54,7 +54,7 @@
 	</repositories>
 	<modules>
 		<module>db2pg</module>
-		<module>common</module>
-		<module>convert</module>
+		
+		
 	</modules>
 </project>
