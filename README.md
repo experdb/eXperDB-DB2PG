@@ -21,7 +21,7 @@ It works on JAVA basis, so there is no restriction on platforms such as Unix, Li
 * Export Oracle schema to a PostgreSQL schema.
 * Export DDL to PostgreSQL DDL.
 * Export predefined functions, triggers, procedures.
-* Support mysql(mariaDB)
+* Support MySQL(MariaDB)
 <!--* Support cubrid.-->
 
 
