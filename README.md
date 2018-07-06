@@ -1,9 +1,6 @@
 ## eXperDB-DB2PG: Data Migration tool for PostgreSQL
 
 ## Introduction
-eXperDB-DB2PG는 다양한 원천 DBMS로부터 eXperDB 또는 PostgreSQL로 데이터를 이관하는 데이터 이관 솔루션이다.
-JAVA 기반으로 동작하여 Unix, Linux 및 Windows 등 플랫폼에 대한 제약이 없고, 설치가 필요하지 않아 간편하게 활용할 수 있다.
-
 eXperDB-DB2PG is a data migration solution that transfers data from various source DBMSs to eXperDB or PostgreSQL.
 It works on JAVA basis, so there is no restriction on platforms such as Unix, Linux and Windows, and installation is not necessary and can be used easily.
 
