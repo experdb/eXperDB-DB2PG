@@ -28,16 +28,16 @@ It works on JAVA basis, so there is no restriction on platforms such as Unix, Li
 <!--* Support cubrid.-->
 
 
+## License
+[![LICENSE](https://img.shields.io/badge/LICENSE-GPLv3-ff69b4.svg)](https://github.com/experdb/eXperDB-Management/blob/master/LICENSE)
+
+
 ## System Requirements
 * OS : Developed and tested on Linux and Windows, but work on any UNIX-like system and Windows System
 * JDK : JDK 1.7 or later
 * Storage : With the SAM(Sequential Access Method) file, you need to enough free space to store the original data when transferring data.
 * From : Oracle(Including Oracle Spatial), SQL Server, MySQL, Sybase
 * To : eXperDB, PostgreSQL
-
-
-## License
-[![LICENSE](https://img.shields.io/badge/LICENSE-GPLv3-ff69b4.svg)](https://github.com/experdb/eXperDB-Management/blob/master/LICENSE)
 
 
 ## Copyright
