@@ -5,7 +5,7 @@ eXperDB-DB2PG is a data migration solution that transfers data from various sour
 It works on JAVA basis, so there is no restriction on platforms such as Unix, Linux and Windows, and installation is not necessary and can be used easily.
 
 
-![Architecture](./Images/DB2PG_Architecture.png "eXperDB-DB2PG Architecture")
+![Architecture](https://github.com/experdb/image_repo/blob/master/images/DB2PG_001_Architecture.png "eXperDB-DB2PG Architecture")
 
 
 ## Features
