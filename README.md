@@ -5,6 +5,9 @@ eXperDB-DB2PG is a data migration solution that transfers data from various sour
 It works on JAVA basis, so there is no restriction on platforms such as Unix, Linux and Windows, and installation is not necessary and can be used easily.
 
 
+![Architecture](./Images/DB2PG Architecture.png "eXperDB-DB2PG Architecture")
+
+
 ## Features
 * Export full data or using WHERE clause.
 * Export Oracle Spatial data to PostGIS.
