@@ -42,7 +42,7 @@ It works on JAVA basis, so there is no restriction on platforms such as Unix, Li
 
 
 ### Options
-|Option|Description|Mandatory Status|Comment|
+|Option|Description|Mandatory|Comment|
 |----------|--------|:----:|----|
 |-c, --config `<arg>`|Configuration file load for executing DB2PG command|Y|In the current version(1.1.2), the environment setting is not input as a parameter.|
 |-M, --make-templates|Create a configuration file to run the DB2PG command|N|<center>-|
