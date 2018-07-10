@@ -33,7 +33,7 @@ It works on JAVA basis, so there is no restriction on platforms such as Unix, Li
 
 
 ## Execution
-### System Requirements
+#### 1. System Requirements
 * OS : Developed and tested on Linux and Windows, but work on any UNIX-like system and Windows System
 * JDK : JDK 1.7 or later
 * Storage : With the SAM(Sequential Access Method) file, you need to enough free space to store the original data when transferring data.
@@ -41,7 +41,7 @@ It works on JAVA basis, so there is no restriction on platforms such as Unix, Li
 * To : eXperDB, PostgreSQL
 
 
-### Options
+#### 2. Options
 |Option|Description|Mandatory|
 |----------|--------|:----:|
 |-c, --config `<arg>`|Configuration file load for executing DB2PG command. _(In the current version(1.1.2), the environment setting is not input as a parameter)_|Y|
@@ -50,7 +50,7 @@ It works on JAVA basis, so there is no restriction on platforms such as Unix, Li
 |--unload-summary `<arg>`|Summarize the logs loaded on the target using the Import.sql script generated from the Source Database. _(Create a file using '>' or '>>')_|N|
 
 
-### Examples(On Linux)
+#### 3. Examples(On Linux)
 |Command|E.g. use|
 |-|-|
 |Help|./db2pg.sh|
