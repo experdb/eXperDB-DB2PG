@@ -33,7 +33,7 @@ It works on JAVA basis, so there is no restriction on platforms such as Unix, Li
 
 
 ## Execution
-## #System Requirements
+### System Requirements
 * OS : Developed and tested on Linux and Windows, but work on any UNIX-like system and Windows System
 * JDK : JDK 1.7 or later
 * Storage : With the SAM(Sequential Access Method) file, you need to enough free space to store the original data when transferring data.
