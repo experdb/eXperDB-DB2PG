@@ -32,7 +32,8 @@ It works on JAVA basis, so there is no restriction on platforms such as Unix, Li
 [![LICENSE](https://img.shields.io/badge/LICENSE-GPLv3-ff69b4.svg)](https://github.com/experdb/eXperDB-Management/blob/master/LICENSE)
 
 
-## System Requirements
+## Execution
+## #System Requirements
 * OS : Developed and tested on Linux and Windows, but work on any UNIX-like system and Windows System
 * JDK : JDK 1.7 or later
 * Storage : With the SAM(Sequential Access Method) file, you need to enough free space to store the original data when transferring data.
@@ -40,7 +41,7 @@ It works on JAVA basis, so there is no restriction on platforms such as Unix, Li
 * To : eXperDB, PostgreSQL
 
 
-## Options
+### Options
 |Option|Description|Mandatory Status|Comment|
 |----------|--------|:----:|----|
 |-c, --config `<arg>`|Configuration file load for executing DB2PG command|O|In the current version(1.1.2), the environment setting is not input as a parameter.|
