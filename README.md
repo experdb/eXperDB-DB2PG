@@ -51,7 +51,7 @@ It works on JAVA basis, so there is no restriction on platforms such as Unix, Li
 
 
 ### Examples(On Linux)
-|Action|E.g. use|
+|Command|E.g. use|
 |-|-|
 |Help|./db2pg.sh|
 |Execute|./db2pg.sh -c db2pg.config|
