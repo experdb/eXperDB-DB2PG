@@ -48,8 +48,6 @@ It works on JAVA basis, so there is no restriction on platforms such as Unix, Li
 |-M, --make-templates|Create a configuration file to run the DB2PG command|X|<center>-|
 |--rebuild-summary `<arg>`|Summarizes constraint execution logs such as PK, FK, INDEX created and deleted in Target Database|X|Create a file using '>' or '>>'|
 |--unload-summary `<arg>`|Summarize the logs loaded on the target using the Import.sql script generated from the Source Database|X|Create a file using '>' or '>>'|
-## Copyright
-Copyright (c) 2016-2018, eXperDB Development Team All rights reserved.
 
 
 ### Examples(On Linux)
@@ -64,6 +62,10 @@ Copyright (c) 2016-2018, eXperDB Development Team All rights reserved.
 ||psql -U db2pg -d db2pg -p 5432 -h 127.0.0.1 -f idx_create.sql >> rebuild.log|
 ||psql -U db2pg -d db2pg -p 5432 -h 127.0.0.1 -f fk_create.sql >> rebuild.log|
 |Rebuild Log Summary|bash db2pg.sh --rebuild-summary ./db2pg-result/rebuild/rebuild.log|
+
+
+## Copyright
+Copyright (c) 2016-2018, eXperDB Development Team All rights reserved.
 
 
 ## Community
