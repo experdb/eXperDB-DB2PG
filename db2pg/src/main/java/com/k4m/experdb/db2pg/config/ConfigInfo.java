@@ -65,12 +65,16 @@ public class ConfigInfo {
 			;
 	public static int TAR_PORT
 			;
+	public static int TAR_CONN_COUNT, TAR_TABLE_BAD_COUNT
+			;
+	public static String TAR_COPY_OPTIONS
+			;
+	
 	//endregion
 	//endregion
 	
 	//region OUTPUT
 	public static String OUTPUT_DIRECTORY // "./"
-			, FILE_CHARACTERSET // "UTF8"
 			, CLASSIFY_STRING //  original(default), small, capital 
 			;
 	//endregion
@@ -146,7 +150,6 @@ public class ConfigInfo {
 				String outputDirectory = ((String)propertyCheck(prop.getProperty("OUTPUT_DIRECTORY"),"./",String.class)).trim().replace("\\", "/");
 				ConfigInfo.OUTPUT_DIRECTORY = outputDirectory.length()-1 == outputDirectory.lastIndexOf("/")
 													? outputDirectory : outputDirectory.concat("/");
-				ConfigInfo.FILE_CHARACTERSET = prop.getProperty("FILE_CHARACTERSET");
 				ConfigInfo.CLASSIFY_STRING = (String)propertyCheck(prop.getProperty("CLASSIFY_STRING"),"original",String.class);
 				ConfigInfo.SELECT_QUERIES_FILE = (String)propertyCheck(prop.getProperty("SELECT_QUERIES_FILE"),"",String.class);
 				ConfigInfo.BASIC_BUFFER_SIZE=(int)propertyCheck(prop.getProperty("BASIC_BUFFER_SIZE"),10,Integer.class);
@@ -162,6 +165,9 @@ public class ConfigInfo {
 				ConfigInfo.LOG_LEVEL = (org.apache.log4j.Level)propertyCheck(prop.getProperty("LOG_LEVEL")
 						,org.apache.log4j.Level.INFO,org.apache.log4j.Level.class);
 				ConfigInfo.SRC_IS_ASCII = (boolean)propertyCheck(prop.getProperty("SRC_IS_ASCII"),false,Boolean.class);
+				ConfigInfo.TAR_CONN_COUNT = (int)propertyCheck(prop.getProperty("TAR_CONN_COUNT"),1,Integer.class);
+				ConfigInfo.TAR_TABLE_BAD_COUNT = (int)propertyCheck(prop.getProperty("TAR_TABLE_BAD_COUNT"),-1,Integer.class);
+				ConfigInfo.TAR_COPY_OPTIONS = (String)propertyCheck(prop.getProperty("TAR_COPY_OPTIONS"),null,String.class);
 				
 			} catch (FileNotFoundException fnfe) {
 				LogUtils.error("[CONFIG_FILE_NOT_FOUND_ERR]",ConfigInfo.Loader.class,fnfe);

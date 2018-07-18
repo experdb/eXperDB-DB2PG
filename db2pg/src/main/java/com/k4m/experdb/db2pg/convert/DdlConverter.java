@@ -173,13 +173,13 @@ public class DdlConverter {
 		while((ddlStrVO = tableQueue.poll())!= null) {
 			if ( ddlStrVO.getAlertComments() != null ) {
 				for(String alertComment : ddlStrVO.getAlertComments()) {
-					fileBuffer.put(alertComment.getBytes(ConfigInfo.FILE_CHARACTERSET));
+					fileBuffer.put(alertComment.getBytes(ConfigInfo.TAR_DB_CHARSET));
 					alertComments.add(alertComment);
-					fileBuffer.put("\n".getBytes(ConfigInfo.FILE_CHARACTERSET));
+					fileBuffer.put("\n".getBytes(ConfigInfo.TAR_DB_CHARSET));
 				}
 			}
-			fileBuffer.put(ddlStrVO.toString().getBytes(ConfigInfo.FILE_CHARACTERSET));
-			fileBuffer.put("\n".getBytes(ConfigInfo.FILE_CHARACTERSET));
+			fileBuffer.put(ddlStrVO.toString().getBytes(ConfigInfo.TAR_DB_CHARSET));
+			fileBuffer.put("\n".getBytes(ConfigInfo.TAR_DB_CHARSET));
 			fileBuffer.flip();
 			fch.write(fileBuffer);
 			fileBuffer.clear();
@@ -191,8 +191,8 @@ public class DdlConverter {
 		fos = new FileOutputStream(constraintsSqlFile);
 		fch = fos.getChannel();
 		while((ddlStrVO = constraintsQueue.poll())!= null) {
-			fileBuffer.put(ddlStrVO.toString().getBytes(ConfigInfo.FILE_CHARACTERSET));
-			fileBuffer.put("\n".getBytes(ConfigInfo.FILE_CHARACTERSET));
+			fileBuffer.put(ddlStrVO.toString().getBytes(ConfigInfo.TAR_DB_CHARSET));
+			fileBuffer.put("\n".getBytes(ConfigInfo.TAR_DB_CHARSET));
 			fileBuffer.flip();
 			fch.write(fileBuffer);
 			fileBuffer.clear();
@@ -204,8 +204,8 @@ public class DdlConverter {
 		fos = new FileOutputStream(indexSqlFile);
 		fch = fos.getChannel();
 		while((ddlStrVO = indexQueue.poll())!= null) {
-			fileBuffer.put(ddlStrVO.toString().getBytes(ConfigInfo.FILE_CHARACTERSET));
-			fileBuffer.put("\n".getBytes(ConfigInfo.FILE_CHARACTERSET));
+			fileBuffer.put(ddlStrVO.toString().getBytes(ConfigInfo.TAR_DB_CHARSET));
+			fileBuffer.put("\n".getBytes(ConfigInfo.TAR_DB_CHARSET));
 			fileBuffer.flip();
 			fch.write(fileBuffer);
 			fileBuffer.clear();
@@ -218,8 +218,8 @@ public class DdlConverter {
 			fch = fos.getChannel();
 			for(String alertComment : alertComments) {
 				System.out.println(alertComment);
-				fileBuffer.put(alertComment.getBytes(ConfigInfo.FILE_CHARACTERSET));
-				fileBuffer.put("\n".getBytes(ConfigInfo.FILE_CHARACTERSET));
+				fileBuffer.put(alertComment.getBytes(ConfigInfo.TAR_DB_CHARSET));
+				fileBuffer.put("\n".getBytes(ConfigInfo.TAR_DB_CHARSET));
 				fileBuffer.flip();
 				fch.write(fileBuffer);
 				fileBuffer.clear();

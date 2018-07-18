@@ -147,7 +147,7 @@ public class ExecuteQuery implements Runnable{
         	} else {
         		LogUtils.debug("[NO_TRUNCATE_COMMAND] " + this.tableName,ExecuteQuery.class);
         	}
-        	bb.put(bf.toString().getBytes(ConfigInfo.FILE_CHARACTERSET));
+        	bb.put(bf.toString().getBytes(ConfigInfo.TAR_DB_CHARSET));
 			bb.flip();
 			
 			outChannel.write(bb);
@@ -167,7 +167,7 @@ public class ExecuteQuery implements Runnable{
         		if(i<columnNames.size()-1) head.append(',');
         	}
         	head.append(") FROM STDIN;\n");
-        	bb.put(head.toString().getBytes(ConfigInfo.FILE_CHARACTERSET));
+        	bb.put(head.toString().getBytes(ConfigInfo.TAR_DB_CHARSET));
 			bb.flip();
 			
 			outChannel.write(bb);
@@ -185,18 +185,18 @@ public class ExecuteQuery implements Runnable{
         		bf.append("\n");
 //        		bf.append(Constant.R);
         		rowCnt += 1;
-        		divideProcessing(bf.length(),ConfigInfo.BASIC_BUFFER_SIZE,ConfigInfo.BASIC_BUFFER_SIZE, bf, bb, outChannel, ConfigInfo.FILE_CHARACTERSET);
+        		divideProcessing(bf.length(),ConfigInfo.BASIC_BUFFER_SIZE,ConfigInfo.BASIC_BUFFER_SIZE, bf, bb, outChannel, ConfigInfo.TAR_DB_CHARSET);
 
         		if(rowCnt % ConfigInfo.SRC_TABLE_COPY_SEGMENT_SIZE == 0) {
         			if (bf.length() != 0){
-            			bb.put(bf.toString().getBytes(ConfigInfo.FILE_CHARACTERSET));
+            			bb.put(bf.toString().getBytes(ConfigInfo.TAR_DB_CHARSET));
             			bb.flip();
             			outChannel.write(bb);
             			bb.clear();
             			bf.setLength(0);
                 	}
-					bb.put("\\.\n\n".toString().getBytes(ConfigInfo.FILE_CHARACTERSET));
-		        	bb.put(head.toString().getBytes(ConfigInfo.FILE_CHARACTERSET));
+					bb.put("\\.\n\n".toString().getBytes(ConfigInfo.TAR_DB_CHARSET));
+		        	bb.put(head.toString().getBytes(ConfigInfo.TAR_DB_CHARSET));
 					bb.flip();
 					outChannel.write(bb);
 					bb.clear();
@@ -204,12 +204,12 @@ public class ExecuteQuery implements Runnable{
         	}
         	
         	if (bf.length() != 0){
-    			bb.put(bf.toString().getBytes(ConfigInfo.FILE_CHARACTERSET));
+    			bb.put(bf.toString().getBytes(ConfigInfo.TAR_DB_CHARSET));
     			bb.flip();
     			outChannel.write(bb);
     			bb.clear();
         	}
-			bb.put("\\.\n\n".toString().getBytes(ConfigInfo.FILE_CHARACTERSET));
+			bb.put("\\.\n\n".toString().getBytes(ConfigInfo.TAR_DB_CHARSET));
 			bb.flip();
 			outChannel.write(bb);
 			bb.clear();
@@ -254,7 +254,7 @@ public class ExecuteQuery implements Runnable{
 			case Types.CHAR: case Types.NCHAR:
 				String str = null;
 				if(ConfigInfo.SRC_IS_ASCII) {
-					//str = new String(rs.getString(index).getBytes(ConfigInfo.ASCII_ENCODING),ConfigInfo.FILE_CHARACTERSET);
+					//str = new String(rs.getString(index).getBytes(ConfigInfo.ASCII_ENCODING),ConfigInfo.TAR_DB_CHARSET);
 					byte[] b = rs.getBytes(index);
 					
 					if ( b != null) str = new String(b, ConfigInfo.SRC_DB_CHARSET);
@@ -303,14 +303,14 @@ public class ExecuteQuery implements Runnable{
 					} else {
 						if(bf.length()>0) {
 							ByteBuffer tmpByteBuffer = ByteBuffer.allocateDirect(ConfigInfo.BASIC_BUFFER_SIZE*2);
-							divideProcessing(ConfigInfo.BASIC_BUFFER_SIZE, bf, tmpByteBuffer, outChannel, ConfigInfo.FILE_CHARACTERSET);
+							divideProcessing(ConfigInfo.BASIC_BUFFER_SIZE, bf, tmpByteBuffer, outChannel, ConfigInfo.TAR_DB_CHARSET);
 						}
 						
 						ByteBuffer bb = ByteBuffer.allocateDirect(buffer.length*4);
 						
 						while((n = reader.read(buffer)) != -1){
 							String s = new String(Arrays.copyOfRange(buffer, 0, n));
-							bb.put(s.getBytes(ConfigInfo.FILE_CHARACTERSET));
+							bb.put(s.getBytes(ConfigInfo.TAR_DB_CHARSET));
 							bb.flip();
 			        		outChannel.write(bb);
 			        		bb.clear();
@@ -342,12 +342,12 @@ public class ExecuteQuery implements Runnable{
 						} else {
 							if(bf.length()>0) {
 								ByteBuffer tmpByteBuffer = ByteBuffer.allocateDirect(ConfigInfo.BASIC_BUFFER_SIZE*2);
-								divideProcessing(ConfigInfo.BLOB_BUFFER_SIZE, bf, tmpByteBuffer, outChannel, ConfigInfo.FILE_CHARACTERSET);
+								divideProcessing(ConfigInfo.BLOB_BUFFER_SIZE, bf, tmpByteBuffer, outChannel, ConfigInfo.TAR_DB_CHARSET);
 							}
     	        			
 							StringBuffer lobBf = new StringBuffer();
 							lobBf.append("\\\\x");
-							bb.put(lobBf.toString().getBytes(ConfigInfo.FILE_CHARACTERSET));
+							bb.put(lobBf.toString().getBytes(ConfigInfo.TAR_DB_CHARSET));
 			        		bb.flip();
 			        		outChannel.write(bb);
 			        		bb.clear();
@@ -356,7 +356,7 @@ public class ExecuteQuery implements Runnable{
 								buffeOutr.write(buffer, 0, len);
 								buffeOutr.flush();
 								lobBf.append(DatatypeConverter.printHexBinary(buffeOutr.toByteArray()));
-								divideProcessing(ConfigInfo.BLOB_BUFFER_SIZE, lobBf, bb, outChannel, ConfigInfo.FILE_CHARACTERSET);
+								divideProcessing(ConfigInfo.BLOB_BUFFER_SIZE, lobBf, bb, outChannel, ConfigInfo.TAR_DB_CHARSET);
 			        			buffeOutr.reset();
 							}
 						}
@@ -383,12 +383,12 @@ public class ExecuteQuery implements Runnable{
 					StringBuffer lobBf = new StringBuffer();
 					if(bf.length()>0) {
 						ByteBuffer tmpByteBuffer = ByteBuffer.allocateDirect(ConfigInfo.BASIC_BUFFER_SIZE*2);
-						divideProcessing(ConfigInfo.BLOB_BUFFER_SIZE, bf, tmpByteBuffer, outChannel, ConfigInfo.FILE_CHARACTERSET);
+						divideProcessing(ConfigInfo.BLOB_BUFFER_SIZE, bf, tmpByteBuffer, outChannel, ConfigInfo.TAR_DB_CHARSET);
 					}
         								
 					
 					lobBf.append("\\\\x");
-					bb.put(lobBf.toString().getBytes(ConfigInfo.FILE_CHARACTERSET));
+					bb.put(lobBf.toString().getBytes(ConfigInfo.TAR_DB_CHARSET));
 					bb.flip();
 					outChannel.write(bb);
 					bb.clear();
@@ -398,7 +398,7 @@ public class ExecuteQuery implements Runnable{
 						buffeOutr.flush();
 						lobBf.append(DatatypeConverter.printHexBinary(buffeOutr.toByteArray()));
 						
-						divideProcessing(ConfigInfo.BLOB_BUFFER_SIZE, lobBf, bb, outChannel, ConfigInfo.FILE_CHARACTERSET);
+						divideProcessing(ConfigInfo.BLOB_BUFFER_SIZE, lobBf, bb, outChannel, ConfigInfo.TAR_DB_CHARSET);
 						
 						buffeOutr.reset();
 						lobBf.setLength(0);
@@ -451,14 +451,14 @@ public class ExecuteQuery implements Runnable{
 					} else {
 						if(bf.length()>0) {
 							ByteBuffer tmpByteBuffer = ByteBuffer.allocateDirect(ConfigInfo.BASIC_BUFFER_SIZE*2);
-							divideProcessing(ConfigInfo.BASIC_BUFFER_SIZE, bf, tmpByteBuffer, outChannel, ConfigInfo.FILE_CHARACTERSET);
+							divideProcessing(ConfigInfo.BASIC_BUFFER_SIZE, bf, tmpByteBuffer, outChannel, ConfigInfo.TAR_DB_CHARSET);
 						}
 						
 						ByteBuffer bb = ByteBuffer.allocateDirect(buffer.length*4);
 						
 						while((n = reader.read(buffer)) != -1){
 							String s = new String(Arrays.copyOfRange(buffer, 0, n));
-							bb.put(s.getBytes(ConfigInfo.FILE_CHARACTERSET));
+							bb.put(s.getBytes(ConfigInfo.TAR_DB_CHARSET));
 							bb.flip();
 			        		outChannel.write(bb);
 			        		bb.clear();
