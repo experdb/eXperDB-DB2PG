@@ -255,7 +255,11 @@ public class ExecuteQuery implements Runnable{
 				String str = null;
 				if(ConfigInfo.SRC_IS_ASCII) {
 					//str = new String(rs.getString(index).getBytes(ConfigInfo.ASCII_ENCODING),ConfigInfo.FILE_CHARACTERSET);
-					str = new String(rs.getBytes(index), ConfigInfo.SRC_DB_CHARSET);
+					byte[] b = rs.getBytes(index);
+					
+					if ( b != null) str = new String(b, ConfigInfo.SRC_DB_CHARSET);
+					else str = null;
+					
 				} else {
 					str = rs.getString(index);
 				}

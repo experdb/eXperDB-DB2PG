@@ -38,29 +38,7 @@ public class QueryMaker {
 	private static Map<String, ConcurrentHashMap<String,HashMap<String,ArrayList<Query>>>> mapperMgmt 
 		= new ConcurrentHashMap <String, ConcurrentHashMap<String,HashMap<String,ArrayList<Query>>>>();
 	private String fileLocation; 
-//	public static void main(String... args) {
-//		QueryMaker qm = new QueryMaker("query/src_mapper.xml");
-//		System.out.println(qm.getQuery("GET_TABLE_NAMES", Constant.DB_TYPE.ORA, 0));
-//		System.out.println(qm.getQuery("GET_TABLE_NAMES", Constant.DB_TYPE.MSS, 0));
-//		System.out.println(qm.getQuery("GET_TABLE_NAMES", Constant.DB_TYPE.ASE, 0));
-//		Map<String,Object> params = new HashMap<String,Object>();
-//		String where ="WHERE no = 1";
-//		List<String> tableNameList = new ArrayList<String>();
-//		tableNameList.add("test1");
-//		tableNameList.add("test2");
-//		tableNameList.add("test3");
-//		for (String tableName : tableNameList) {
-//			params.put("SCHEMA", "public");
-//			params.put("TABLE", tableName);
-//			params.put("WHERE", "");
-//			
-//			if(where!=null) {
-//				params.put("WHERE", where);
-//			}
-//			System.out.println(qm.getQuery("GET_SOURCE_TABLE_DATA", params, 0));
-//			params.clear();
-//		}
-//	}
+//	public sd
 	
 	public QueryMaker(String fileLocation) {
 		while(mapperMgmt.get(fileLocation) == null) {
