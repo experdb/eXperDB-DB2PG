@@ -155,6 +155,8 @@
 		ORDER BY psat.relname, i.relname;
 	</select>
 	<select id="getPgCurrentSchema" parameterType="map" resultType="map" databaseId="POG">
-		select current_schema() as schema;
+		<if test='DB_VER >= 9.2'>
+			select current_schema() as schema;
+		</if>
 	</select>
 </mapper>

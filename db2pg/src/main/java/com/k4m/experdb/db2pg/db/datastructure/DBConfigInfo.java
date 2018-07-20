@@ -65,6 +65,8 @@ public class DBConfigInfo implements java.io.Serializable{
 	 * DB 버전
 	 */
 	public String DB_VER;  //DB버전
+	public int DB_MAJOR_VER; //DB 메이저버전
+	public int DB_MINOR_VER; //DB 마이너버전
 	
 	public int ROWNUM;
 	

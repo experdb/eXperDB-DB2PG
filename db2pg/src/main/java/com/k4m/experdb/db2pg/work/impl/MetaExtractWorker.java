@@ -1,10 +1,12 @@
 package com.k4m.experdb.db2pg.work.impl;
 
+import java.util.HashMap;
 import java.util.List;
 
 import org.apache.ibatis.session.SqlSession;
 
 import com.k4m.experdb.db2pg.db.DBCPPoolManager;
+import com.k4m.experdb.db2pg.db.datastructure.DBConfigInfo;
 import com.k4m.experdb.db2pg.mapper.MetaExtractMapper;
 import com.k4m.experdb.db2pg.work.DBWorker;
 
@@ -13,13 +15,13 @@ public class MetaExtractWorker extends DBWorker {
 	private String poolName;
 	private MetaExtractMapper mapper;
 	private boolean stop;
-	private List<MetaExtractWork> works;
+	private MetaExtractWork work;
 	private Object result;
 	
-	public MetaExtractWorker(String poolName, List<MetaExtractWork> works) throws Exception {
+	public MetaExtractWorker(String poolName, MetaExtractWork work) throws Exception {
 		super();
 		this.poolName = poolName;
-		this.works = works;
+		this.work = work;
 		sqlSession = DBCPPoolManager.getSession(poolName);
 		mapper = sqlSession.getMapper(MetaExtractMapper.class);
 		stop = false;
@@ -29,42 +31,47 @@ public class MetaExtractWorker extends DBWorker {
 	public void run() {
 		try {
 			isRunning = true;
-			for(MetaExtractWork work : works) {
-				switch(work.type) {
-				case GET_AUTOINCREMENT_INFORM:
-					result = mapper.getAutoincrementInform(work.params);
-					break;
-				case GET_COLUMN_INFORM:
-					result = mapper.getColumnInform(work.params);
-					break;
-				case GET_CONSTRAINT_INFORM:
-					result = mapper.getConstraintInform(work.params);
-					break;
-				case GET_CREATE_TABLE:
-					result = mapper.getCreateTable(work.params);
-					break;
-				case GET_KEY_INFORM:
-					result = mapper.getKeyInform(work.params);
-					break;
-				case GET_SOURCE_TABLE_DATA:
-					result = mapper.getSourceTableData(work.params);
-					break;
-				case GET_TABLE_INFORM:
-					result = mapper.getTableInform(work.params);
-					break;
-				case GET_TABLE_NAME:
-					result = mapper.getTableName(work.params);
-					break;
-				case GET_PG_CURRENT_SCHEMA:
-					result = mapper.getPgCurrentSchema(work.params);
-					break;
-				case GET_PG_FK_DDL:
-					result = mapper.getPgFkDdl(work.params);
-					break;
-				case GET_PG_IDX_DDL:
-					result = mapper.getPgIdxDdl(work.params);
-					break;
-				}
+			if(work.params == null) {
+				work.params = new HashMap<String, Object>();
+			}
+			DBConfigInfo dbconf = DBCPPoolManager.getConfigInfo(poolName);
+			work.params.put("DB_VER", dbconf.DB_VER);
+			work.params.put("DB_MAJOR_VER", dbconf.DB_MAJOR_VER);
+			work.params.put("DB_MINOR_VER", dbconf.DB_MINOR_VER);
+			switch(work.type) {
+			case GET_AUTOINCREMENT_INFORM:
+				result = mapper.getAutoincrementInform(work.params);
+				break;
+			case GET_COLUMN_INFORM:
+				result = mapper.getColumnInform(work.params);
+				break;
+			case GET_CONSTRAINT_INFORM:
+				result = mapper.getConstraintInform(work.params);
+				break;
+			case GET_CREATE_TABLE:
+				result = mapper.getCreateTable(work.params);
+				break;
+			case GET_KEY_INFORM:
+				result = mapper.getKeyInform(work.params);
+				break;
+			case GET_SOURCE_TABLE_DATA:
+				result = mapper.getSourceTableData(work.params);
+				break;
+			case GET_TABLE_INFORM:
+				result = mapper.getTableInform(work.params);
+				break;
+			case GET_TABLE_NAME:
+				result = mapper.getTableName(work.params);
+				break;
+			case GET_PG_CURRENT_SCHEMA:
+				result = mapper.getPgCurrentSchema(work.params);
+				break;
+			case GET_PG_FK_DDL:
+				result = mapper.getPgFkDdl(work.params);
+				break;
+			case GET_PG_IDX_DDL:
+				result = mapper.getPgIdxDdl(work.params);
+				break;
 			}
 			shutdown();
 		} catch (Exception e) {

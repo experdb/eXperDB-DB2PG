@@ -152,6 +152,8 @@ public class DBCPPoolManager {
             conn = getConnection(poolName);
             conn.setAutoCommit(false);
             configInfo.DB_VER = conn.getMetaData().getDatabaseMajorVersion() + "." + conn.getMetaData().getDatabaseMinorVersion();
+            configInfo.DB_MAJOR_VER = conn.getMetaData().getDatabaseMajorVersion();
+            configInfo.DB_MINOR_VER = conn.getMetaData().getDatabaseMinorVersion();
             configInfo.ORG_SCHEMA_NM= conn.getMetaData().getUserName();
 		} catch (Exception e) {
 			shutdownDriver(poolName);

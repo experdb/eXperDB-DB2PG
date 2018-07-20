@@ -27,19 +27,11 @@ public class MetaExtractWorkerTest {
 		dbconf.DB_TYPE=Constant.DB_TYPE.POG;
 		String poolName = "MetaExtractWorkerTest";
 		DBCPPoolManager.setupDriver(dbconf, poolName, 2);
-		List<MetaExtractWork> works = new LinkedList<MetaExtractWork>();
+		MetaExtractWorker metaExtractWorker = new MetaExtractWorker(poolName, new MetaExtractWork(MetaExtractWorker.WORK_TYPE.GET_PG_CURRENT_SCHEMA, null));
+//		executorService.execute(metaExtractWorker);
+		metaExtractWorker.run();
 		
-		works.add(new MetaExtractWork(MetaExtractWorker.WORK_TYPE.GET_PG_CURRENT_SCHEMA, null));
-		MetaExtractWorker metaExtractWorker = new MetaExtractWorker(poolName, works);
-		System.out.println(metaExtractWorker.getPoolName());
-		
-		System.out.println(metaExtractWorker.isRunning());
-//		metaExtractWorker.run();
-		executorService.execute(metaExtractWorker);
-		Thread.sleep(30);
-		System.out.println(metaExtractWorker.isRunning());
-		Thread.sleep(10);
-		System.out.println(metaExtractWorker.isRunning());
+		if(metaExtractWorker.hasException()) metaExtractWorker.getException().printStackTrace();
 		
 		System.out.println(metaExtractWorker.getResult());
 		
