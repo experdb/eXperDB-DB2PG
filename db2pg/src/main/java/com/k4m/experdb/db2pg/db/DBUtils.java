@@ -68,38 +68,38 @@ public class DBUtils {
 		return tableNames;
 	}
 	
-	public static String getCreateTableQuery(String table,String srcPoolName, DBConfigInfo dbConfigInfo) {
-		Connection srcConn = null;
-		PreparedStatement srcPreStmt = null;
-		String createTableQuery = null;
-		QueryMaker qm = new QueryMaker("/src_mapper.xml");
-		Map<String,Object> params = new HashMap<String,Object>();
-		try {
-			LogUtils.info("[START_CREATE_TABLE_QUERY_MAKE] "+table,DBUtils.class);
-			srcConn = DBCPPoolManager.getConnection(srcPoolName);
-			if(dbConfigInfo.DB_TYPE.equals(Constant.DB_TYPE.MYSQL)) {
-				if(dbConfigInfo.SCHEMA_NAME!=null && !dbConfigInfo.SCHEMA_NAME.equals("")) {
-					params.put("SCHEMA", dbConfigInfo.SCHEMA_NAME+".");
-				} else {
-					params.put("SCHEMA", "");
-				}
-				if(table!=null && !table.equals("")) {
-					params.put("TABLE", table);
-				} else {
-					throw new Exception("TABLE NOT FOUND");
-				}
-				srcPreStmt = qm.getPreparedStatement("GET_CREATE_TABLE",Constant.DB_TYPE.MYSQL, params, srcConn, Double.parseDouble(dbConfigInfo.DB_VER));
-				ResultSet rs = srcPreStmt.executeQuery();
-				if(rs.first()) createTableQuery = rs.getString("Create Table");
-				rs.close();
-			}
-			srcConn.close();
-		} catch(Exception e){
-			LogUtils.error(e.getMessage(),DBUtils.class);
-		} finally {
-			LogUtils.info("[END_CREATE_TABLE_QUERY_MAKE] "+table,DBUtils.class);
-		}
-		return createTableQuery;
-	}
+//	public static String getCreateTableQuery(String table,String srcPoolName, DBConfigInfo dbConfigInfo) {
+//		Connection srcConn = null;
+//		PreparedStatement srcPreStmt = null;
+//		String createTableQuery = null;
+//		QueryMaker qm = new QueryMaker("/src_mapper.xml");
+//		Map<String,Object> params = new HashMap<String,Object>();
+//		try {
+//			LogUtils.info("[START_CREATE_TABLE_QUERY_MAKE] "+table,DBUtils.class);
+//			srcConn = DBCPPoolManager.getConnection(srcPoolName);
+//			if(dbConfigInfo.DB_TYPE.equals(Constant.DB_TYPE.MYSQL)) {
+//				if(dbConfigInfo.SCHEMA_NAME!=null && !dbConfigInfo.SCHEMA_NAME.equals("")) {
+//					params.put("SCHEMA", dbConfigInfo.SCHEMA_NAME+".");
+//				} else {
+//					params.put("SCHEMA", "");
+//				}
+//				if(table!=null && !table.equals("")) {
+//					params.put("TABLE", table);
+//				} else {
+//					throw new Exception("TABLE NOT FOUND");
+//				}
+//				srcPreStmt = qm.getPreparedStatement("GET_CREATE_TABLE",Constant.DB_TYPE.MYSQL, params, srcConn, Double.parseDouble(dbConfigInfo.DB_VER));
+//				ResultSet rs = srcPreStmt.executeQuery();
+//				if(rs.first()) createTableQuery = rs.getString("Create Table");
+//				rs.close();
+//			}
+//			srcConn.close();
+//		} catch(Exception e){
+//			LogUtils.error(e.getMessage(),DBUtils.class);
+//		} finally {
+//			LogUtils.info("[END_CREATE_TABLE_QUERY_MAKE] "+table,DBUtils.class);
+//		}
+//		return createTableQuery;
+//	}
 	
 }
