@@ -2,6 +2,7 @@ package com.k4m.experdb.db2pg.work.impl;
 
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.ibatis.session.SqlSession;
 
@@ -17,7 +18,7 @@ public class MetaExtractWorker extends DBWorker {
 	private boolean stop;
 	private MetaExtractWork work;
 	private Object result;
-	
+
 	public MetaExtractWorker(String poolName, MetaExtractWork work) throws Exception {
 		super();
 		this.poolName = poolName;
@@ -31,14 +32,14 @@ public class MetaExtractWorker extends DBWorker {
 	public void run() {
 		try {
 			isRunning = true;
-			if(work.params == null) {
+			if (work.params == null) {
 				work.params = new HashMap<String, Object>();
 			}
 			DBConfigInfo dbconf = DBCPPoolManager.getConfigInfo(poolName);
 			work.params.put("DB_VER", dbconf.DB_VER);
 			work.params.put("DB_MAJOR_VER", dbconf.DB_MAJOR_VER);
 			work.params.put("DB_MINOR_VER", dbconf.DB_MINOR_VER);
-			switch(work.type) {
+			switch (work.type) {
 			case GET_AUTOINCREMENT_INFORM:
 				result = mapper.getAutoincrementInform(work.params);
 				break;
@@ -60,17 +61,17 @@ public class MetaExtractWorker extends DBWorker {
 			case GET_TABLE_INFORM:
 				result = mapper.getTableInform(work.params);
 				break;
-			case GET_TABLE_NAME:
-				result = mapper.getTableName(work.params);
+			case GET_TABLE_NAMES:
+				result = mapper.getTableNames(work.params);
 				break;
 			case GET_PG_CURRENT_SCHEMA:
-				result = mapper.getPgCurrentSchema(work.params);
+				result = mapper.getPgCurrentSchema();
 				break;
 			case GET_PG_FK_DDL:
-				result = mapper.getPgFkDdl(work.params);
+				result = mapper.getPgFkDdl();
 				break;
 			case GET_PG_IDX_DDL:
-				result = mapper.getPgIdxDdl(work.params);
+				result = mapper.getPgIdxDdl();
 				break;
 			}
 			shutdown();
@@ -86,26 +87,32 @@ public class MetaExtractWorker extends DBWorker {
 	public void stop() {
 		stop = true;
 	}
-	
+
 	@Override
 	public void shutdown() {
-		if(!stop) stop = true;
+		if (!stop)
+			stop = true;
 		sqlSession.close();
 	}
-	
+
 	public Object getResult() {
 		return result;
 	}
 	
+	public List<?> getListResult() {
+		return (List<?>) result;
+	}
+	
+	public Map<?,?> getMapResult() {
+		return (Map<?,?>)result;
+	}
+
 	public String getPoolName() {
 		return poolName;
 	}
-	
+
 	public enum WORK_TYPE {
-		GET_TABLE_NAME, GET_SOURCE_TABLE_DATA, GET_CREATE_TABLE, GET_TABLE_INFORM
-		, GET_COLUMN_INFORM, GET_CONSTRAINT_INFORM, GET_KEY_INFORM, GET_AUTOINCREMENT_INFORM
-		, GET_PG_CURRENT_SCHEMA, GET_PG_IDX_DDL, GET_PG_FK_DDL
+		GET_TABLE_NAMES, GET_SOURCE_TABLE_DATA, GET_CREATE_TABLE, GET_TABLE_INFORM, GET_COLUMN_INFORM, GET_CONSTRAINT_INFORM, GET_KEY_INFORM, GET_AUTOINCREMENT_INFORM, GET_PG_CURRENT_SCHEMA, GET_PG_IDX_DDL, GET_PG_FK_DDL
 	}
-	
-	
+
 }

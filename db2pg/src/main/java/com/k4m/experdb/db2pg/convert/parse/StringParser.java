@@ -39,9 +39,6 @@ public abstract class StringParser <T> {
 		System.out.println(string+"\n========================\n");
 		do {
 			ignoreRangeCharacterIndex = 0;
-			for(int i=0;i<ignoreRangeCharacter.length;i++) {
-				int idx = string.indexOf(ignoreRangeCharacter[i],prevEnd+1);
-			}
 			for(int i=1;i<ignoreRangeCharacter.length;i++) {
 				if(ignoreRangeCharacterIndexes[ignoreRangeCharacterIndex]>ignoreRangeCharacterIndexes[i]) {
 					ignoreRangeCharacterIndex = i;

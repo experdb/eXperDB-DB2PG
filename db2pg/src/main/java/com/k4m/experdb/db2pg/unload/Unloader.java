@@ -26,7 +26,6 @@ import com.k4m.experdb.db2pg.common.DevUtils;
 import com.k4m.experdb.db2pg.common.LogUtils;
 import com.k4m.experdb.db2pg.config.ConfigInfo;
 import com.k4m.experdb.db2pg.db.DBCPPoolManager;
-import com.k4m.experdb.db2pg.db.QueryMaker;
 import com.k4m.experdb.db2pg.db.datastructure.DBConfigInfo;
 
 public class Unloader {
@@ -48,7 +47,6 @@ public class Unloader {
 	
 	public void start() {
 		try {
-			QueryMaker qMaker = new QueryMaker("/src_mapper.xml");
 			if(!ConfigInfo.SELECT_QUERIES_FILE.equals("")) {
 				loadSelectQuery(ConfigInfo.SELECT_QUERIES_FILE);
 			}
@@ -91,21 +89,21 @@ public class Unloader {
 			
 			Map<String,Object> params = new HashMap<String,Object>();
 			for (String tableName : tableNameList) {
-				params.put("SCHEMA", dbConfigInfo.SCHEMA_NAME!=null && !dbConfigInfo.SCHEMA_NAME.equals("")
-										? dbConfigInfo.SCHEMA_NAME+"." : "");
+				String schema = "", replaceTableName, where ="";
+				if (dbConfigInfo.SCHEMA_NAME!=null && !dbConfigInfo.SCHEMA_NAME.equals("")) {
+					schema = dbConfigInfo.SCHEMA_NAME+".";
+				}
 				if(dbConfigInfo.DB_TYPE.equals(Constant.DB_TYPE.MYSQL)) {
-					params.put("TABLE", "`"+tableName+"`");
+					replaceTableName = "`"+tableName+"`";
 				} else {
-					params.put("TABLE", "\""+tableName+"\"");
+					replaceTableName =  "\""+tableName+"\"";
 				}
 				
 				
 				if(ConfigInfo.SRC_WHERE!=null && !ConfigInfo.SRC_WHERE.equals("")) {
-					params.put("WHERE", "WHERE "+ConfigInfo.SRC_WHERE);
-				} else {
-					params.put("WHERE", "");
+					where = "WHERE "+ConfigInfo.SRC_WHERE;
 				}
-				selSqlList.add(qMaker.getQuery("GET_SOURCE_TABLE_DATA",dbConfigInfo.DB_TYPE, params, Double.parseDouble(dbConfigInfo.DB_VER)));
+				selSqlList.add(String.format("SELECT * FROM %s%s %s", schema,replaceTableName,where));
 			}
 			params.clear();
 			int jobSize = 0;

@@ -4,8 +4,8 @@
      "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
 <mapper namespace="com.k4m.experdb.db2pg.mapper.MetaExtractMapper">
-	<select id="getTableName" parameterType="map" resultType="map" databaseId="ORA">
-		SELECT OBJECT_NAME FROM ALL_OBJECTS 
+	<select id="getTableNames" parameterType="map" resultType="java.lang.String" databaseId="ORA">
+		SELECT OBJECT_NAME as TABLE_NAME FROM ALL_OBJECTS 
 		WHERE OWNER=#{OWNER} 
 			AND OBJECT_NAME NOT IN ('TOAD_PLAN_TABLE','PLAN_TABLE') 
 			AND OBJECT_NAME NOT LIKE 'MDRT%'
@@ -15,19 +15,19 @@
 	<select id="getSourceTableData" parameterType="map" resultType="map" databaseId="ORA">
 		SELECT * FROM ${SCHEMA}${TABLE} ${WHERE}
 	</select>
-	<select id="getTableNames" parameterType="map" resultType="map" databaseId="MSS">
+	<select id="getTableNames" parameterType="map" resultType="java.lang.String" databaseId="MSS">
 		SELECT TABLE_NAME FROM information_schema.tables WHERE TABLE_SCHEMA=#{TABLE_SCHEMA}
 	</select>
 	<select id="getSourceTableData" parameterType="map" resultType="map" databaseId="MSS">
 		SELECT * FROM ${SCHEMA}${TABLE} ${WHERE}
 	</select>
-	<select id="getTableNames" parameterType="map" resultType="map" databaseId="ASE" >
+	<select id="getTableNames" parameterType="map" resultType="java.lang.String" databaseId="ASE" >
 		SELECT name AS table_name FROM sysobjects WHERE type='U' AND user_name(uid)=#{USER_NAME}
 	</select>
 	<select id="getSourceTableData" parameterType="map" resultType="map" databaseId="ASE">
 		SELECT * FROM ${SCHEMA}${TABLE} ${WHERE}
 	</select>
-	<select id="getTableNames" parameterType="map" resultType="map" databaseId="MYSQL">
+	<select id="getTableNames" parameterType="map" resultType="java.lang.String" databaseId="MYSQL">
 		SELECT table_name
 		 FROM information_schema.tables
 		WHERE table_schema=#{TABLE_SCHEMA} ${TABLE_ONLY}
@@ -35,7 +35,7 @@
 	<select id="getSourceTableData" parameterType="map" resultType="map" databaseId="MYSQL">
 		SELECT * FROM ${SCHEMA}${TABLE} ${WHERE}
 	</select>
-	<select id="getCreateTable" parameterType="map" resultType="map" databaseId="MYSQL">
+	<select id="getCreateTable" parameterType="map" resultType="java.lang.String" databaseId="MYSQL">
 			SHOW CREATE TABLE ${SCHEMA}${TABLE}
 	</select>
 	<select id="getTableInform" parameterType="map" resultType="map" databaseId="MYSQL">
@@ -98,7 +98,7 @@
 		       AND s.table_schema=#{TABLE_SCHEMA}
 		       AND s.table_name=#{TABLE_NAME}
 	</select>
-	<select id="getTableNames" parameterType="map" resultType="map" databaseId="CUB">
+	<select id="getTableNames" parameterType="map" resultType="java.lang.String" databaseId="CUB">
 		SELECT class_name AS table_name FROM db_class WHERE is_system_class='NO' AND class_type='CLASS' ORDER BY class_name ASC;
 	</select>
 	<select id="getConstraintInform" parameterType="map" resultType="map" databaseId="CUB">
@@ -122,7 +122,7 @@
 	<select id="getAutoincrementInform" parameterType="map" resultType="map" databaseId="CUB">
 		SELECT owner.name, db_serial.* FROM db_serial WHERE class_name=#{TABLE_NAME}
 	</select>
-	<select id="getPgFkDdl" parameterType="map" resultType="map" databaseId="POG">
+	<select id="getPgFkDdl" resultType="map" databaseId="POG">
 		SELECT psat1.schemaname AS "SCHEMA_NM",
 			pc.conname AS "CONSTRAINT_NAME",
 			'R' AS "CONSTRAINT_TYPE",
@@ -134,7 +134,7 @@
 			JOIN pg_stat_all_tables psat1 ON psat1.relid = pc.conrelid
 			JOIN pg_stat_all_tables psat2 ON psat2.relid = pc.confrelid
 	</select>
-	<select id="getPgIdxDdl" parameterType="map" resultType="map" databaseId="POG">
+	<select id="getPgIdxDdl" resultType="map" databaseId="POG">
 		SELECT	CASE WHEN EXISTS (SELECT oid FROM pg_constraint pc WHERE pc.conindid = pi.indexrelid)
 					THEN 'ALTER TABLE "' || psat.schemaname || '"."'|| psat.relname || '" ADD CONSTRAINT "' || i.relname || '" ' 
 						|| pg_get_constraintdef((SELECT oid FROM pg_constraint pc WHERE pc.conrelid = pi.indrelid AND pc.conindid = pi.indexrelid)) 
@@ -154,9 +154,7 @@
 		WHERE	rtg.privilege_type = 'SELECT' AND rtg.table_schema = current_schema()
 		ORDER BY psat.relname, i.relname;
 	</select>
-	<select id="getPgCurrentSchema" parameterType="map" resultType="map" databaseId="POG">
-		<if test='DB_VER >= 9.2'>
-			select current_schema() as schema;
-		</if>
+	<select id="getPgCurrentSchema" resultType="java.lang.String" databaseId="POG">
+		select current_schema() as schema;
 	</select>
 </mapper>

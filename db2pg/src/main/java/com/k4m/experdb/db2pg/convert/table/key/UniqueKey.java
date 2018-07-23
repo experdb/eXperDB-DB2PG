@@ -2,8 +2,6 @@ package com.k4m.experdb.db2pg.convert.table.key;
 
 import java.util.ArrayList;
 
-import com.k4m.experdb.db2pg.convert.table.Column;
-
 
 public class UniqueKey extends Key<UniqueKey> {
 	public UniqueKey() {

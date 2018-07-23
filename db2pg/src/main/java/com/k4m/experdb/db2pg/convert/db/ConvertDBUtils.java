@@ -1,8 +1,5 @@
 package com.k4m.experdb.db2pg.convert.db;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -17,60 +14,46 @@ import com.k4m.experdb.db2pg.convert.table.key.ForeignKey;
 import com.k4m.experdb.db2pg.convert.table.key.Key.IndexType;
 import com.k4m.experdb.db2pg.convert.table.key.Key.Type;
 import com.k4m.experdb.db2pg.convert.table.key.NormalKey;
+import com.k4m.experdb.db2pg.convert.table.key.PrimaryKey;
+import com.k4m.experdb.db2pg.convert.table.key.UniqueKey;
 import com.k4m.experdb.db2pg.convert.table.key.option.ForeignKeyDelete;
 import com.k4m.experdb.db2pg.convert.table.key.option.ForeignKeyMatch;
 import com.k4m.experdb.db2pg.convert.table.key.option.ForeignKeyUpdate;
 import com.k4m.experdb.db2pg.convert.table.key.option.ReferenceDefinition;
-import com.k4m.experdb.db2pg.convert.table.key.PrimaryKey;
-import com.k4m.experdb.db2pg.convert.table.key.UniqueKey;
-import com.k4m.experdb.db2pg.db.DBCPPoolManager;
-import com.k4m.experdb.db2pg.db.QueryMaker;
 import com.k4m.experdb.db2pg.db.datastructure.DBConfigInfo;
+import com.k4m.experdb.db2pg.work.impl.MetaExtractWork;
+import com.k4m.experdb.db2pg.work.impl.MetaExtractWorker;
+import com.k4m.experdb.db2pg.work.impl.MetaExtractWorker.WORK_TYPE;
 
 public class ConvertDBUtils {
 	
+	@SuppressWarnings("unchecked")
 	public static List<String> getTableNames(boolean tableOnly, String srcPoolName, DBConfigInfo dbConfigInfo) {
-		Connection srcConn = null;
-		PreparedStatement srcPreStmt = null;
-		
-		List<String> tableNames = new ArrayList<String>();
-		
-		QueryMaker qm = new QueryMaker("/src_mapper.xml");
-		Map<String,Object> params = new HashMap<String,Object>();
 		try {
-			
 			LogUtils.info("[START_GET_TABLE_NAMES]",ConvertDBUtils.class);
-			srcConn = DBCPPoolManager.getConnection(srcPoolName);
+			Map<String,Object> params = new HashMap<String,Object>();
 			if(dbConfigInfo.DB_TYPE.equals(Constant.DB_TYPE.MYSQL)) {
 				params.put("TABLE_SCHEMA", dbConfigInfo.SCHEMA_NAME);
 //				params.put("TABLE_ONLY", tableOnly?"WHERE table_type IN ('BASE TABLE')":"WHERE table_type IN ('BASE TABLE','VIEW')");
 				params.put("TABLE_ONLY", "AND table_type IN ('BASE TABLE')");
-				srcPreStmt = qm.getPreparedStatement("GET_TABLE_NAMES",Constant.DB_TYPE.MYSQL, params, srcConn, Double.parseDouble(dbConfigInfo.DB_VER));
-	        	ResultSet rs = srcPreStmt.executeQuery();
-	        	while (rs.next()) tableNames.add(rs.getString("table_name"));
-	        	rs.close();
 			}
-			srcPreStmt.close();
-			srcConn.close();
+			MetaExtractWorker mew = new MetaExtractWorker(srcPoolName, new MetaExtractWork(WORK_TYPE.GET_TABLE_NAMES, params));
+			mew.run();
+			
+			return (List<String>) mew.getListResult();
 		} catch(Exception e){
 			LogUtils.error(e.getMessage(),ConvertDBUtils.class);
 		} finally {
 			LogUtils.info("[END_GET_TABLE_NAMES]",ConvertDBUtils.class);
 		}
-		return tableNames;
+		return null;
 	}
 	
 	public static List<Table> getTableInform(List<String> tableNames,boolean tableOnly, String srcPoolName, DBConfigInfo dbConfigInfo) {
-		Connection srcConn = null;
-		PreparedStatement srcPreStmt = null;
-		
 		List<Table> tables = new ArrayList<Table>();
-		
-		QueryMaker qm = new QueryMaker("/src_mapper.xml");
-		Map<String,Object> params = new HashMap<String,Object>();
 		try {
 			LogUtils.info("[START_GET_TABLE_INFORM]",ConvertDBUtils.class);
-			srcConn = DBCPPoolManager.getConnection(srcPoolName);
+			Map<String,Object> params = new HashMap<String,Object>();
 			if(dbConfigInfo.DB_TYPE.equals(Constant.DB_TYPE.MYSQL)) {
 				params.put("TABLE_SCHEMA", dbConfigInfo.SCHEMA_NAME);
 				params.put("TABLE_ONLY", "AND table_type IN ('BASE TABLE')");
@@ -88,21 +71,19 @@ public class ConvertDBUtils {
 				} else {
 					params.put("TABLE_LIST", "");
 				}
-				srcPreStmt = qm.getPreparedStatement("GET_TABLE_INFORM",Constant.DB_TYPE.MYSQL, params, srcConn, Double.parseDouble(dbConfigInfo.DB_VER));
-				ResultSet rs = srcPreStmt.executeQuery();
-				while (rs.next()) {
+				MetaExtractWorker mew = new MetaExtractWorker(srcPoolName, new MetaExtractWork(WORK_TYPE.GET_TABLE_INFORM, params));
+				mew.run();
+				@SuppressWarnings("unchecked")
+				List<Map<String,Object>> results = (List<Map<String,Object>>)mew.getListResult();
+				for (Map<String,Object> result : results) {
 					Table table = new Table();
-					table.setSchemaName(rs.getString("table_schema"));
-					table.setName(rs.getString("table_name"));
-					table.setAutoIncrement(rs.getLong("auto_increment"));
-					table.setComment(rs.getString("table_comment"));
-					
+					table.setSchemaName((String)result.get("table_schema"));
+					table.setName((String)result.get("table_name"));
+					table.setAutoIncrement((Integer)result.get("auto_increment"));
+					table.setComment((String)result.get("table_comment"));
 					tables.add(table);
 				}
-				rs.close();
 			}
-			srcPreStmt.close();
-			srcConn.close();
 		} catch(Exception e){
 			LogUtils.error(e.getMessage(),ConvertDBUtils.class);
 		} finally {
@@ -113,42 +94,35 @@ public class ConvertDBUtils {
 	}
 	
 	public static Table setColumnInform(Table table, String srcPoolName, DBConfigInfo dbConfigInfo) {
-		Connection srcConn = null;
-		PreparedStatement srcPreStmt = null;
-		
-		QueryMaker qm = new QueryMaker("/src_mapper.xml");
-		Map<String,Object> params = new HashMap<String,Object>();
 		try {
 			
 			LogUtils.info("[START_SET_COLUMN_INFORM]",ConvertDBUtils.class);
-			srcConn = DBCPPoolManager.getConnection(srcPoolName);
+			Map<String,Object> params = new HashMap<String,Object>();
 			if(dbConfigInfo.DB_TYPE.equals(Constant.DB_TYPE.MYSQL)) {
 				params.put("TABLE_SCHEMA", table.getSchemaName());
 				params.put("TABLE_NAME", table.getName());
-				srcPreStmt = qm.getPreparedStatement("GET_COLUMN_INFORM",Constant.DB_TYPE.MYSQL, params, srcConn, Double.parseDouble(dbConfigInfo.DB_VER));
-
-	        	ResultSet rs = srcPreStmt.executeQuery();
+				MetaExtractWorker mew = new MetaExtractWorker(srcPoolName, new MetaExtractWork(WORK_TYPE.GET_COLUMN_INFORM, params));
+				mew.run();
+				@SuppressWarnings("unchecked")
+				List<Map<String,Object>> results = (List<Map<String,Object>>)mew.getListResult();
 	        	
-	        	while (rs.next()) {
+	        	for (Map<String,Object> result : results) {
 	        		Column column = new Column();
-	        		column.setOrdinalPosition(rs.getInt("ordinal_position"));
-	        		column.setName(rs.getString("column_name"));
-	        		column.setDefaultValue(rs.getString("column_default"));
-	        		column.setNotNull(!rs.getBoolean("is_nullable"));
-	        		column.setNumericPrecision(rs.getInt("numeric_precision"));
-	        		column.setNumericScale(rs.getInt("numeric_scale"));
-	        		String columnType = rs.getString("column_type");
+	        		column.setOrdinalPosition((Integer)result.get("ordinal_position"));
+	        		column.setName((String)result.get("column_name"));
+	        		column.setDefaultValue((String)result.get("column_default"));
+	        		column.setNotNull(!(Boolean)result.get("is_nullable"));
+	        		column.setNumericPrecision((Integer)result.get("numeric_precision"));
+	        		column.setNumericScale((Integer)result.get("numeric_scale"));
+	        		String columnType = (String)result.get("column_type");
 	        		column.setType(columnType);
-	        		column.setComment(rs.getString("column_comment"));
-	        		column.setAutoIncreament(rs.getString("extra").contains("auto_increment"));
-	        		column.setExtra(rs.getString("extra"));
+	        		column.setComment((String)result.get("column_comment"));
+	        		column.setAutoIncreament(((String)result.get("extra")).contains("auto_increment"));
+	        		column.setExtra((String)result.get("extra"));
 	        		table.getColumns().add(column);
 	        	}
 	        	Collections.sort(table.getColumns(),Column.getComparator());
-	        	rs.close();
 			}
-			srcPreStmt.close();
-			srcConn.close();
 			LogUtils.info("[END_SET_COLUMN_INFORM]",ConvertDBUtils.class);
 		} catch(Exception e){
 			LogUtils.error(e.getMessage(),ConvertDBUtils.class);
@@ -157,31 +131,27 @@ public class ConvertDBUtils {
 	}
 	
 	public static Table setConstraintInform(Table table, String srcPoolName, DBConfigInfo dbConfigInfo) {
-		Connection srcConn = null;
-		PreparedStatement srcPreStmt = null;
-		
-		QueryMaker qm = new QueryMaker("/src_mapper.xml");
-		Map<String,Object> params = new HashMap<String,Object>();
 		try {
-			
 			LogUtils.info("[START_SET_CONSTRAINT_INFORM]",ConvertDBUtils.class);
-			srcConn = DBCPPoolManager.getConnection(srcPoolName);
+			Map<String,Object> params = new HashMap<String,Object>();
 			if(dbConfigInfo.DB_TYPE.equals(Constant.DB_TYPE.MYSQL)) {
 				params.put("TABLE_SCHEMA", table.getSchemaName());
 				params.put("TABLE_NAME", table.getName());
-				srcPreStmt = qm.getPreparedStatement("GET_CONSTRAINT_INFORM",Constant.DB_TYPE.MYSQL, params, srcConn, Double.parseDouble(dbConfigInfo.DB_VER));
+				MetaExtractWorker mew = new MetaExtractWorker(srcPoolName, new MetaExtractWork(WORK_TYPE.GET_CONSTRAINT_INFORM, params));
+				mew.run();
+				@SuppressWarnings("unchecked")
+				List<Map<String,Object>> results = (List<Map<String,Object>>)mew.getListResult();
 				
-	        	ResultSet rs = srcPreStmt.executeQuery();
-	        	while (rs.next()) {
-	        		String constraintType = rs.getString("constraint_type");
+	        	for(Map<String,Object> result : results ) {
+	        		String constraintType = (String)result.get("constraint_type");
 	        		if(constraintType.equals("PRIMARY KEY")) {
-	        			String keySchema = rs.getString("constraint_schema");
-	        			String keyName = rs.getString("constraint_name");
-	        			String tableSchema = rs.getString("table_schema");
-	        			String tableName = rs.getString("table_name");
-	        			String columnName = rs.getString("column_name");
-	        			int ordinalPosition = rs.getInt("ordinal_position");
-	        			String indexType = rs.getString("index_type");
+	        			String keySchema = (String)result.get("constraint_schema");
+	        			String keyName = (String)result.get("constraint_name");
+	        			String tableSchema = (String)result.get("table_schema");
+	        			String tableName = (String)result.get("table_name");
+	        			String columnName = (String)result.get("column_name");
+	        			int ordinalPosition = (Integer)result.get("ordinal_position");
+	        			String indexType = (String)result.get("index_type");
 	        			
 	        			PrimaryKey pkey = new PrimaryKey();
 	        			boolean isAdded = false;
@@ -220,13 +190,13 @@ public class ConvertDBUtils {
 	        			}
 	        			table.getKeys().add(pkey);
 	        		} else if (constraintType.equals("UNIQUE")) {
-	        			String keySchema = rs.getString("constraint_schema");
-	        			String keyName = rs.getString("constraint_name");
-	        			String tableSchema = rs.getString("table_schema");
-	        			String tableName = rs.getString("table_name");
-	        			String columnName = rs.getString("column_name");
-	        			int ordinalPosition = rs.getInt("ordinal_position");
-	        			String indexType = rs.getString("index_type");
+	        			String keySchema = (String)result.get("constraint_schema");
+	        			String keyName = (String)result.get("constraint_name");
+	        			String tableSchema = (String)result.get("table_schema");
+	        			String tableName = (String)result.get("table_name");
+	        			String columnName = (String)result.get("column_name");
+	        			int ordinalPosition = (Integer)result.get("ordinal_position");
+	        			String indexType = (String)result.get("index_type");
 	        			
 	        			UniqueKey ukey = new UniqueKey();
 	        			boolean isAdded = false;
@@ -265,19 +235,19 @@ public class ConvertDBUtils {
 	        			}
 	        			table.getKeys().add(ukey);
 	        		} else if (constraintType.equals("FOREIGN KEY")) {
-	        			String keySchema = rs.getString("constraint_schema");
-	        			String keyName = rs.getString("constraint_name");
-	        			String tableSchema = rs.getString("table_schema");
-	        			String tableName = rs.getString("table_name");
-	        			String columnName = rs.getString("column_name");
-	        			int ordinalPosition = rs.getInt("ordinal_position");
-	        			String indexType = rs.getString("index_type");
-	        			String refTableSchema = rs.getString("referenced_table_schema");
-	        			String refTable = rs.getString("referenced_table_name");
-	        			String refColumnName = rs.getString("referenced_column_name");
-	        			String matchOption = rs.getString("match_option"); 
-	        			String updateRule = rs.getString("update_rule");
-	        			String deleteRule = rs.getString("delete_rule");
+	        			String keySchema = (String)result.get("constraint_schema");
+	        			String keyName = (String)result.get("constraint_name");
+	        			String tableSchema = (String)result.get("table_schema");
+	        			String tableName = (String)result.get("table_name");
+	        			String columnName = (String)result.get("column_name");
+	        			int ordinalPosition = (Integer)result.get("ordinal_position");
+	        			String indexType = (String)result.get("index_type");
+	        			String refTableSchema = (String)result.get("referenced_table_schema");
+	        			String refTable = (String)result.get("referenced_table_name");
+	        			String refColumnName = (String)result.get("referenced_column_name");
+	        			String matchOption = (String)result.get("match_option"); 
+	        			String updateRule = (String)result.get("update_rule");
+	        			String deleteRule = (String)result.get("delete_rule");
 	        			
 	        			
 //	        			private ReferenceDefinition refDef;
@@ -375,10 +345,7 @@ public class ConvertDBUtils {
 	        		
 	        	}
 	        	Collections.sort(table.getColumns(),Column.getComparator());
-	        	rs.close();
 			}
-			srcPreStmt.close();
-			srcConn.close();
 			LogUtils.info("[END_SET_CONSTRAINT_INFORM]",ConvertDBUtils.class);
 		} catch(Exception e){
 			LogUtils.error(e.getMessage(),ConvertDBUtils.class);
@@ -388,29 +355,25 @@ public class ConvertDBUtils {
 	
 	
 	public static Table setKeyInform(Table table, String srcPoolName, DBConfigInfo dbConfigInfo) {
-		Connection srcConn = null;
-		PreparedStatement srcPreStmt = null;
-		
-		QueryMaker qm = new QueryMaker("/src_mapper.xml");
-		Map<String,Object> params = new HashMap<String,Object>();
 		try {
-			
 			LogUtils.info("[START_SET_KEY_INFORM]",ConvertDBUtils.class);
-			srcConn = DBCPPoolManager.getConnection(srcPoolName);
+			Map<String,Object> params = new HashMap<String,Object>();
+			
 			if(dbConfigInfo.DB_TYPE.equals(Constant.DB_TYPE.MYSQL)) {
 				params.put("TABLE_SCHEMA", table.getSchemaName());
 				params.put("TABLE_NAME", table.getName());
-				srcPreStmt = qm.getPreparedStatement("GET_KEY_INFORM",Constant.DB_TYPE.MYSQL, params, srcConn, Double.parseDouble(dbConfigInfo.DB_VER));
-	        	ResultSet rs = srcPreStmt.executeQuery();
-	        	
-	        	while (rs.next()) {
-        			String keySchema = rs.getString("index_schema");
-        			String keyName = rs.getString("index_name");
-        			String tableSchema = rs.getString("table_schema");
-        			String tableName = rs.getString("table_name");
-        			String columnName = rs.getString("column_name");
-        			int ordinalPosition = rs.getInt("seq_in_index");
-        			String indexType = rs.getString("index_type");
+				MetaExtractWorker mew = new MetaExtractWorker(srcPoolName, new MetaExtractWork(WORK_TYPE.GET_KEY_INFORM, params));
+				mew.run();
+	        	@SuppressWarnings("unchecked")
+				List<Map<String,Object>> results = (List<Map<String,Object>>)mew.getListResult();
+	        	for (Map<String,Object> result : results) {
+        			String keySchema = (String)result.get("index_schema");
+        			String keyName = (String)result.get("index_name");
+        			String tableSchema = (String)result.get("table_schema");
+        			String tableName = (String)result.get("table_name");
+        			String columnName = (String)result.get("column_name");
+        			int ordinalPosition = (Integer)result.get("seq_in_index");
+        			String indexType = (String)result.get("index_type");
         			
         			NormalKey nkey = new NormalKey();
         			
@@ -451,10 +414,7 @@ public class ConvertDBUtils {
 	        	}
 	        	
 	        	Collections.sort(table.getColumns(),Column.getComparator());
-	        	rs.close();
 			}
-			srcPreStmt.close();
-			srcConn.close();
 			LogUtils.info("[END_SET_KEY_INFORM]",ConvertDBUtils.class);
 		} catch(Exception e){
 			LogUtils.error(e.getMessage(),ConvertDBUtils.class);
@@ -463,14 +423,10 @@ public class ConvertDBUtils {
 	}
 	
 	public static String getCreateTableQuery(String table,String srcPoolName, DBConfigInfo dbConfigInfo) {
-		Connection srcConn = null;
-		PreparedStatement srcPreStmt = null;
 		String createTableQuery = null;
-		QueryMaker qm = new QueryMaker("/src_mapper.xml");
-		Map<String,Object> params = new HashMap<String,Object>();
 		try {
 			LogUtils.info("[START_CREATE_TABLE_QUERY_MAKE] "+table,ConvertDBUtils.class);
-			srcConn = DBCPPoolManager.getConnection(srcPoolName);
+			Map<String,Object> params = new HashMap<String,Object>();
 			if(dbConfigInfo.DB_TYPE.equals(Constant.DB_TYPE.MYSQL)) {
 				if(dbConfigInfo.SCHEMA_NAME!=null && !dbConfigInfo.SCHEMA_NAME.equals("")) {
 					params.put("SCHEMA", dbConfigInfo.SCHEMA_NAME+".");
@@ -482,12 +438,13 @@ public class ConvertDBUtils {
 				} else {
 					throw new Exception("TABLE NOT FOUND");
 				}
-				srcPreStmt = qm.getPreparedStatement("GET_CREATE_TABLE",Constant.DB_TYPE.MYSQL, params, srcConn, Double.parseDouble(dbConfigInfo.DB_VER));
-				ResultSet rs = srcPreStmt.executeQuery();
-				if(rs.first()) createTableQuery = rs.getString("Create Table");
-				rs.close();
+				MetaExtractWorker mew = new MetaExtractWorker(srcPoolName, new MetaExtractWork(WORK_TYPE.GET_KEY_INFORM, params));
+				mew.run();
+				@SuppressWarnings("unchecked")
+				List<String> results = (List<String>)mew.getListResult();
+				
+				if(!results.isEmpty()) createTableQuery = results.get(0);
 			}
-			srcConn.close();
 		} catch(Exception e){
 			LogUtils.error(e.getMessage(),ConvertDBUtils.class);
 		} finally {

@@ -14,6 +14,7 @@ import java.util.concurrent.PriorityBlockingQueue;
 import java.util.regex.Pattern;
 
 import com.k4m.experdb.db2pg.common.Constant;
+import com.k4m.experdb.db2pg.common.LogUtils;
 import com.k4m.experdb.db2pg.config.ConfigInfo;
 import com.k4m.experdb.db2pg.convert.db.ConvertDBUtils;
 import com.k4m.experdb.db2pg.convert.exception.NotSupportDatabaseTypeException;
@@ -30,14 +31,14 @@ import com.k4m.experdb.db2pg.db.DBUtils;
 import com.k4m.experdb.db2pg.db.datastructure.DBConfigInfo;
 import com.k4m.experdb.db2pg.db.datastructure.exception.DBTypeNotFoundException;
 
-public class DdlConverter {
+public class DDLConverter {
 	private ConvertMapper<?> convertMapper;
 	private PriorityBlockingQueue<DDLStringVO> tableQueue, indexQueue, constraintsQueue;
 	private DBConfigInfo dbConfigInfo;
 	private String outputDirectory;
 	private List<String> tableNameList = null, excludes = null;
 	
-	public DdlConverter() throws Exception {
+	public DDLConverter() throws Exception {
 		switch(ConfigInfo.SRC_DB_TYPE) {
 		case Constant.DB_TYPE.MYSQL :
 			convertMapper = ConvertMapper.makeConvertMapper(MySqlConvertMapper.class);
@@ -52,11 +53,12 @@ public class DdlConverter {
 		outputDirectory = ConfigInfo.OUTPUT_DIRECTORY+"ddl/";
 		File dir = new File(outputDirectory);
 		if(!dir.exists()){
-			while(!dir.mkdirs()){
-				try {
-					Thread.sleep(10);
-				} catch(Exception e) {
-				}
+			LogUtils.info(String.format("%s directory is not existed.", dir.getPath()), DDLConverter.class);
+			if(dir.mkdirs()) {
+				LogUtils.info(String.format("Success to create %s directory.", dir.getPath()), DDLConverter.class);
+			} else {
+				LogUtils.error(String.format("Failed to create %s directory.", dir.getPath()), DDLConverter.class);
+				System.exit(550);
 			}
 		}
 		this.dbConfigInfo = new DBConfigInfo();

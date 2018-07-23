@@ -8,6 +8,10 @@ public class MetaExtractWork {
 	WORK_TYPE type;
 	Map<String,Object> params;
 	
+	public MetaExtractWork(WORK_TYPE workType) {
+		this.type = workType;
+	}
+	
 	public MetaExtractWork(WORK_TYPE workType, Map<String,Object> params) {
 		this.params = params;
 		this.type = workType;

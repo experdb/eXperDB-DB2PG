@@ -7,7 +7,7 @@ import org.apache.log4j.LogManager;
 import com.k4m.experdb.db2pg.common.LogUtils;
 import com.k4m.experdb.db2pg.config.ArgsParser;
 import com.k4m.experdb.db2pg.config.ConfigInfo;
-import com.k4m.experdb.db2pg.convert.DdlConverter;
+import com.k4m.experdb.db2pg.convert.DDLConverter;
 import com.k4m.experdb.db2pg.rebuild.MakeSqlFile;
 import com.k4m.experdb.db2pg.rebuild.TargetPgDDL;
 import com.k4m.experdb.db2pg.unload.Unloader;
@@ -24,16 +24,17 @@ public class Main {
 		LogUtils.info("[DB2PG_START]",Main.class);
 		File dir = new File(ConfigInfo.OUTPUT_DIRECTORY);
 		if(!dir.exists()){
-			while(!dir.mkdirs()){
-				try {
-					Thread.sleep(10);
-				} catch(Exception e) {
-				}
+			LogUtils.info(String.format("%s directory is not existed.", dir.getPath()), Main.class);
+			if(dir.mkdirs()) {
+				LogUtils.info(String.format("Success to create %s directory.", dir.getPath()), Main.class);
+			} else {
+				LogUtils.error(String.format("Failed to create %s directory.", dir.getPath()), Main.class);
+				System.exit(550);
 			}
 		}
 		if(ConfigInfo.SRC_DDL_EXPORT) {
 			LogUtils.debug("[SRC_DDL_EXPORT_START]",Main.class);
-			DdlConverter ddlConv = new DdlConverter();
+			DDLConverter ddlConv = new DDLConverter();
 			ddlConv.start();
 			LogUtils.debug("[SRC_DDL_EXPORT_END]",Main.class);
 		}
@@ -50,11 +51,12 @@ public class Main {
 			TargetPgDDL dbInform = new TargetPgDDL();
 			dir = new File(ConfigInfo.OUTPUT_DIRECTORY+"rebuild/");
 			if(!dir.exists()){
-				while(!dir.mkdirs()){
-					try {
-						Thread.sleep(10);
-					} catch(Exception e) {
-					}
+				LogUtils.info(String.format("%s directory is not existed.", dir.getPath()), Main.class);
+				if(dir.mkdirs()) {
+					LogUtils.info(String.format("Success to create %s directory.", dir.getPath()), Main.class);
+				} else {
+					LogUtils.error(String.format("Failed to create %s directory.", dir.getPath()), Main.class);
+					System.exit(550);
 				}
 			}
 			MakeSqlFile.listToSqlFile(ConfigInfo.OUTPUT_DIRECTORY + "rebuild/fk_drop.sql", dbInform.getFkDropList());

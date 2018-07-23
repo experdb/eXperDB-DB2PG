@@ -80,6 +80,7 @@ public abstract class Key<T> {
 		return type;
 	}
 	
+	@SuppressWarnings("hiding")
 	public <T> T unwrap(Class<T> iface) throws TableKeyException {
 		if (iface.isAssignableFrom(getClass())) {
 			return iface.cast(this);
