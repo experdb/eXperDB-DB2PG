@@ -7,9 +7,9 @@ import java.util.Map;
 import com.k4m.experdb.db2pg.common.Constant;
 import com.k4m.experdb.db2pg.common.LogUtils;
 import com.k4m.experdb.db2pg.db.datastructure.DBConfigInfo;
-import com.k4m.experdb.db2pg.work.impl.MetaExtractWork;
-import com.k4m.experdb.db2pg.work.impl.MetaExtractWorker;
-import com.k4m.experdb.db2pg.work.impl.MetaExtractWorker.WORK_TYPE;
+import com.k4m.experdb.db2pg.work.db.impl.MetaExtractWork;
+import com.k4m.experdb.db2pg.work.db.impl.MetaExtractWorker;
+import com.k4m.experdb.db2pg.work.db.impl.MetaExtractWorker.WORK_TYPE;
 
 public class DBUtils {
 	

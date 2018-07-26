@@ -21,13 +21,11 @@ import com.k4m.experdb.db2pg.convert.vo.DDLStringVO;
 
 public class PgDDLMaker<T> {
 	private T t;
-	private ConvertMapper<?> convertMapper;
 	private String dbType;
 	private DDL_TYPE ddlType;
 	
-	public PgDDLMaker(DDL_TYPE ddlType, ConvertMapper<?> convertMapper) {
+	public PgDDLMaker(DDL_TYPE ddlType) {
 		this.ddlType = ddlType;
-		this.convertMapper = convertMapper;
 		dbType = Constant.DB_TYPE.POG;
 	}
 

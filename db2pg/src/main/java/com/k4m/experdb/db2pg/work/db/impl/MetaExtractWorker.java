@@ -1,4 +1,4 @@
-package com.k4m.experdb.db2pg.work.impl;
+package com.k4m.experdb.db2pg.work.db.impl;
 
 import java.util.HashMap;
 import java.util.List;
@@ -9,9 +9,9 @@ import org.apache.ibatis.session.SqlSession;
 import com.k4m.experdb.db2pg.db.DBCPPoolManager;
 import com.k4m.experdb.db2pg.db.datastructure.DBConfigInfo;
 import com.k4m.experdb.db2pg.mapper.MetaExtractMapper;
-import com.k4m.experdb.db2pg.work.DBWorker;
+import com.k4m.experdb.db2pg.work.db.DBWorker;
 
-public class MetaExtractWorker extends DBWorker {
+public final class MetaExtractWorker extends DBWorker {
 	private SqlSession sqlSession;
 	private String poolName;
 	private MetaExtractMapper mapper;
@@ -25,13 +25,14 @@ public class MetaExtractWorker extends DBWorker {
 		this.work = work;
 		sqlSession = DBCPPoolManager.getSession(poolName);
 		mapper = sqlSession.getMapper(MetaExtractMapper.class);
-		stop = false;
+		stop = true;
 	}
 
 	@Override
 	public void run() {
 		try {
 			isRunning = true;
+			stop = false;
 			if (work.params == null) {
 				work.params = new HashMap<String, Object>();
 			}
@@ -74,7 +75,7 @@ public class MetaExtractWorker extends DBWorker {
 				result = mapper.getPgIdxDdl();
 				break;
 			}
-			shutdown();
+			stop();
 		} catch (Exception e) {
 			this.exception = e;
 			hasException = true;
@@ -86,12 +87,6 @@ public class MetaExtractWorker extends DBWorker {
 	@Override
 	public void stop() {
 		stop = true;
-	}
-
-	@Override
-	public void shutdown() {
-		if (!stop)
-			stop = true;
 		sqlSession.close();
 	}
 

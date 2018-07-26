@@ -1,8 +1,8 @@
-package com.k4m.experdb.db2pg.work.impl;
+package com.k4m.experdb.db2pg.work.db.impl;
 
 import java.util.Map;
 
-import com.k4m.experdb.db2pg.work.impl.MetaExtractWorker.WORK_TYPE;
+import com.k4m.experdb.db2pg.work.db.impl.MetaExtractWorker.WORK_TYPE;
 
 public class MetaExtractWork {
 	WORK_TYPE type;

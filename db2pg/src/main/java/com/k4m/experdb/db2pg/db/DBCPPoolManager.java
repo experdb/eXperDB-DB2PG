@@ -155,16 +155,16 @@ public class DBCPPoolManager {
             configInfo.DB_MAJOR_VER = conn.getMetaData().getDatabaseMajorVersion();
             configInfo.DB_MINOR_VER = conn.getMetaData().getDatabaseMinorVersion();
             configInfo.ORG_SCHEMA_NM= conn.getMetaData().getUserName();
+            if (conn != null){
+            	conn.close();
+            }
 		} catch (Exception e) {
 			shutdownDriver(poolName);
-			throw e;			
-		}finally{
-			if (conn != null){
-				conn.close();
-			}
+			throw e;
+		} finally {
+			LogUtils.info("DBCPPool 생성 완료 하였습니다. ["+poolName+"]",DBCPPoolManager.class);
+			LogUtils.info("************************************************************",DBCPPoolManager.class);
 		}
-		LogUtils.info("DBCPPool 생성 완료 하였습니다. ["+poolName+"]",DBCPPoolManager.class);
-		LogUtils.info("************************************************************",DBCPPoolManager.class);
 	}
 	
 	public static void shutdownDriver(String poolName) throws Exception {

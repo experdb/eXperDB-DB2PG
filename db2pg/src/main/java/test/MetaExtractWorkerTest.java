@@ -7,8 +7,8 @@ import java.util.concurrent.TimeUnit;
 import com.k4m.experdb.db2pg.common.Constant;
 import com.k4m.experdb.db2pg.db.DBCPPoolManager;
 import com.k4m.experdb.db2pg.db.datastructure.DBConfigInfo;
-import com.k4m.experdb.db2pg.work.impl.MetaExtractWork;
-import com.k4m.experdb.db2pg.work.impl.MetaExtractWorker;
+import com.k4m.experdb.db2pg.work.db.impl.MetaExtractWork;
+import com.k4m.experdb.db2pg.work.db.impl.MetaExtractWorker;
 
 public class MetaExtractWorkerTest {
 	public static void main(String[] args) throws Exception {

@@ -13,6 +13,7 @@ import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 
+import com.k4m.experdb.db2pg.common.Constant;
 import com.k4m.experdb.db2pg.common.LogUtils;
 import com.k4m.experdb.db2pg.rebuild.RebuildSummary;
 import com.k4m.experdb.db2pg.sample.SampleFileLoader;
@@ -64,7 +65,7 @@ public class ArgsParser {
 			LogUtils.error(e.getMessage(), ArgsParser.class);
 			System.out.println(e.getMessage());
 			formatter.printHelp("eXperDB-DB2PG", options);
-			System.exit(-1);
+			System.exit(Constant.ERR_CD.METHOD_NOT_ALLOWD_ERR);
 		}
 		boolean summarized = false;
 		if (cmd.hasOption("make-templates")) {
@@ -93,9 +94,9 @@ public class ArgsParser {
 
 			} catch (Exception e) {
 				LogUtils.error(e.getMessage(), ArgsParser.class);
-				System.out.println(e.getMessage());
+				System.exit(Constant.ERR_CD.UNKNOWN_ERR);
 			}
-			System.exit(0);
+			System.exit(Constant.ERR_CD.SUCCESS);
 		}
 		if (cmd.hasOption("rebuild-summary")) {
 			String[] rebuildLogs = cmd.getOptionValue("rebuild-summary").split(",");
@@ -113,15 +114,14 @@ public class ArgsParser {
 		}
 
 		if (summarized) {
-			System.exit(0);
+			System.exit(Constant.ERR_CD.SUCCESS);
 		}
 		if (cmd.hasOption("config")) {
 			ConfigInfo.Loader.load(cmd.getOptionValue("config"));
 		} else {
 			System.out.println("Enter the config file path");
 			formatter.printHelp("DB2PG", options);
-			System.exit(-1);
-			return;
+			System.exit(Constant.ERR_CD.METHOD_NOT_ALLOWD_ERR);
 		}
 
 		if (cmd.hasOption("src-export")) {

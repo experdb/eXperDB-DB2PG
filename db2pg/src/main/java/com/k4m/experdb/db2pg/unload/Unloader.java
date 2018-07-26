@@ -195,9 +195,8 @@ public class Unloader {
     		LogUtils.info(String.format("[TOTAL_INFO] SUCCESS : %d / FAILURE : %d / TOTAL: %d",jobList.size()-failCnt,failCnt,jobList.size()),Unloader.class);
     		LogUtils.info("[ELAPSED_TIME] " + makeElapsedTimeString(estimatedTime/1000),Unloader.class);
 		}catch(Exception e){
-//			e.printStackTrace();
 			LogUtils.error("EXCEPTION!!!!",Unloader.class,e);
-			System.exit(1);
+			System.exit(Constant.ERR_CD.UNKNOWN_ERR);
 		}
 	}
 	

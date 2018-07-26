@@ -4,6 +4,7 @@ import java.io.File;
 
 import org.apache.log4j.LogManager;
 
+import com.k4m.experdb.db2pg.common.Constant;
 import com.k4m.experdb.db2pg.common.LogUtils;
 import com.k4m.experdb.db2pg.config.ArgsParser;
 import com.k4m.experdb.db2pg.config.ConfigInfo;
@@ -29,12 +30,12 @@ public class Main {
 				LogUtils.info(String.format("Success to create %s directory.", dir.getPath()), Main.class);
 			} else {
 				LogUtils.error(String.format("Failed to create %s directory.", dir.getPath()), Main.class);
-				System.exit(550);
+				System.exit(Constant.ERR_CD.FAILED_CREATE_DIR_ERR);
 			}
 		}
 		if(ConfigInfo.SRC_DDL_EXPORT) {
 			LogUtils.debug("[SRC_DDL_EXPORT_START]",Main.class);
-			DDLConverter ddlConv = new DDLConverter();
+			DDLConverter ddlConv = DDLConverter.getInstance();
 			ddlConv.start();
 			LogUtils.debug("[SRC_DDL_EXPORT_END]",Main.class);
 		}
@@ -56,7 +57,7 @@ public class Main {
 					LogUtils.info(String.format("Success to create %s directory.", dir.getPath()), Main.class);
 				} else {
 					LogUtils.error(String.format("Failed to create %s directory.", dir.getPath()), Main.class);
-					System.exit(550);
+					System.exit(Constant.ERR_CD.FAILED_CREATE_DIR_ERR);
 				}
 			}
 			MakeSqlFile.listToSqlFile(ConfigInfo.OUTPUT_DIRECTORY + "rebuild/fk_drop.sql", dbInform.getFkDropList());

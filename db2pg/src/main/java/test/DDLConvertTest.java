@@ -1,4 +1,4 @@
-package com.k4m.experdb.db2pg.convert;
+package test;
 
 
 import java.io.File;
@@ -27,12 +27,12 @@ import com.k4m.experdb.db2pg.db.DBCPPoolManager;
 import com.k4m.experdb.db2pg.db.datastructure.DBConfigInfo;
 import com.k4m.experdb.db2pg.db.datastructure.exception.DBTypeNotFoundException;
 
-public class Test {
+public class DDLConvertTest {
 	public static void main(String[] args) {
-		new Test();
+		new DDLConvertTest();
 	}
 	
-	public Test() {
+	public DDLConvertTest() {
 		try {
 			
 			ConvertMapper<?> convertMapper = ConvertMapper.makeConvertMapper(MySqlConvertMapper.class);
@@ -56,7 +56,7 @@ public class Test {
 			List<String> tableNames = new ArrayList<>();
 //			tableNames.add("titles");
 			List<Table> tables = ConvertDBUtils.getTableInform(tableNames,true,Constant.POOLNAME.SOURCE.name(), dbConfigInfo);
-			PgDDLMaker<Table> ddlMaker = new PgDDLMaker<Table>(DDL_TYPE.CREATE,convertMapper);
+			PgDDLMaker<Table> ddlMaker = new PgDDLMaker<Table>(DDL_TYPE.CREATE);
 			for(Table table : tables) {
 				ConvertDBUtils.setColumnInform(table, Constant.POOLNAME.SOURCE.name(), dbConfigInfo);
 				ConvertDBUtils.setConstraintInform(table,Constant.POOLNAME.SOURCE.name(), dbConfigInfo);
@@ -133,9 +133,9 @@ public class Test {
 			fch.close();
 			fos.close();
 		} catch (MapperNotFoundException e) {
-			LogUtils.error(e.getMessage(), Test.class,e);
+			LogUtils.error(e.getMessage(), DDLConvertTest.class,e);
 		} catch (DBTypeNotFoundException e) {
-			LogUtils.error(e.getMessage(), Test.class,e);
+			LogUtils.error(e.getMessage(), DDLConvertTest.class,e);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

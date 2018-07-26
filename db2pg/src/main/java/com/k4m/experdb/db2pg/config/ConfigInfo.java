@@ -31,7 +31,7 @@ public class ConfigInfo {
 	//endregion
 	//region PROCESSING
 	public static int SRC_LOB_FETCH_SIZE // 1024
-			, SRC_STATEMENT_FETCH_SIZE // 3000
+			, STATEMENT_FETCH_SIZE // 3000
 			;
 	public static int SRC_TABLE_SELECT_PARALLEL // 1
 			, SRC_TABLE_COPY_SEGMENT_SIZE // one time copy command load tuple count (10000)
@@ -84,16 +84,11 @@ public class ConfigInfo {
 	//endregion
 	
 	//region OUTPUT
-	//basic output buffer size
-	public static int BASIC_BUFFER_SIZE; //10*1024*1024
-	//large objects ouput buffer size 
-	public static int BLOB_BUFFER_SIZE ; //10*1024*1024
-	public static int CLOB_BUFFER_SIZE ; //10*1024*1024
+	//buffer size
+	public static int BUFFER_SIZE; //10*1024*1024
 	//endregion
 	
 	public static org.apache.log4j.Level LOG_LEVEL;
-	
-	public static String ASCII_ENCODING = "8859_1";
 	
 	public static class Loader {
 		public static void load(String configFilePath) {
@@ -112,7 +107,7 @@ public class ConfigInfo {
 				ConfigInfo.SRC_PORT = (int)propertyCheck(prop.getProperty("SRC_PORT"),1521,Integer.class);
 				ConfigInfo.SRC_DB_CHARSET = (String)propertyCheck(prop.getProperty("SRC_DB_CHARSET"),null,String.class);
 				ConfigInfo.SRC_LOB_FETCH_SIZE = (int)propertyCheck(prop.getProperty("SRC_LOB_FETCH_SIZE"),1024,Integer.class);
-				ConfigInfo.SRC_STATEMENT_FETCH_SIZE = (int)propertyCheck(prop.getProperty("SRC_STATEMENT_FETCH_SIZE"),3000,Integer.class);
+				ConfigInfo.STATEMENT_FETCH_SIZE = (int)propertyCheck(prop.getProperty("STATEMENT_FETCH_SIZE"),3000,Integer.class);
 				ConfigInfo.SRC_TABLE_SELECT_PARALLEL = (int)propertyCheck(prop.getProperty("SRC_TABLE_SELECT_PARALLEL"),1,Integer.class);
 				ConfigInfo.SRC_TABLE_COPY_SEGMENT_SIZE = (int)propertyCheck(prop.getProperty("SRC_TABLE_COPY_SEGMENT_SIZE"),10000,Integer.class);
 				ConfigInfo.VERBOSE = (boolean)propertyCheck(prop.getProperty("VERBOSE"),true,Boolean.class);
@@ -152,15 +147,9 @@ public class ConfigInfo {
 													? outputDirectory : outputDirectory.concat("/");
 				ConfigInfo.CLASSIFY_STRING = (String)propertyCheck(prop.getProperty("CLASSIFY_STRING"),"original",String.class);
 				ConfigInfo.SELECT_QUERIES_FILE = (String)propertyCheck(prop.getProperty("SELECT_QUERIES_FILE"),"",String.class);
-				ConfigInfo.BASIC_BUFFER_SIZE=(int)propertyCheck(prop.getProperty("BASIC_BUFFER_SIZE"),10,Integer.class);
-				ConfigInfo.BASIC_BUFFER_SIZE = ConfigInfo.BASIC_BUFFER_SIZE>0?ConfigInfo.BASIC_BUFFER_SIZE:10;
-				ConfigInfo.BASIC_BUFFER_SIZE = ConfigInfo.BASIC_BUFFER_SIZE * 1024 * 1024;
-				ConfigInfo.BLOB_BUFFER_SIZE=(int)propertyCheck(prop.getProperty("BLOB_BUFFER_SIZE"),10,Integer.class);
-				ConfigInfo.BLOB_BUFFER_SIZE = ConfigInfo.BLOB_BUFFER_SIZE>0?ConfigInfo.BLOB_BUFFER_SIZE:10;
-				ConfigInfo.BLOB_BUFFER_SIZE = ConfigInfo.BLOB_BUFFER_SIZE * 1024 * 1024;
-				ConfigInfo.CLOB_BUFFER_SIZE=(int)propertyCheck(prop.getProperty("CLOB_BUFFER_SIZE"),10,Integer.class);
-				ConfigInfo.CLOB_BUFFER_SIZE = ConfigInfo.CLOB_BUFFER_SIZE>0?ConfigInfo.CLOB_BUFFER_SIZE:10;
-				ConfigInfo.CLOB_BUFFER_SIZE = ConfigInfo.CLOB_BUFFER_SIZE * 1024 * 1024 / 2;// division 2 >> java char : 2byte
+				ConfigInfo.BUFFER_SIZE=(int)propertyCheck(prop.getProperty("BUFFER_SIZE"),10,Integer.class);
+				ConfigInfo.BUFFER_SIZE = ConfigInfo.BUFFER_SIZE>0?ConfigInfo.BUFFER_SIZE:10;
+				ConfigInfo.BUFFER_SIZE = ConfigInfo.BUFFER_SIZE * 1024 * 1024;
 				
 				ConfigInfo.LOG_LEVEL = (org.apache.log4j.Level)propertyCheck(prop.getProperty("LOG_LEVEL")
 						,org.apache.log4j.Level.INFO,org.apache.log4j.Level.class);
