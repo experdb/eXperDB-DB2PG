@@ -32,6 +32,8 @@ import java.util.List;
 
 import javax.xml.bind.DatatypeConverter;
 
+import org.apache.commons.lang3.time.StopWatch;
+
 import com.k4m.experdb.db2pg.common.Constant;
 import com.k4m.experdb.db2pg.common.DevUtils;
 import com.k4m.experdb.db2pg.common.LogUtils;
@@ -51,6 +53,7 @@ public class ExecuteQuery implements Runnable{
 	private StringBuffer bf = null;
 	private GatheringByteChannel outChannel;
 	private DBConfigInfo dbConfigInfo;
+	private StopWatch stopWatch = new StopWatch();
 	
 	public ExecuteQuery(String srcPoolName, String selectQuery,String outputFileName,DBConfigInfo dbConfigInfo){
 		this.srcPoolName = srcPoolName;
@@ -107,6 +110,7 @@ public class ExecuteQuery implements Runnable{
 		PreparedStatement preSrcStmt = null;
 		
 		try {
+			stopWatch.start();
 			LogUtils.info(String.format("%s : %s", this.tableName, selectQuery),ExecuteQuery.class);
 			SrcConn = DBCPPoolManager.getConnection(srcPoolName);
 			preSrcStmt = SrcConn.prepareStatement(selectQuery);
@@ -185,21 +189,12 @@ public class ExecuteQuery implements Runnable{
         		bf.append("\n");
 //        		bf.append(Constant.R);
         		rowCnt += 1;
-        		divideProcessing(bf.length(),ConfigInfo.BASIC_BUFFER_SIZE,ConfigInfo.BASIC_BUFFER_SIZE, bf, bb, outChannel, ConfigInfo.FILE_CHARACTERSET);
-
         		if(rowCnt % ConfigInfo.SRC_TABLE_COPY_SEGMENT_SIZE == 0) {
-        			if (bf.length() != 0){
-            			bb.put(bf.toString().getBytes(ConfigInfo.FILE_CHARACTERSET));
-            			bb.flip();
-            			outChannel.write(bb);
-            			bb.clear();
-            			bf.setLength(0);
-                	}
-					bb.put("\\.\n\n".toString().getBytes(ConfigInfo.FILE_CHARACTERSET));
-		        	bb.put(head.toString().getBytes(ConfigInfo.FILE_CHARACTERSET));
-					bb.flip();
-					outChannel.write(bb);
-					bb.clear();
+        			bf.append("\\.\n\n");
+        			bf.append(head);
+        		}
+        		if (bf.length() > bb.capacity() || rowCnt % ConfigInfo.SRC_TABLE_COPY_SEGMENT_SIZE == 0) {
+        			divideProcessing(bf.length(),ConfigInfo.BASIC_BUFFER_SIZE,ConfigInfo.BASIC_BUFFER_SIZE, bf, bb, outChannel, ConfigInfo.FILE_CHARACTERSET);
         		}
         	}
         	
@@ -215,6 +210,9 @@ public class ExecuteQuery implements Runnable{
 			bb.clear();
         	outChannel.close();
         	fos.close();
+        	stopWatch.stop();
+        	rs.close();
+        	LogUtils.debug("[ELAPSED_TIME] " + tableName + " " + stopWatch.getTime()+"ms",ExecuteQuery.class);
 		} catch(Exception e) {
 			this.success = false;
 			File output_file = new File(outputFileName+".error");
@@ -245,16 +243,26 @@ public class ExecuteQuery implements Runnable{
 	
 	private String ConvertDataToString(Connection SrcConn,int columnType, ResultSet rs, int index) throws SQLException, Exception {
 		try {
+			Boolean bool = null;
+			String str = null;
+			BigDecimal bigDecimal = null;
+			Date date = null;
+			Time time = null;
+			Timestamp timestamp = null;
+			Clob clob = null;
+			Blob blob = null;
+			byte[] bytes = null;
+			InputStream in = null;
+			SQLXML xml = null;
+			Object obj = null;
+			NClob nclob = null;
 			
 			switch (columnType){
 			case Types.BIT:
-				Boolean bool = rs.getBoolean(index);
+				bool = rs.getBoolean(index);
 				return bool == null ? "\\N" : bool.toString();
-			case Types.VARCHAR: case Types.NVARCHAR: case Types.LONGNVARCHAR: case Types.LONGVARCHAR: 
-			case Types.CHAR: case Types.NCHAR:
-				String str = null;
+			case Types.VARCHAR:  case Types.LONGVARCHAR:  case Types.CHAR: 
 				if(ConfigInfo.SRC_IS_ASCII) {
-					//str = new String(rs.getString(index).getBytes(ConfigInfo.ASCII_ENCODING),ConfigInfo.FILE_CHARACTERSET);
 					byte[] b = rs.getBytes(index);
 					
 					if ( b != null) str = new String(b, ConfigInfo.SRC_DB_CHARSET);
@@ -263,57 +271,64 @@ public class ExecuteQuery implements Runnable{
 				} else {
 					str = rs.getString(index);
 				}
+				if(str!=null)
+				return str == null ? "\\N" : DevUtils.replaceEach(str, DevUtils.BackSlashSequence, DevUtils.BackSlashSequenceReplace);
+			case Types.NVARCHAR: case Types.LONGNVARCHAR: case Types.NCHAR:
+				str = rs.getString(index);
 				return str == null ? "\\N" : DevUtils.replaceEach(str, DevUtils.BackSlashSequence, DevUtils.BackSlashSequenceReplace);
 			case Types.NUMERIC:
-				BigDecimal bigDecimal = rs.getBigDecimal(index);
+				bigDecimal = rs.getBigDecimal(index);
 				return bigDecimal == null ? "\\N" : bigDecimal.toString();
 			case Types.TINYINT: case Types.SMALLINT: case Types.INTEGER: case Types.BIGINT:
 			case Types.FLOAT: case Types.REAL: case Types.DOUBLE: case Types.DECIMAL:
 				String numStr = rs.getString(index);
 				return numStr == null ? "\\N" : DevUtils.replaceEach(numStr, DevUtils.BackSlashSequence, DevUtils.BackSlashSequenceReplace);
 			case Types.DATE:
-				Date date = rs.getDate(index);
+				date = rs.getDate(index);
 				return date == null ? "\\N" : date.toString();
 			case Types.TIME:
-				Time time = rs.getTime(index);
+				time = rs.getTime(index);
 				return time == null ? "\\N" : time.toString();
 			case Types.TIMESTAMP:
-				Timestamp timestamp = rs.getTimestamp(index); 
+				timestamp = rs.getTimestamp(index); 
 				return timestamp == null ? "\\N" : timestamp.toString();
 			case Types.CLOB:
-				Clob clob = rs.getClob(index);
+				clob = rs.getClob(index);
 				
 				if (clob != null) {
 					BufferedReader reader = null;
-					if ( ConfigInfo.SRC_IS_ASCII ) {
-						reader = new BufferedReader(new InputStreamReader(clob.getAsciiStream(),ConfigInfo.SRC_DB_CHARSET));
-					} else {
-						reader = new BufferedReader(clob.getCharacterStream());
-					}
-					char[] buffer = new char[ConfigInfo.CLOB_BUFFER_SIZE];
+					char[] buffer = null;
 					int n = 0;
 					
-					if (ConfigInfo.BASIC_BUFFER_SIZE > clob.length() + bf.length()) { 
-						StringBuffer sb = new StringBuffer();
-						while((n = reader.read(buffer)) != -1){
-							sb.append(buffer, 0, n);
-						}
-						reader.close();
-						return DevUtils.replaceEach(sb.toString(), DevUtils.BackSlashSequence, DevUtils.BackSlashSequenceReplace);
+					
+					
+					
+					if (clob.length() < 32766 && !ConfigInfo.SRC_IS_ASCII) { 
+						str = rs.getString(index);
+						return str == null ? "\\N" : DevUtils.replaceEach(str, DevUtils.BackSlashSequence, DevUtils.BackSlashSequenceReplace);
 					} else {
+						if ( ConfigInfo.SRC_IS_ASCII ) {
+							reader = new BufferedReader(new InputStreamReader(clob.getAsciiStream(),ConfigInfo.SRC_DB_CHARSET));
+						} else {
+							reader = new BufferedReader(clob.getCharacterStream());
+						}
+						buffer = new char[4*1024];
 						if(bf.length()>0) {
-							ByteBuffer tmpByteBuffer = ByteBuffer.allocateDirect(ConfigInfo.BASIC_BUFFER_SIZE*2);
+							ByteBuffer tmpByteBuffer = ByteBuffer.allocateDirect(bf.length()*4);
 							divideProcessing(ConfigInfo.BASIC_BUFFER_SIZE, bf, tmpByteBuffer, outChannel, ConfigInfo.FILE_CHARACTERSET);
 						}
 						
 						ByteBuffer bb = ByteBuffer.allocateDirect(buffer.length*4);
 						
 						while((n = reader.read(buffer)) != -1){
-							String s = new String(Arrays.copyOfRange(buffer, 0, n));
-							bb.put(s.getBytes(ConfigInfo.FILE_CHARACTERSET));
-							bb.flip();
-			        		outChannel.write(bb);
-			        		bb.clear();
+							String s = DevUtils.replaceEach(new String(Arrays.copyOfRange(buffer, 0, n)), DevUtils.BackSlashSequence, DevUtils.BackSlashSequenceReplace);
+							bf.append(s);
+							if(bf.length() > bb.capacity()) {
+								divideProcessing(ConfigInfo.BASIC_BUFFER_SIZE, bf, bb, outChannel, ConfigInfo.FILE_CHARACTERSET);
+							}
+						}
+						if(bf.length()>0) {
+							divideProcessing(ConfigInfo.BASIC_BUFFER_SIZE, bf, bb, outChannel, ConfigInfo.FILE_CHARACTERSET);
 						}
 						reader.close();
 						return "";
@@ -321,14 +336,14 @@ public class ExecuteQuery implements Runnable{
 				}
 				return "\\N";
 			case Types.BLOB:
-				Blob blob = rs.getBlob(index);
+				blob = rs.getBlob(index);
 				
 				if (blob == null){
 					return "\\N";
 				} else {
 					byte[] buffer = new byte[ConfigInfo.BLOB_BUFFER_SIZE];
 					int len = 0;
-					InputStream in = blob.getBinaryStream();
+					in = blob.getBinaryStream();
 					ByteBuffer bb = ByteBuffer.allocateDirect(ConfigInfo.BLOB_BUFFER_SIZE);
 					if (blob != null){
 						ByteArrayOutputStream buffeOutr = new ByteArrayOutputStream();
@@ -367,10 +382,10 @@ public class ExecuteQuery implements Runnable{
 					return "";	
 				}
 			case Types.VARBINARY:
-				byte[] bytes = rs.getBytes(index);
+				bytes = rs.getBytes(index);
 				return bytes == null ? "\\N" : bytes.toString();
 			case Types.LONGVARBINARY:
-				InputStream in = rs.getBinaryStream(index);
+				in = rs.getBinaryStream(index);
 				if(in == null) {
 					return "\\N";
 				} else {
@@ -411,10 +426,10 @@ public class ExecuteQuery implements Runnable{
 				}
 				
 			case OracleTypes.OPAQUE: case Types.SQLXML:
-				SQLXML xml = rs.getSQLXML(index); 
+				xml = rs.getSQLXML(index); 
 				return xml == null ? "\\N" : xml.toString();
 			case Types.STRUCT: 
-				Object obj = rs.getObject(index);
+				obj = rs.getObject(index);
 				if(obj == null)	return "\\N";
 				
 				//ORACLE STRUCT
@@ -433,35 +448,38 @@ public class ExecuteQuery implements Runnable{
 				
 				return "\\N";
 			case Types.NCLOB:
-				NClob nclob = rs.getNClob(index);
+				nclob = rs.getNClob(index);
 				
 				if (nclob != null) {
 					BufferedReader reader = null;
-					reader = new BufferedReader(nclob.getCharacterStream());
-					char[] buffer = new char[ConfigInfo.CLOB_BUFFER_SIZE];
+					char[] buffer = null;
 					int n = 0;
 					
-					if (ConfigInfo.BASIC_BUFFER_SIZE > nclob.length() + bf.length()) { 
-						StringBuffer sb = new StringBuffer();
-						while((n = reader.read(buffer)) != -1){
-							sb.append(buffer, 0, n);		
-						}
-						reader.close();
-						return DevUtils.replaceEach(sb.toString(), DevUtils.BackSlashSequence, DevUtils.BackSlashSequenceReplace);
+					
+					
+					
+					if (nclob.length() < 32766 && !ConfigInfo.SRC_IS_ASCII) { 
+						str = rs.getString(index);
+						return str == null ? "\\N" : DevUtils.replaceEach(str, DevUtils.BackSlashSequence, DevUtils.BackSlashSequenceReplace);
 					} else {
+						reader = new BufferedReader(nclob.getCharacterStream());
+						buffer = new char[4*1024];
 						if(bf.length()>0) {
-							ByteBuffer tmpByteBuffer = ByteBuffer.allocateDirect(ConfigInfo.BASIC_BUFFER_SIZE*2);
+							ByteBuffer tmpByteBuffer = ByteBuffer.allocateDirect(bf.length()*4);
 							divideProcessing(ConfigInfo.BASIC_BUFFER_SIZE, bf, tmpByteBuffer, outChannel, ConfigInfo.FILE_CHARACTERSET);
 						}
 						
-						ByteBuffer bb = ByteBuffer.allocateDirect(buffer.length*4);
+						ByteBuffer bb = ByteBuffer.allocateDirect(ConfigInfo.CLOB_BUFFER_SIZE);
 						
 						while((n = reader.read(buffer)) != -1){
-							String s = new String(Arrays.copyOfRange(buffer, 0, n));
-							bb.put(s.getBytes(ConfigInfo.FILE_CHARACTERSET));
-							bb.flip();
-			        		outChannel.write(bb);
-			        		bb.clear();
+							String s = DevUtils.replaceEach(new String(Arrays.copyOfRange(buffer, 0, n)), DevUtils.BackSlashSequence, DevUtils.BackSlashSequenceReplace);
+							bf.append(s);
+							if(bf.length() > bb.capacity()) {
+								divideProcessing(ConfigInfo.BASIC_BUFFER_SIZE, bf, bb, outChannel, ConfigInfo.FILE_CHARACTERSET);
+							}
+						}
+						if(bf.length()>0) {
+							divideProcessing(ConfigInfo.BASIC_BUFFER_SIZE, bf, bb, outChannel, ConfigInfo.FILE_CHARACTERSET);
 						}
 						reader.close();
 						return "";
@@ -480,23 +498,23 @@ public class ExecuteQuery implements Runnable{
 	}
 	
 	protected void divideProcessing (int bufferSize, StringBuffer bf, ByteBuffer bb, GatheringByteChannel outChannel, String charset) throws IOException {
-		int bfsCnt = bf.length()/bufferSize+1;
+		byte[] bytes = bf.toString().getBytes(charset);
+		
+		int bfsCnt = bytes.length/bb.capacity(); 
 		for(int i=0;i<bfsCnt;i++) {
-			String sub = null;
-			if(i<bfsCnt-1) {
-				sub = bf.substring(i*bufferSize, (i+1)*bufferSize);
-			} else {
-				sub = bf.substring(i*bufferSize, i*bufferSize+(bf.length()%bufferSize));
-			}
-			if(sub != null){
-				bb.put(sub.getBytes(charset));
-				bb.flip();
-    			
-    			outChannel.write(bb);
-    			bb.clear();
-			}
+			bb.put(Arrays.copyOfRange(bytes, i*bb.capacity(), (i+1)*bb.capacity()));
+			bb.flip();
+			outChannel.write(bb);
+			bb.clear();
+		}
+		if(bytes.length%bb.capacity()>0) {
+			bb.put(Arrays.copyOfRange(bytes, bfsCnt*bb.capacity(), bytes.length));
+			bb.flip();
+			outChannel.write(bb);
+			bb.clear();
 		}
 		bf.setLength(0);
+		
 	}
 	protected void divideProcessing (int compareSize, int size, int bufferSize, StringBuffer bf, ByteBuffer bb, GatheringByteChannel outChannel, String charset) throws IOException {
 		if (compareSize >= size ){
