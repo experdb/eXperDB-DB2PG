@@ -187,7 +187,7 @@ public class ExecuteQuery implements Runnable{
         			divideProcessing();
         		}
         	}
-        	
+        	rs.close();
         	if (stringBuffer.length() != 0){
         		divideProcessing();
         	}
