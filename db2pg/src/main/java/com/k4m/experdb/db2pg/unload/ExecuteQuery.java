@@ -198,7 +198,7 @@ public class ExecuteQuery implements Runnable{
         	outChannel.close();
         	fos.close();
         	stopWatch.stop();
-        	LogUtils.info("[ELAPSED_TIME] " + stopWatch.getTime()+"ms",ExecuteQuery.class);
+        	LogUtils.debug("[ELAPSED_TIME] " + stopWatch.getTime()+"ms",ExecuteQuery.class);
         	
 		} catch(Exception e) {
 			this.success = false;
@@ -248,10 +248,8 @@ public class ExecuteQuery implements Runnable{
 			case Types.BIT:
 				bool = rs.getBoolean(index);
 				return bool == null ? "\\N" : bool.toString();
-			case Types.VARCHAR: case Types.NVARCHAR: case Types.LONGNVARCHAR: case Types.LONGVARCHAR: 
-			case Types.CHAR: case Types.NCHAR:
+			case Types.VARCHAR:  case Types.LONGVARCHAR:  case Types.CHAR: 
 				if(ConfigInfo.SRC_IS_ASCII) {
-					//str = new String(rs.getString(index).getBytes(ConfigInfo.ASCII_ENCODING),ConfigInfo.TAR_DB_CHARSET);
 					byte[] b = rs.getBytes(index);
 					
 					if ( b != null) str = new String(b, ConfigInfo.SRC_DB_CHARSET);
@@ -260,6 +258,9 @@ public class ExecuteQuery implements Runnable{
 				} else {
 					str = rs.getString(index);
 				}
+				return str == null ? "\\N" : DevUtils.replaceEach(str, DevUtils.BackSlashSequence, DevUtils.BackSlashSequenceReplace);
+			case Types.NVARCHAR: case Types.LONGNVARCHAR: case Types.NCHAR:
+				str = rs.getString(index);
 				return str == null ? "\\N" : DevUtils.replaceEach(str, DevUtils.BackSlashSequence, DevUtils.BackSlashSequenceReplace);
 			case Types.NUMERIC:
 				bigDecimal = rs.getBigDecimal(index);
