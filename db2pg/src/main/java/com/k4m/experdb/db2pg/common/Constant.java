@@ -40,7 +40,7 @@ public class Constant {
     
     public static enum POOLNAME
     {
-    	REPOSITORY, SOURCE, TARGET;
+    	REPOSITORY, SOURCE, SOURCE_DDL, TARGET;
     }    
     
 

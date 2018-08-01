@@ -157,9 +157,9 @@ public class Unloader {
 	        				,DevUtils.classifyString(ConfigInfo.TAR_SCHEMA,ConfigInfo.CLASSIFY_STRING)
 	        				,DevUtils.classifyString(executeQuery.getTableName()
 	        				,ConfigInfo.CLASSIFY_STRING),executeQuery.getRowCnt()).getBytes(ConfigInfo.TAR_DB_CHARSET));
-//	        		fos.write(String.format("ALTER TABLE %s DISABLE TRIGGER USER;\n\n",executeQuery.tableName).getBytes(charset));
+	        		fos.write(String.format("ALTER TABLE %s DISABLE TRIGGER USER;\n\n",executeQuery.getTableName()).getBytes(ConfigInfo.TAR_DB_CHARSET));
 	        		fos.write(String.format("\\i ./%s",executeQuery.getTableName().replace("$", "-")+".sql\n\n").getBytes(ConfigInfo.TAR_DB_CHARSET));
-//	        		fos.write(String.format("ALTER TABLE %s ENABLE TRIGGER USER;\n",executeQuery.tableName).getBytes(charset));
+	        		fos.write(String.format("ALTER TABLE %s ENABLE TRIGGER USER;\n",executeQuery.getTableName()).getBytes(ConfigInfo.TAR_DB_CHARSET));
 //	        		fos.write("\\echo [COPY_END] `date +%Y-%m-%d_%k:%M:%S`\n\n".getBytes(ConfigInfo.TAR_DB_CHARSET));
 //	        		fos.write("\\echo  \n".getBytes(ConfigInfo.TAR_DB_CHARSET));
 //	        		fos.write("\\echo  \n".getBytes(ConfigInfo.TAR_DB_CHARSET));

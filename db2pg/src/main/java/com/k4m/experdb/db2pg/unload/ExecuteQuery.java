@@ -198,7 +198,7 @@ public class ExecuteQuery implements Runnable{
         	outChannel.close();
         	fos.close();
         	stopWatch.stop();
-        	LogUtils.debug("[ELAPSED_TIME] " + stopWatch.getTime()+"ms",ExecuteQuery.class);
+        	LogUtils.debug("[ELAPSED_TIME] "+tableName+" " + stopWatch.getTime()+"ms",ExecuteQuery.class);
         	
 		} catch(Exception e) {
 			this.success = false;
