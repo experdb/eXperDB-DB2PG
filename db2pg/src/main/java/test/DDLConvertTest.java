@@ -13,6 +13,8 @@ import java.util.concurrent.PriorityBlockingQueue;
 
 import com.k4m.experdb.db2pg.common.Constant;
 import com.k4m.experdb.db2pg.common.LogUtils;
+import com.k4m.experdb.db2pg.convert.ConvertObject;
+import com.k4m.experdb.db2pg.convert.DDLString;
 import com.k4m.experdb.db2pg.convert.db.ConvertDBUtils;
 import com.k4m.experdb.db2pg.convert.make.PgDDLMaker;
 import com.k4m.experdb.db2pg.convert.map.ConvertMapper;
@@ -21,8 +23,6 @@ import com.k4m.experdb.db2pg.convert.map.exception.MapperNotFoundException;
 import com.k4m.experdb.db2pg.convert.table.Column;
 import com.k4m.experdb.db2pg.convert.table.Table;
 import com.k4m.experdb.db2pg.convert.type.DDL_TYPE;
-import com.k4m.experdb.db2pg.convert.vo.ConvertVO;
-import com.k4m.experdb.db2pg.convert.vo.DDLStringVO;
 import com.k4m.experdb.db2pg.db.DBCPPoolManager;
 import com.k4m.experdb.db2pg.db.datastructure.DBConfigInfo;
 import com.k4m.experdb.db2pg.db.datastructure.exception.DBTypeNotFoundException;
@@ -47,11 +47,11 @@ public class DDLConvertTest {
 			dbConfigInfo.CHARSET = "UTF-8";
 			LogUtils.setVerbose(false);
 			DBCPPoolManager.setupDriver(dbConfigInfo, Constant.POOLNAME.SOURCE.name(), 1);
-			PriorityBlockingQueue<DDLStringVO> tableQueue = new PriorityBlockingQueue<>(20, DDLStringVO.getComparator())
-					, tableIndexQueue = new PriorityBlockingQueue<>(5, DDLStringVO.getComparator())
-					, tableConstraintsQueue = new PriorityBlockingQueue<>(10, DDLStringVO.getComparator());
-			Queue<DDLStringVO> ddlQueue = new LinkedBlockingQueue<DDLStringVO>();
-			DDLStringVO ddlStrVO = null;
+			PriorityBlockingQueue<DDLString> tableQueue = new PriorityBlockingQueue<>(20, DDLString.getComparator())
+					, tableIndexQueue = new PriorityBlockingQueue<>(5, DDLString.getComparator())
+					, tableConstraintsQueue = new PriorityBlockingQueue<>(10, DDLString.getComparator());
+			Queue<DDLString> ddlQueue = new LinkedBlockingQueue<DDLString>();
+			DDLString ddlStrVO = null;
 			
 			List<String> tableNames = new ArrayList<>();
 //			tableNames.add("titles");
@@ -62,7 +62,7 @@ public class DDLConvertTest {
 				ConvertDBUtils.setConstraintInform(table,Constant.POOLNAME.SOURCE.name(), dbConfigInfo);
 				ConvertDBUtils.setKeyInform(table,Constant.POOLNAME.SOURCE.name(), dbConfigInfo);
 				for(Column column : table.getColumns()) {
-					for(ConvertVO convertVO:convertMapper.getPatternList()) {
+					for(ConvertObject convertVO:convertMapper.getPatternList()) {
 						if(convertVO.getPattern().matcher(column.getType()).find()) {
 							column.setType(convertVO.getToValue());
 							break;

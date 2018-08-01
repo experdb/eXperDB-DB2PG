@@ -5,7 +5,8 @@ import java.util.LinkedList;
 import java.util.List;
 
 import com.k4m.experdb.db2pg.common.Constant;
-import com.k4m.experdb.db2pg.convert.map.ConvertMapper;
+import com.k4m.experdb.db2pg.config.ConfigInfo;
+import com.k4m.experdb.db2pg.convert.DDLString;
 import com.k4m.experdb.db2pg.convert.pattern.SqlPattern;
 import com.k4m.experdb.db2pg.convert.table.Column;
 import com.k4m.experdb.db2pg.convert.table.Table;
@@ -17,7 +18,6 @@ import com.k4m.experdb.db2pg.convert.table.key.UniqueKey;
 import com.k4m.experdb.db2pg.convert.table.key.exception.TableKeyException;
 import com.k4m.experdb.db2pg.convert.type.COMMAND_TYPE;
 import com.k4m.experdb.db2pg.convert.type.DDL_TYPE;
-import com.k4m.experdb.db2pg.convert.vo.DDLStringVO;
 
 public class PgDDLMaker<T> {
 	private T t;
@@ -34,7 +34,7 @@ public class PgDDLMaker<T> {
 		return this;
 	}
 
-	public List<DDLStringVO> make() {
+	public List<DDLString> make() {
 		switch (ddlType) {
 		case CREATE:
 			if (t instanceof Table)
@@ -64,9 +64,9 @@ public class PgDDLMaker<T> {
 		return ddlType;
 	}
 	
-	public List<DDLStringVO> makeCreateTable(Table table) {
-		List<DDLStringVO> ddlStringVOs = new LinkedList<DDLStringVO>();
-		List<DDLStringVO> tmpStringVOs = new LinkedList<DDLStringVO>();
+	public List<DDLString> makeCreateTable(Table table) {
+		List<DDLString> ddlStringVOs = new LinkedList<DDLString>();
+		List<DDLString> tmpStringVOs = new LinkedList<DDLString>();
 		StringBuilder ctsb = new StringBuilder();
 		StringBuilder tmpsb = new StringBuilder();
 		ctsb.append("CREATE TABLE \"");
@@ -81,13 +81,13 @@ public class PgDDLMaker<T> {
 			}
 			ctsb.append(column.getName());
 			ctsb.append(' ');
-			if(SqlPattern.check(column.getType(), SqlPattern.MYSQL.ENUM)) {
+			if(ConfigInfo.SRC_DB_TYPE.equals(Constant.DB_TYPE.MYSQL) && SqlPattern.check(column.getType(), SqlPattern.MYSQL.ENUM)) {
 				String typeName = String.format("%s_%s_enum", table.getName(), column.getName());
 				tmpsb.append("CREATE TYPE \"");
 				tmpsb.append(typeName);
 				tmpsb.append("\" AS ");
 				tmpsb.append(column.getType());
-				tmpStringVOs.add(new DDLStringVO().setString(tmpsb.toString()).setDDLType(DDL_TYPE.CREATE)
+				tmpStringVOs.add(new DDLString().setString(tmpsb.toString()).setDDLType(DDL_TYPE.CREATE)
 						.setCommandType(COMMAND_TYPE.TYPE).setPriority(1));
 				tmpsb.setLength(0);
 				ctsb.append(typeName);
@@ -122,7 +122,7 @@ public class PgDDLMaker<T> {
 					tmpsb.append(" INCREMENT 1 MINVALUE 1 START ");
 					tmpsb.append(table.getAutoIncrement());
 				}
-				tmpStringVOs.add(new DDLStringVO().setString(tmpsb.toString()).setDDLType(DDL_TYPE.CREATE)
+				tmpStringVOs.add(new DDLString().setString(tmpsb.toString()).setDDLType(DDL_TYPE.CREATE)
 						.setCommandType(COMMAND_TYPE.SEQUENCE).setPriority(2));
 				tmpsb.setLength(0);
 			}
@@ -140,7 +140,7 @@ public class PgDDLMaker<T> {
 				tmpsb.append(" IS '");
 				tmpsb.append(column.getComment());
 				tmpsb.append('\'');
-				tmpStringVOs.add(new DDLStringVO().setString(tmpsb.toString()).setDDLType(DDL_TYPE.CREATE)
+				tmpStringVOs.add(new DDLString().setString(tmpsb.toString()).setDDLType(DDL_TYPE.CREATE)
 						.setCommandType(COMMAND_TYPE.COMMENT).setPriority(5));
 				tmpsb.setLength(0);
 			}
@@ -157,7 +157,7 @@ public class PgDDLMaker<T> {
 					String columns = pkey.getColumns().toString();
 					tmpsb.append(columns.substring(columns.indexOf("[")+1,columns.indexOf("]")));
 					tmpsb.append(")");
-					tmpStringVOs.add(new DDLStringVO().setString(tmpsb.toString()).setDDLType(DDL_TYPE.CREATE)
+					tmpStringVOs.add(new DDLString().setString(tmpsb.toString()).setDDLType(DDL_TYPE.CREATE)
 							.setCommandType(COMMAND_TYPE.PRIMARY_KEY).setPriority(1));
 					tmpsb.setLength(0);
 				} catch (TableKeyException e) {
@@ -194,7 +194,7 @@ public class PgDDLMaker<T> {
 							tmpsb.append(fkey.getRefDef().getUpdate().getAction());
 						}
 					}
-					tmpStringVOs.add(new DDLStringVO().setString(tmpsb.toString()).setDDLType(DDL_TYPE.CREATE)
+					tmpStringVOs.add(new DDLString().setString(tmpsb.toString()).setDDLType(DDL_TYPE.CREATE)
 							.setCommandType(COMMAND_TYPE.FOREIGN_KEY).setPriority(2));
 					tmpsb.setLength(0);
 				} catch (TableKeyException e) {
@@ -214,7 +214,7 @@ public class PgDDLMaker<T> {
 					String columns = ukey.getColumns().toString();
 					tmpsb.append(columns.substring(columns.indexOf("[")+1,columns.indexOf("]")));
 					tmpsb.append(")");
-					tmpStringVOs.add(new DDLStringVO().setString(tmpsb.toString()).setDDLType(DDL_TYPE.CREATE)
+					tmpStringVOs.add(new DDLString().setString(tmpsb.toString()).setDDLType(DDL_TYPE.CREATE)
 							.setCommandType(COMMAND_TYPE.INDEX).setPriority(1));
 					tmpsb.setLength(0);
 				} catch (TableKeyException e) {
@@ -234,7 +234,7 @@ public class PgDDLMaker<T> {
 					String columns = nkey.getColumns().toString();
 					tmpsb.append(columns.substring(columns.indexOf("[")+1,columns.indexOf("]")));
 					tmpsb.append(")");
-					tmpStringVOs.add(new DDLStringVO().setString(tmpsb.toString()).setDDLType(DDL_TYPE.CREATE)
+					tmpStringVOs.add(new DDLString().setString(tmpsb.toString()).setDDLType(DDL_TYPE.CREATE)
 							.setCommandType(COMMAND_TYPE.INDEX).setPriority(2));
 					tmpsb.setLength(0);
 				} catch (TableKeyException e) {
@@ -253,16 +253,16 @@ public class PgDDLMaker<T> {
 			tmpsb.append("\" IS '");
 			tmpsb.append(table.getComment());
 			tmpsb.append('\'');
-			tmpStringVOs.add(new DDLStringVO().setString(tmpsb.toString()).setDDLType(DDL_TYPE.CREATE)
+			tmpStringVOs.add(new DDLString().setString(tmpsb.toString()).setDDLType(DDL_TYPE.CREATE)
 					.setCommandType(COMMAND_TYPE.COMMENT).setPriority(4));
 			tmpsb.setLength(0);
 		}
 		
 		
 		ctsb.append(")");
-		ddlStringVOs.add(new DDLStringVO().setString(ctsb.toString()).setDDLType(ddlType)
+		ddlStringVOs.add(new DDLString().setString(ctsb.toString()).setDDLType(ddlType)
 				.setCommandType(COMMAND_TYPE.TABLE).setPriority(3).setAlertComments(table.alertComments()));
-		for (DDLStringVO ddlStringVO : tmpStringVOs) {
+		for (DDLString ddlStringVO : tmpStringVOs) {
 			ddlStringVOs.add(ddlStringVO);
 		}
 		ctsb.setLength(0);
