@@ -119,9 +119,14 @@ public class ArgsParser {
 		if (cmd.hasOption("config")) {
 			ConfigInfo.Loader.load(cmd.getOptionValue("config"));
 		} else {
-			System.out.println("Enter the config file path");
-			formatter.printHelp("DB2PG", options);
-			System.exit(Constant.ERR_CD.METHOD_NOT_ALLOWD_ERR);
+			File defaultConfig = new File("db2pg.config");
+			if(defaultConfig.exists()) {
+				ConfigInfo.Loader.load(defaultConfig.getAbsolutePath());
+			} else {
+				System.out.println("Enter the config file path");
+				formatter.printHelp("DB2PG", options);
+				System.exit(Constant.ERR_CD.METHOD_NOT_ALLOWD_ERR);
+			}
 		}
 
 		if (cmd.hasOption("src-export")) {
