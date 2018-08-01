@@ -39,6 +39,7 @@ public class DBUtils {
 	        	rs.close();
 			} else if(dbConfigInfo.DB_TYPE.equals(Constant.DB_TYPE.MSS)) {
 				params.put("TABLE_SCHEMA", dbConfigInfo.SCHEMA_NAME);
+				params.put("TABLE_ONLY", tableOnly?"AND type in ('U')":"AND type in ('U', 'V')");
 				srcPreStmt = qm.getPreparedStatement("GET_TABLE_NAMES",Constant.DB_TYPE.MSS, params, srcConn, Double.parseDouble(dbConfigInfo.DB_VER));
 	        	ResultSet rs = srcPreStmt.executeQuery();
 	        	while (rs.next()) tableNames.add(rs.getString("TABLE_NAME"));

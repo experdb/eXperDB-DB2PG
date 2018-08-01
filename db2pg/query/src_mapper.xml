@@ -18,7 +18,10 @@
 	
 	<db type="MSS">
 		<select id="GET_TABLE_NAMES">
-			SELECT TABLE_NAME FROM information_schema.tables WHERE TABLE_SCHEMA=#{TABLE_SCHEMA}
+			SELECT name as table_name
+			FROM sys.objects 
+			WHERE schema_id=(SELECT schema_id FROM sys.schemas WHERE name=#{TABLE_SCHEMA})
+				${TABLE_ONLY}
 		</select>
 		<select id="GET_SOURCE_TABLE_DATA">
 			SELECT * FROM ${SCHEMA}${TABLE} ${WHERE}
