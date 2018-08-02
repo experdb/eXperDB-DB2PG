@@ -50,9 +50,6 @@ public final class MetaExtractWorker extends DBWorker {
 			case GET_CONSTRAINT_INFORM:
 				result = mapper.getConstraintInform(work.params);
 				break;
-			case GET_CREATE_TABLE:
-				result = mapper.getCreateTable(work.params);
-				break;
 			case GET_KEY_INFORM:
 				result = mapper.getKeyInform(work.params);
 				break;
@@ -107,7 +104,7 @@ public final class MetaExtractWorker extends DBWorker {
 	}
 
 	public enum WORK_TYPE {
-		GET_TABLE_NAMES, GET_SOURCE_TABLE_DATA, GET_CREATE_TABLE, GET_TABLE_INFORM, GET_COLUMN_INFORM, GET_CONSTRAINT_INFORM, GET_KEY_INFORM, GET_AUTOINCREMENT_INFORM, GET_PG_CURRENT_SCHEMA, GET_PG_IDX_DDL, GET_PG_FK_DDL
+		GET_TABLE_NAMES, GET_SOURCE_TABLE_DATA, GET_TABLE_INFORM, GET_COLUMN_INFORM, GET_CONSTRAINT_INFORM, GET_KEY_INFORM, GET_AUTOINCREMENT_INFORM, GET_PG_CURRENT_SCHEMA, GET_PG_IDX_DDL, GET_PG_FK_DDL
 	}
 
 }

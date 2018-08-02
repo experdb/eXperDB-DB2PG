@@ -6,7 +6,6 @@ import java.util.Map;
 public interface MetaExtractMapper {
 	public List<String> getTableNames(Map<String,Object> params);
 	public List<?> getSourceTableData(Map<String,Object> params);
-	public List<String> getCreateTable(Map<String,Object> params);
 	public List<Map<String,Object>> getTableInform(Map<String,Object> params);
 	public List<Map<String,Object>> getColumnInform(Map<String,Object> params);
 	public List<Map<String,Object>> getConstraintInform(Map<String,Object> params);

@@ -8,6 +8,7 @@ import java.util.Map;
 
 import com.k4m.experdb.db2pg.common.Constant;
 import com.k4m.experdb.db2pg.common.LogUtils;
+import com.k4m.experdb.db2pg.config.ConfigInfo;
 import com.k4m.experdb.db2pg.convert.table.Column;
 import com.k4m.experdb.db2pg.convert.table.Table;
 import com.k4m.experdb.db2pg.convert.table.key.ForeignKey;
@@ -30,7 +31,6 @@ public class ConvertDBUtils {
 	/**
 	 * <br>schema's name : schema_name (string)
 	 * <br>table's name : table_name (string)
-	 * <br>table has auto-increament : auto_increment (long)
 	 * <br>table has comment : table_comment (string)
 	 * */
 	public static List<Table> getTableInform(List<String> tableNames,boolean tableOnly, String srcPoolName, DBConfigInfo dbConfigInfo) {
@@ -38,23 +38,27 @@ public class ConvertDBUtils {
 		try {
 			LogUtils.info("[START_GET_TABLE_INFORM]",ConvertDBUtils.class);
 			Map<String,Object> params = new HashMap<String,Object>();
+			params.put("TABLE_SCHEMA", dbConfigInfo.SCHEMA_NAME);
+			String columnName = null;
 			if(dbConfigInfo.DB_TYPE.equals(Constant.DB_TYPE.MYSQL)) {
-				params.put("TABLE_SCHEMA", dbConfigInfo.SCHEMA_NAME);
-				params.put("TABLE_ONLY", "AND table_type IN ('BASE TABLE')");
-				if(tableNames != null && !tableNames.isEmpty()) {
-					StringBuilder sb = new StringBuilder();
-					sb.append("AND table_name IN (");
-					for(String tableName : tableNames) {
-						sb.append("'");
-						sb.append(tableName);
-						sb.append("',");
-					}
-					sb.deleteCharAt(sb.length()-1);
-					sb.append(")");
-					params.put("TABLE_LIST", sb.toString());
-				} else {
-					params.put("TABLE_LIST", "");
+				columnName = "table_name";
+			} else if(dbConfigInfo.DB_TYPE.equals(Constant.DB_TYPE.MSS)) {
+				columnName = "o.name";
+			}
+			
+			if(tableNames != null && !tableNames.isEmpty()) {
+				StringBuilder sb = new StringBuilder();
+				sb.append("AND "+columnName+" IN (");
+				for(String tableName : tableNames) {
+					sb.append("'");
+					sb.append(tableName);
+					sb.append("',");
 				}
+				sb.deleteCharAt(sb.length()-1);
+				sb.append(")");
+				params.put("TABLE_LIST", sb.toString());
+			} else {
+				params.put("TABLE_LIST", "");
 			}
 			MetaExtractWorker mew = new MetaExtractWorker(srcPoolName, new MetaExtractWork(WORK_TYPE.GET_TABLE_INFORM, params));
 			mew.run();
@@ -66,8 +70,6 @@ public class ConvertDBUtils {
 				if(obj!=null) table.setSchemaName(obj.toString());
 				obj = result.get("table_name");
 				if(obj!=null) table.setName(obj.toString());
-				obj = result.get("auto_increment");
-				if(obj!=null) table.setAutoIncrement(Long.valueOf(obj.toString()));
 				obj = result.get("table_comment");
 				if(obj!=null) table.setComment(obj.toString());
 				tables.add(table);
@@ -90,19 +92,18 @@ public class ConvertDBUtils {
 	 * <br>Column has contain null : is_null (boolean) 
 	 * <br>Column has comment : column_comment (string)
 	 * <br>Any additional information that is available about a given column : extra (string)
-	   <br>&nbsp ex) auto_increment
 	 * <br>Precision setting when the column data type is numeric : numeric_precision (int)
 	 * <br>Scale setting when the column data type is numeric : numeric_scale (int)
+	 * <br>Sequnce's start value : seq_start (long)
+	 * <br>Sequnce's minimal value : seq_min_value (long)
+	 * <br>Sequnce's increment value : seq_inc_value (long)
 	 * */
 	public static Table setColumnInform(Table table, String srcPoolName, DBConfigInfo dbConfigInfo) {
 		try {
-			
 			LogUtils.info("[START_SET_COLUMN_INFORM]",ConvertDBUtils.class);
 			Map<String,Object> params = new HashMap<String,Object>();
-			if(dbConfigInfo.DB_TYPE.equals(Constant.DB_TYPE.MYSQL)) {
-				params.put("TABLE_SCHEMA", table.getSchemaName());
-				params.put("TABLE_NAME", table.getName());
-			}
+			params.put("TABLE_SCHEMA", table.getSchemaName());
+			params.put("TABLE_NAME", table.getName());
 			MetaExtractWorker mew = new MetaExtractWorker(srcPoolName, new MetaExtractWork(WORK_TYPE.GET_COLUMN_INFORM, params));
 			mew.run();
 			List<Map<String,Object>> results = (List<Map<String,Object>>)mew.getListResult();
@@ -125,11 +126,16 @@ public class ConvertDBUtils {
         		column.setType(obj!=null?obj.toString():null);
         		obj = result.get("column_comment");
         		column.setComment(obj!=null?obj.toString():null);
+        		obj = result.get("seq_start");
+        		if(obj != null) column.setSeqStart(Long.valueOf(obj.toString()));
+        		obj = result.get("seq_min_value");
+        		if(obj != null) column.setSeqMinValue(Long.valueOf(obj.toString()));
+        		obj = result.get("seq_inc_value");
+        		if(obj != null) column.setSeqIncValue(Long.valueOf(obj.toString()));
         		obj = result.get("extra");
         		column.setExtra(obj!=null?obj.toString():null);
-        		if(column.getExtra()!= null)
-        			column.setAutoIncreament(column.getExtra().contains("auto_increment"));
         		table.getColumns().add(column);
+        		
         	}
         	Collections.sort(table.getColumns(),Column.getComparator());
 			LogUtils.info("[END_SET_COLUMN_INFORM]",ConvertDBUtils.class);

@@ -110,7 +110,7 @@ public class PgDDLMaker<T> {
 			}
 			
 			// table_column_seq
-			if (column.isAutoIncreament()) {
+			if (column.getSeqStart()>0) {
 				String seqName = String.format("%s_%s_seq", table.getName(),column.getName());
 				ctsb.append(" DEFAULT NEXTVAL('");
 				ctsb.append(seqName);
@@ -118,10 +118,7 @@ public class PgDDLMaker<T> {
 				tmpsb.append("CREATE SEQUENCE \"");
 				tmpsb.append(seqName);
 				tmpsb.append('"');
-				if(table.getAutoIncrement()>0) {
-					tmpsb.append(" INCREMENT 1 MINVALUE 1 START ");
-					tmpsb.append(table.getAutoIncrement());
-				}
+				tmpsb.append(String.format(" INCREMENT %d MINVALUE %d START %d", column.getSeqIncValue(), column.getSeqMinValue(), column.getSeqStart()));
 				tmpStringVOs.add(new DDLString().setString(tmpsb.toString()).setDDLType(DDL_TYPE.CREATE)
 						.setCommandType(COMMAND_TYPE.SEQUENCE).setPriority(2));
 				tmpsb.setLength(0);

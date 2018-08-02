@@ -10,7 +10,6 @@ public class Table {
 	private String tableName;
 	private String comment;
 	private List<String> alertComments;
-	private long autoIncrement;
 	private List<Column> columns;
 	private List<Key<?>> keys;
 	
@@ -18,7 +17,6 @@ public class Table {
 		this.columns = new LinkedList<Column>();
 		this.keys = new LinkedList<Key<?>>();
 		this.alertComments = new LinkedList<String>();
-		autoIncrement = 0;
 	}
 	
 	public String getSchemaName() {
@@ -50,15 +48,6 @@ public class Table {
 		return keys;
 	}
 	
-
-	public long getAutoIncrement() {
-		return autoIncrement;
-	}
-
-	public void setAutoIncrement(long autoIncrement) {
-		this.autoIncrement = autoIncrement;
-	}
-
 	@Override
 	public boolean equals(Object obj) {
 		if(obj instanceof Table) {
@@ -93,10 +82,6 @@ public class Table {
 		if(keys != null) {
 			sb.append(" keys=");
 			sb.append(keys);
-		}
-		if(autoIncrement > 0) {
-			sb.append(" auto_increment=");
-			sb.append(autoIncrement);
 		}
 		sb.append(" ]");
 		return sb.toString();
