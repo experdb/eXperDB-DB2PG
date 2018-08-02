@@ -15,6 +15,7 @@
 	<select id="getSourceTableData" parameterType="map" resultType="map" databaseId="ORA">
 		SELECT * FROM ${SCHEMA}${TABLE} ${WHERE}
 	</select>
+	
 	<select id="getTableNames" parameterType="map" resultType="java.lang.String" databaseId="MSS">
 		SELECT name as table_name
 		FROM sys.objects 
@@ -24,12 +25,38 @@
 	<select id="getSourceTableData" parameterType="map" resultType="map" databaseId="MSS">
 		SELECT * FROM ${SCHEMA}${TABLE} ${WHERE}
 	</select>
+	<select id="getTableInform"  parameterType="map" resultType="map" databaseId="MSS">
+		SELECT
+			s.name AS schema_name ,
+			o.name AS table_name ,
+			(
+			SELECT
+				VALUE
+			FROM
+				SYS.EXTENDED_PROPERTIES
+			WHERE
+				MAJOR_ID = o.object_id
+				AND MINOR_ID = 0 ) AS table_comment
+		FROM
+			sys.objects o
+		INNER JOIN sys.schemas s ON
+			o.schema_id=s.schema_id
+		WHERE
+			s.name=#{TABLE_SCHEMA}
+			AND TYPE IN ( 'U' ) 
+			${TABLE_LIST}
+	</select>
+	<select id="getColumnInform" parameterType="map" resultType="map" databaseId="MSS">
+		
+	</select>
+	
 	<select id="getTableNames" parameterType="map" resultType="java.lang.String" databaseId="ASE" >
 		SELECT name AS table_name FROM sysobjects WHERE type='U' AND user_name(uid)=#{USER_NAME}
 	</select>
 	<select id="getSourceTableData" parameterType="map" resultType="map" databaseId="ASE">
 		SELECT * FROM ${SCHEMA}${TABLE} ${WHERE}
 	</select>
+	
 	<select id="getTableNames" parameterType="map" resultType="java.lang.String" databaseId="MYSQL">
 		SELECT table_name
 		 FROM information_schema.tables
@@ -38,21 +65,43 @@
 	<select id="getSourceTableData" parameterType="map" resultType="map" databaseId="MYSQL">
 		SELECT * FROM ${SCHEMA}${TABLE} ${WHERE}
 	</select>
-	<select id="getCreateTable" parameterType="map" resultType="java.lang.String" databaseId="MYSQL">
-			SHOW CREATE TABLE ${SCHEMA}${TABLE}
-	</select>
 	<select id="getTableInform" parameterType="map" resultType="map" databaseId="MYSQL">
-		SELECT table_schema AS schema_name, table_name AS table_name, auto_increment AS auto_increment, table_comment AS table_comment
+		SELECT table_schema AS schema_name, table_name AS table_name, table_comment AS table_comment
 		 FROM information_schema.tables
-		WHERE table_schema=#{TABLE_SCHEMA} ${TABLE_ONLY} ${TABLE_LIST}
+		WHERE table_schema=#{TABLE_SCHEMA} AND table_type IN ('BASE TABLE') ${TABLE_LIST}
 	</select>
 	<select id="getColumnInform" parameterType="map" resultType="map" databaseId="MYSQL">
-		SELECT column_name AS column_name, ordinal_position AS ordinal_position, column_default AS column_default, is_nullable AS is_null
-		       , numeric_precision AS numeric_precision , numeric_scale AS numeric_scale, column_type AS column_type
-		       , column_comment AS column_comment, extra AS extra
-		  FROM information_schema.COLUMNS 
-		 WHERE table_schema=#{TABLE_SCHEMA}
-		       AND table_name=#{TABLE_NAME}
+		SELECT
+			c.column_name AS column_name,
+			c.ordinal_position AS ordinal_position,
+			c.column_default AS column_default,
+			c.is_nullable AS is_null ,
+			c.numeric_precision AS numeric_precision ,
+			c.numeric_scale AS numeric_scale,
+			c.column_type AS column_type ,
+			c.column_comment AS column_comment,
+			CASE
+				WHEN extra LIKE '%auto_increment%' THEN t.auto_increment
+				ELSE NULL
+			END AS seq_start,
+			CASE
+				WHEN t.auto_increment IS NOT NULL
+				AND extra LIKE '%auto_increment%' THEN 1
+				ELSE NULL
+			END AS seq_min_value,
+			CASE
+				WHEN t.auto_increment IS NOT NULL
+				AND extra LIKE '%auto_increment%' THEN 1
+				ELSE NULL
+			END AS seq_inc_value,
+			c.extra AS extra
+		FROM
+			information_schema.COLUMNS AS c
+		INNER JOIN information_schema.TABLES AS t ON
+			c.TABLE_SCHEMA = t.TABLE_SCHEMA
+			AND c.TABLE_NAME = t.TABLE_NAME
+		WHERE c.table_schema=#{TABLE_SCHEMA}
+		    AND c.table_name=#{TABLE_NAME}
 	</select>
 	<select id="getConstraintInform" parameterType="map" resultType="map" databaseId="MYSQL">
 		SELECT
@@ -177,6 +226,7 @@
 		      AND s.table_schema=#{TABLE_SCHEMA}
 		      AND s.table_name=#{TABLE_NAME}
 	</select>
+	
 	<select id="getTableNames" parameterType="map" resultType="java.lang.String" databaseId="CUB">
 		SELECT class_name AS table_name FROM db_class WHERE is_system_class='NO' AND class_type='CLASS' ORDER BY class_name ASC;
 	</select>
@@ -201,6 +251,7 @@
 	<select id="getAutoincrementInform" parameterType="map" resultType="map" databaseId="CUB">
 		SELECT owner.name, db_serial.* FROM db_serial WHERE class_name=#{TABLE_NAME}
 	</select>
+	
 	<select id="getPgFkDdl" resultType="map" databaseId="POG">
 		SELECT psat1.schemaname AS "SCHEMA_NM",
 			pc.conname AS "CONSTRAINT_NAME",
