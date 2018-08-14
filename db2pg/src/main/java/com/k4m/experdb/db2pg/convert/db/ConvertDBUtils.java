@@ -27,7 +27,7 @@ import com.k4m.experdb.db2pg.work.db.impl.MetaExtractWorker;
 import com.k4m.experdb.db2pg.work.db.impl.MetaExtractWorker.WORK_TYPE;
 
 public class ConvertDBUtils {
-	
+	/** [Add] sequence extract function**/
 	/**
 	 * <br>schema's name : schema_name (string)
 	 * <br>table's name : table_name (string)

@@ -47,6 +47,16 @@
 			<url>http://mvn.riptano.com/content/repositories/public</url>
 		</repository>
 		<repository>
+			<id>cubrid.release.repository</id>
+			<url>http://maven.cubrid.org</url>
+			<releases>
+				<enabled>true</enabled>
+			</releases>
+			<snapshots>
+				<enabled>false</enabled>
+			</snapshots>
+		</repository>
+		<repository>
 			<id>mvnrepository</id>
 			<name>mvnrepository</name>
 			<url>http://mvnrepository.com/artifact</url>
@@ -54,7 +64,7 @@
 	</repositories>
 	<modules>
 		<module>db2pg</module>
-		
-		
+
+
 	</modules>
 </project>

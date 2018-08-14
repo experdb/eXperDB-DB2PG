@@ -47,6 +47,46 @@
 			${TABLE_LIST}
 	</select>
 	<select id="getColumnInform" parameterType="map" resultType="map" databaseId="MSS">
+		SELECT
+			c.column_id AS ordinal_position ,
+			c.name AS column_name ,
+			type_name( c.user_type_id ) AS column_type ,
+			object_definition( c.default_object_id ) AS column_default ,
+			CASE
+				WHEN c.is_nullable != 0 THEN 'true'
+				ELSE 'false'
+			END AS is_null ,
+			(
+			SELECT
+				CAST( value AS VARCHAR ) AS value
+			FROM
+				fn_listextendedproperty ( 'MS_DESCRIPTION',
+				'schema',
+				object_schema_name( o.object_id ),
+				'table',
+				o.name,
+				'column',
+				c.name )) AS column_comment ,
+			c.precision AS numeric_precision ,
+			c.scale AS numeric_scale ,
+			CONVERT( BIGINT,
+			i.last_value ) + CONVERT( BIGINT,
+			i.increment_value ) AS seq_start ,
+			i.seed_value AS seq_min_value ,
+			i.increment_value AS seq_inc_value ,
+			NULL AS extra
+		FROM
+			sys.columns c
+		JOIN sys.objects o ON
+			c.object_id = o.object_id
+		LEFT OUTER JOIN sys.identity_columns i ON
+			c.object_id = i.object_id
+			AND c.column_id = i.column_id
+		WHERE
+			object_schema_name( o.object_id )=#{TABLE_SCHEMA}
+			AND o.name=#{TABLE_NAME}
+	</select>
+	<select id="getConstraintInform" parameterType="map" resultType="map" databaseId="MSS">
 		
 	</select>
 	

@@ -142,7 +142,7 @@
 			<artifactId>mysql-connector-java</artifactId>
 			<version>5.1.44</version>
 		</dependency>
-		
+
 		<dependency>
 			<groupId>org.mybatis</groupId>
 			<artifactId>mybatis</artifactId>
@@ -169,6 +169,11 @@
 			<groupId>org.slf4j</groupId>
 			<artifactId>slf4j-log4j12</artifactId>
 			<version>1.7.25</version>
+		</dependency>
+		<dependency>
+			<groupId>cubrid</groupId>
+			<artifactId>cubrid-jdbc</artifactId>
+			<version>9.3.6.0002</version>
 		</dependency>
 	</dependencies>
 	<build>
@@ -253,7 +258,7 @@
 								</resource>
 							</resources>
 						</configuration>
-					</execution>				
+					</execution>
 				</executions>
 			</plugin>
 			<plugin>
