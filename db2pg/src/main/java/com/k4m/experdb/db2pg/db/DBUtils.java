@@ -23,16 +23,7 @@ public class DBUtils {
 			LogUtils.info("[START_GET_TABLE_NAMES]",DBUtils.class);
 			
 			params.put("TABLE_SCHEMA", dbConfigInfo.SCHEMA_NAME);
-			
-			if(dbConfigInfo.DB_TYPE.equals(Constant.DB_TYPE.ORA)){
-				params.put("TABLE_ONLY", tableOnly?"AND OBJECT_TYPE IN ('TABLE')":"AND OBJECT_TYPE IN ('TABLE','VIEW')");
-			} else if(dbConfigInfo.DB_TYPE.equals(Constant.DB_TYPE.MSS)) {
-				params.put("TABLE_ONLY", tableOnly?"AND type in ('U')":"AND type in ('U', 'V')");
-			} else if(dbConfigInfo.DB_TYPE.equals(Constant.DB_TYPE.ASE)) {
-				//params.put("USER_NAME", dbConfigInfo.SCHEMA_NAME);
-			} else if(dbConfigInfo.DB_TYPE.equals(Constant.DB_TYPE.MYSQL)) {
-				params.put("TABLE_ONLY", "AND table_type IN ('BASE TABLE')");
-			}
+			params.put("TABLE_ONLY", tableOnly);
 			
 			MetaExtractWorker mew = new MetaExtractWorker(srcPoolName,new MetaExtractWork(WORK_TYPE.GET_TABLE_NAMES, params));
 			mew.run();

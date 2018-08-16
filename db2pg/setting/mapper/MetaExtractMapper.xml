@@ -10,7 +10,14 @@
 			AND OBJECT_NAME NOT IN ('TOAD_PLAN_TABLE','PLAN_TABLE') 
 			AND OBJECT_NAME NOT LIKE 'MDRT%'
 			AND OBJECT_NAME NOT LIKE 'MDXT%'
-			${TABLE_ONLY}
+		<choose>
+			<when test="TABLE_ONLY == true">
+				AND OBJECT_TYPE IN ('TABLE')
+			</when>
+			<otherwise>
+				AND OBJECT_TYPE IN ('TABLE','VIEW')
+			</otherwise>
+		</choose>
 	</select>
 	<select id="getSourceTableData" parameterType="map" resultType="map" databaseId="ORA">
 		SELECT * FROM ${SCHEMA}${TABLE} ${WHERE}
@@ -20,7 +27,14 @@
 		SELECT name as table_name
 		FROM sys.objects 
 		WHERE schema_id=(SELECT schema_id FROM sys.schemas WHERE name=#{TABLE_SCHEMA})
-			${TABLE_ONLY}
+		<choose>
+			<when test="TABLE_ONLY == true">
+				AND type in ('U')
+			</when>
+			<otherwise>
+				AND type in ('U', 'V')
+			</otherwise>
+		</choose>
 	</select>
 	<select id="getSourceTableData" parameterType="map" resultType="map" databaseId="MSS">
 		SELECT * FROM ${SCHEMA}${TABLE} ${WHERE}
@@ -100,11 +114,19 @@
 	<select id="getTableNames" parameterType="map" resultType="java.lang.String" databaseId="MYSQL">
 		SELECT table_name
 		 FROM information_schema.tables
-		WHERE table_schema=#{TABLE_SCHEMA} ${TABLE_ONLY}
+		WHERE table_schema=#{TABLE_SCHEMA} 
+		<choose>
+			<when test="TABLE_ONLY == true">
+				AND table_type IN ('BASE TABLE')
+			</when>
+			<otherwise>
+				AND table_type IN ('BASE TABLE','VIEW')
+			</otherwise>
+		</choose>
 	</select>
 	<select id="getSourceTableData" parameterType="map" resultType="map" databaseId="MYSQL">
 		SELECT * FROM ${SCHEMA}${TABLE} ${WHERE}
-	</select>
+	</select> 
 	<select id="getTableInform" parameterType="map" resultType="map" databaseId="MYSQL">
 		SELECT table_schema AS schema_name, table_name AS table_name, table_comment AS table_comment
 		 FROM information_schema.tables
