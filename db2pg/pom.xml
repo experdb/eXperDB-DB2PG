@@ -181,9 +181,9 @@
 			<resource>
 				<directory>${basedir}/setting</directory>
 			</resource>
-			<resource>
-				<directory>${basedir}/query</directory>
-			</resource>
+<!-- 			<resource> -->
+<!-- 				<directory>${basedir}/query</directory> -->
+<!-- 			</resource> -->
 			<resource>
 				<directory>${basedir}/src/main/java/com/k4m/experdb/db2pg/sample</directory>
 				<includes>
