@@ -94,6 +94,10 @@ public class DBCPPoolManager {
 					driver = "com.mysql.jdbc.Driver" ;
 					connectURI = "jdbc:mysql://"+configInfo.SERVERIP+":"+configInfo.PORT+"/"+configInfo.DBNAME;
 					break;
+				case Constant.DB_TYPE.CUB :
+					driver = "cubrid.jdbc.driver.CUBRIDDriver" ;
+					connectURI = "jdbc:CUBRID:"+configInfo.SERVERIP+":"+configInfo.PORT+":"+configInfo.DBNAME+":"+configInfo.DBNAME+"::";
+					break;
     		}
     		
 			Class.forName(driver);
@@ -122,7 +126,12 @@ public class DBCPPoolManager {
 	        // Pool에서 Connection을 받아와 DB에 Query문을 날리기 전에
 	        // 해당 Connection이 Active한지 Check하고 
 	        // Active하지 않으면 해당 Connection을 다시 생성합니다
-	        connectionPool.setTestOnBorrow(true);
+	        //CUBRID는 setTestOnBorrow 속성 시에 Cannot get a connection, pool error: Unable to validate object 에러 발생
+	        
+	        if (!configInfo.DB_TYPE.equals("CUB")) {
+		        connectionPool.setTestOnBorrow(true);	
+	        }
+	        
 	        connectionPool.setTestOnReturn(true);
 	        connectionPool.setTestWhileIdle(true);
 	        connectionPool.setMaxTotal(maxActive);		        

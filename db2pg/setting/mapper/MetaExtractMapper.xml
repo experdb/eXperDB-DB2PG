@@ -6,7 +6,7 @@
 <mapper namespace="com.k4m.experdb.db2pg.mapper.MetaExtractMapper">
 	<select id="getTableNames" parameterType="map" resultType="java.lang.String" databaseId="ORA">
 		SELECT OBJECT_NAME as TABLE_NAME FROM ALL_OBJECTS 
-		WHERE OWNER=#{OWNER} 
+		WHERE OWNER=#{TABLE_SCHEMA} 
 			AND OBJECT_NAME NOT IN ('TOAD_PLAN_TABLE','PLAN_TABLE') 
 			AND OBJECT_NAME NOT LIKE 'MDRT%'
 			AND OBJECT_NAME NOT LIKE 'MDXT%'
@@ -91,7 +91,7 @@
 	</select>
 	
 	<select id="getTableNames" parameterType="map" resultType="java.lang.String" databaseId="ASE" >
-		SELECT name AS table_name FROM sysobjects WHERE type='U' AND user_name(uid)=#{USER_NAME}
+		SELECT name AS table_name FROM sysobjects WHERE type='U' AND user_name(uid)=#{TABLE_SCHEMA}
 	</select>
 	<select id="getSourceTableData" parameterType="map" resultType="map" databaseId="ASE">
 		SELECT * FROM ${SCHEMA}${TABLE} ${WHERE}
@@ -268,7 +268,7 @@
 	</select>
 	
 	<select id="getTableNames" parameterType="map" resultType="java.lang.String" databaseId="CUB">
-		SELECT class_name AS table_name FROM db_class WHERE is_system_class='NO' AND class_type='CLASS' ORDER BY class_name ASC;
+		SELECT class_name AS table_name FROM db_class WHERE owner_name = #{TABLE_SCHEMA} AND is_system_class='NO' AND class_type='CLASS' ORDER BY class_name ASC;
 	</select>
 	<select id="getConstraintInform" parameterType="map" resultType="map" databaseId="CUB">
 		SELECT i.index_name, i.is_unique, i.is_reverse, i.is_primary_key, i.is_foreign_key, i.key_count
