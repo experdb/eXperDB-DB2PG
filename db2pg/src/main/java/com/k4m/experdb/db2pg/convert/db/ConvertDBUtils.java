@@ -39,23 +39,23 @@ public class ConvertDBUtils {
 			LogUtils.info("[START_GET_TABLE_INFORM]",ConvertDBUtils.class);
 			Map<String,Object> params = new HashMap<String,Object>();
 			params.put("TABLE_SCHEMA", dbConfigInfo.SCHEMA_NAME);
-			String columnName = null;
-			if(dbConfigInfo.DB_TYPE.equals(Constant.DB_TYPE.MYSQL)) {
-				columnName = "table_name";
-			} else if(dbConfigInfo.DB_TYPE.equals(Constant.DB_TYPE.MSS)) {
-				columnName = "o.name";
-			}
+//			String columnName = null;
+//			if(dbConfigInfo.DB_TYPE.equals(Constant.DB_TYPE.MYSQL)) {
+//				columnName = "table_name";
+//			} else if(dbConfigInfo.DB_TYPE.equals(Constant.DB_TYPE.MSS)) {
+//				columnName = "o.name";
+//			}
 			
 			if(tableNames != null && !tableNames.isEmpty()) {
 				StringBuilder sb = new StringBuilder();
-				sb.append("AND "+columnName+" IN (");
+//				sb.append("AND "+columnName+" IN (");
 				for(String tableName : tableNames) {
 					sb.append("'");
 					sb.append(tableName);
 					sb.append("',");
 				}
 				sb.deleteCharAt(sb.length()-1);
-				sb.append(")");
+//				sb.append(")");
 				params.put("TABLE_LIST", sb.toString());
 			} else {
 				params.put("TABLE_LIST", "");

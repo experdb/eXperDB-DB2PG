@@ -58,7 +58,9 @@
 		WHERE
 			s.name=#{TABLE_SCHEMA}
 			AND TYPE IN ( 'U' ) 
-			${TABLE_LIST}
+			<if test="TABLE_LIST != '' and TABLE_LIST != null">
+				AND o.name IN ( ${TABLE_LIST} )
+			</if>
 	</select>
 	<select id="getColumnInform" parameterType="map" resultType="map" databaseId="MSS">
 		SELECT
@@ -130,7 +132,10 @@
 	<select id="getTableInform" parameterType="map" resultType="map" databaseId="MYSQL">
 		SELECT table_schema AS schema_name, table_name AS table_name, table_comment AS table_comment
 		 FROM information_schema.tables
-		WHERE table_schema=#{TABLE_SCHEMA} AND table_type IN ('BASE TABLE') ${TABLE_LIST}
+		WHERE table_schema=#{TABLE_SCHEMA} AND table_type IN ('BASE TABLE') 
+			<if test="TABLE_LIST != '' and TABLE_LIST != null">
+				AND table_name IN ( ${TABLE_LIST} )
+			</if>
 	</select>
 	<select id="getColumnInform" parameterType="map" resultType="map" databaseId="MYSQL">
 		SELECT
