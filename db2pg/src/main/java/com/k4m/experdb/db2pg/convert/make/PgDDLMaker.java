@@ -81,7 +81,7 @@ public class PgDDLMaker<T> {
 			}
 			ctsb.append(column.getName());
 			ctsb.append(' ');
-			if(ConfigInfo.SRC_DB_TYPE.equals(Constant.DB_TYPE.MYSQL) && SqlPattern.check(column.getType(), SqlPattern.MYSQL.ENUM)) {
+			if(ConfigInfo.SRC_DB_CONFIG.DB_TYPE.equals(Constant.DB_TYPE.MYSQL) && SqlPattern.check(column.getType(), SqlPattern.MYSQL.ENUM)) {
 				String typeName = String.format("%s_%s_enum", table.getName(), column.getName());
 				tmpsb.append("CREATE TYPE \"");
 				tmpsb.append(typeName);

@@ -42,7 +42,7 @@ public class DDLConverter {
 
 	public static DDLConverter getInstance() throws Exception {
 		DDLConverter ddlConverter = new DDLConverter();
-		switch (ConfigInfo.SRC_DB_TYPE) {
+		switch (ConfigInfo.SRC_DB_CONFIG.DB_TYPE) {
 		case Constant.DB_TYPE.MYSQL:
 			ddlConverter.convertMapper = ConvertMapper.makeConvertMapper(MySqlConvertMapper.class);
 			break;
@@ -53,7 +53,7 @@ public class DDLConverter {
 			ddlConverter.convertMapper = null;
 			break;
 		default:
-			throw new NotSupportDatabaseTypeException(ConfigInfo.SRC_DB_TYPE);
+			throw new NotSupportDatabaseTypeException(ConfigInfo.SRC_DB_CONFIG.DB_TYPE);
 		}
 		return ddlConverter;
 	}
@@ -69,15 +69,7 @@ public class DDLConverter {
 				System.exit(Constant.ERR_CD.FAILED_CREATE_DIR_ERR);
 			}
 		}
-		this.dbConfigInfo = new DBConfigInfo();
-		dbConfigInfo.SERVERIP = ConfigInfo.SRC_HOST;
-		dbConfigInfo.PORT = String.valueOf(ConfigInfo.SRC_PORT);
-		dbConfigInfo.USERID = ConfigInfo.SRC_USER;
-		dbConfigInfo.DB_PW = ConfigInfo.SRC_PASSWORD;
-		dbConfigInfo.DBNAME = ConfigInfo.SRC_DATABASE;
-		dbConfigInfo.DB_TYPE = ConfigInfo.SRC_DB_TYPE;
-		dbConfigInfo.CHARSET = ConfigInfo.SRC_DB_CHARSET;
-		dbConfigInfo.SCHEMA_NAME = ConfigInfo.SRC_SCHEMA;
+		this.dbConfigInfo = ConfigInfo.SRC_DB_CONFIG;
 		if (dbConfigInfo.SCHEMA_NAME == null && dbConfigInfo.SCHEMA_NAME.trim().equals(""))
 			dbConfigInfo.SCHEMA_NAME = dbConfigInfo.USERID;
 		DBCPPoolManager.setupDriver(dbConfigInfo, Constant.POOLNAME.SOURCE_DDL.name(), 1);
@@ -153,13 +145,13 @@ public class DDLConverter {
 		while ((ddlStrVO = tableQueue.poll()) != null) {
 			if (ddlStrVO.getAlertComments() != null) {
 				for (String alertComment : ddlStrVO.getAlertComments()) {
-					fileBuffer.put(alertComment.getBytes(ConfigInfo.TAR_DB_CHARSET));
+					fileBuffer.put(alertComment.getBytes(ConfigInfo.TAR_DB_CONFIG.CHARSET));
 					alertComments.add(alertComment);
-					fileBuffer.put("\n".getBytes(ConfigInfo.TAR_DB_CHARSET));
+					fileBuffer.put("\n".getBytes(ConfigInfo.TAR_DB_CONFIG.CHARSET));
 				}
 			}
-			fileBuffer.put(ddlStrVO.toString().getBytes(ConfigInfo.TAR_DB_CHARSET));
-			fileBuffer.put("\n".getBytes(ConfigInfo.TAR_DB_CHARSET));
+			fileBuffer.put(ddlStrVO.toString().getBytes(ConfigInfo.TAR_DB_CONFIG.CHARSET));
+			fileBuffer.put("\n".getBytes(ConfigInfo.TAR_DB_CONFIG.CHARSET));
 			fileBuffer.flip();
 			fch.write(fileBuffer);
 			fileBuffer.clear();
@@ -171,8 +163,8 @@ public class DDLConverter {
 		fos = new FileOutputStream(constraintsSqlFile);
 		fch = fos.getChannel();
 		while ((ddlStrVO = constraintsQueue.poll()) != null) {
-			fileBuffer.put(ddlStrVO.toString().getBytes(ConfigInfo.TAR_DB_CHARSET));
-			fileBuffer.put("\n".getBytes(ConfigInfo.TAR_DB_CHARSET));
+			fileBuffer.put(ddlStrVO.toString().getBytes(ConfigInfo.TAR_DB_CONFIG.CHARSET));
+			fileBuffer.put("\n".getBytes(ConfigInfo.TAR_DB_CONFIG.CHARSET));
 			fileBuffer.flip();
 			fch.write(fileBuffer);
 			fileBuffer.clear();
@@ -184,8 +176,8 @@ public class DDLConverter {
 		fos = new FileOutputStream(indexSqlFile);
 		fch = fos.getChannel();
 		while ((ddlStrVO = indexQueue.poll()) != null) {
-			fileBuffer.put(ddlStrVO.toString().getBytes(ConfigInfo.TAR_DB_CHARSET));
-			fileBuffer.put("\n".getBytes(ConfigInfo.TAR_DB_CHARSET));
+			fileBuffer.put(ddlStrVO.toString().getBytes(ConfigInfo.TAR_DB_CONFIG.CHARSET));
+			fileBuffer.put("\n".getBytes(ConfigInfo.TAR_DB_CONFIG.CHARSET));
 			fileBuffer.flip();
 			fch.write(fileBuffer);
 			fileBuffer.clear();
@@ -198,8 +190,8 @@ public class DDLConverter {
 			fch = fos.getChannel();
 			for (String alertComment : alertComments) {
 				System.out.println(alertComment);
-				fileBuffer.put(alertComment.getBytes(ConfigInfo.TAR_DB_CHARSET));
-				fileBuffer.put("\n".getBytes(ConfigInfo.TAR_DB_CHARSET));
+				fileBuffer.put(alertComment.getBytes(ConfigInfo.TAR_DB_CONFIG.CHARSET));
+				fileBuffer.put("\n".getBytes(ConfigInfo.TAR_DB_CONFIG.CHARSET));
 				fileBuffer.flip();
 				fch.write(fileBuffer);
 				fileBuffer.clear();
@@ -211,7 +203,7 @@ public class DDLConverter {
 	
 	private void tableConvert(Table table) throws NotSupportDatabaseTypeException {
 		if (convertMapper != null) {
-			switch (ConfigInfo.SRC_DB_TYPE) {
+			switch (ConfigInfo.SRC_DB_CONFIG.DB_TYPE) {
 			case Constant.DB_TYPE.MYSQL:
 				mysqlTableConvert(table);
 				break;
@@ -220,7 +212,7 @@ public class DDLConverter {
 			case Constant.DB_TYPE.MSS:
 				break;
 			default:
-				throw new NotSupportDatabaseTypeException(ConfigInfo.SRC_DB_TYPE);
+				throw new NotSupportDatabaseTypeException(ConfigInfo.SRC_DB_CONFIG.DB_TYPE);
 			}
 		}
 	}

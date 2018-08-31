@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Properties;
 
 import com.k4m.experdb.db2pg.common.LogUtils;
+import com.k4m.experdb.db2pg.db.datastructure.DBConfigInfo;
 
 
 public class ConfigInfo {
@@ -17,18 +18,7 @@ public class ConfigInfo {
 			;
 	
 	//region SRC
-	//region CONNECTION
-	public static String SRC_HOST=null
-			, SRC_USER=null
-			, SRC_PASSWORD=null
-			, SRC_DATABASE=null
-			, SRC_SCHEMA=null
-			, SRC_DB_TYPE=null
-			, SRC_DB_CHARSET=null
-			;
-	public static int SRC_PORT
-			;
-	//endregion
+	public static DBConfigInfo SRC_DB_CONFIG = new DBConfigInfo();
 	//region PROCESSING
 	public static int SRC_LOB_FETCH_SIZE // 1024
 			, STATEMENT_FETCH_SIZE // 3000
@@ -55,22 +45,12 @@ public class ConfigInfo {
 	//endregion
 	
 	//region TAR
-	//region CONNECTION
-	public static String TAR_HOST=null
-			, TAR_USER=null
-			, TAR_PASSWORD=null
-			, TAR_DATABASE=null
-			, TAR_SCHEMA=null
-			, TAR_DB_CHARSET=null
-			;
-	public static int TAR_PORT
-			;
+	public static DBConfigInfo TAR_DB_CONFIG = new DBConfigInfo();
 	public static int TAR_CONN_COUNT, TAR_TABLE_BAD_COUNT
 			;
 	public static String TAR_COPY_OPTIONS
 			;
 	
-	//endregion
 	//endregion
 	
 	//region OUTPUT
@@ -98,14 +78,14 @@ public class ConfigInfo {
 				ConfigInfo.SRC_EXPORT = (boolean)propertyCheck(prop.getProperty("SRC_EXPORT"),false,Boolean.class);
 				ConfigInfo.SRC_DDL_EXPORT = (boolean)propertyCheck(prop.getProperty("SRC_DDL_EXPORT"),false,Boolean.class);
 				ConfigInfo.PG_CONSTRAINT_EXTRACT = (boolean)propertyCheck(prop.getProperty("PG_CONSTRAINT_EXTRACT"),false,Boolean.class);
-				ConfigInfo.SRC_HOST = prop.getProperty("SRC_HOST");
-				ConfigInfo.SRC_USER = prop.getProperty("SRC_USER");
-				ConfigInfo.SRC_PASSWORD = prop.getProperty("SRC_PASSWORD");
-				ConfigInfo.SRC_DATABASE = prop.getProperty("SRC_DATABASE");
-				ConfigInfo.SRC_SCHEMA = prop.getProperty("SRC_SCHEMA");
-				ConfigInfo.SRC_DB_TYPE = (String)propertyCheck(prop.getProperty("SRC_DB_TYPE"),"ORA",String.class);
-				ConfigInfo.SRC_PORT = (int)propertyCheck(prop.getProperty("SRC_PORT"),1521,Integer.class);
-				ConfigInfo.SRC_DB_CHARSET = (String)propertyCheck(prop.getProperty("SRC_DB_CHARSET"),null,String.class);
+				SRC_DB_CONFIG.SERVERIP 		= prop.getProperty("SRC_HOST");
+				SRC_DB_CONFIG.USERID 		= prop.getProperty("SRC_USER");
+				SRC_DB_CONFIG.DB_PW 		= prop.getProperty("SRC_PASSWORD");
+				SRC_DB_CONFIG.DBNAME 		= prop.getProperty("SRC_DATABASE");
+				SRC_DB_CONFIG.SCHEMA_NAME 	= prop.getProperty("SRC_SCHEMA");
+				SRC_DB_CONFIG.DB_TYPE 		= (String)propertyCheck(prop.getProperty("SRC_DB_TYPE"),"ORA",String.class);
+				SRC_DB_CONFIG.PORT			= (String)propertyCheck(prop.getProperty("SRC_PORT"),"1521",String.class);
+				SRC_DB_CONFIG.CHARSET 		= (String)propertyCheck(prop.getProperty("SRC_DB_CHARSET"),null,String.class);
 				ConfigInfo.SRC_LOB_FETCH_SIZE = (int)propertyCheck(prop.getProperty("SRC_LOB_FETCH_SIZE"),1024,Integer.class);
 				ConfigInfo.STATEMENT_FETCH_SIZE = (int)propertyCheck(prop.getProperty("STATEMENT_FETCH_SIZE"),3000,Integer.class);
 				ConfigInfo.SRC_TABLE_SELECT_PARALLEL = (int)propertyCheck(prop.getProperty("SRC_TABLE_SELECT_PARALLEL"),1,Integer.class);
@@ -135,13 +115,13 @@ public class ConfigInfo {
 					ConfigInfo.SRC_EXCLUDE_TABLES = tmps.size()>0 ? tmps : null;
 				}
 				ConfigInfo.SRC_ROWNUM = (int)propertyCheck(prop.getProperty("SRC_ROWNUM"),-1,Integer.class);
-				ConfigInfo.TAR_HOST = prop.getProperty("TAR_HOST");
-				ConfigInfo.TAR_USER = prop.getProperty("TAR_USER");
-				ConfigInfo.TAR_PASSWORD = prop.getProperty("TAR_PASSWORD");
-				ConfigInfo.TAR_DATABASE = prop.getProperty("TAR_DATABASE");
-				ConfigInfo.TAR_SCHEMA = prop.getProperty("TAR_SCHEMA");
-				ConfigInfo.TAR_PORT = (int)propertyCheck(prop.getProperty("TAR_PORT"),5432,Integer.class);
-				ConfigInfo.TAR_DB_CHARSET = (String)propertyCheck(prop.getProperty("TAR_DB_CHARSET"),null,String.class);
+				TAR_DB_CONFIG.SERVERIP = prop.getProperty("TAR_HOST");
+				TAR_DB_CONFIG.USERID = prop.getProperty("TAR_USER");
+				TAR_DB_CONFIG.DB_PW = prop.getProperty("TAR_PASSWORD");
+				TAR_DB_CONFIG.DBNAME = prop.getProperty("TAR_DATABASE");
+				TAR_DB_CONFIG.SCHEMA_NAME = prop.getProperty("TAR_SCHEMA");
+				TAR_DB_CONFIG.PORT = (String)propertyCheck(prop.getProperty("TAR_PORT"),"5432",String.class);
+				TAR_DB_CONFIG.CHARSET = (String)propertyCheck(prop.getProperty("TAR_DB_CHARSET"),null,String.class);
 				String outputDirectory = ((String)propertyCheck(prop.getProperty("OUTPUT_DIRECTORY"),"./",String.class)).trim().replace("\\", "/");
 				ConfigInfo.OUTPUT_DIRECTORY = outputDirectory.length()-1 == outputDirectory.lastIndexOf("/")
 													? outputDirectory : outputDirectory.concat("/");

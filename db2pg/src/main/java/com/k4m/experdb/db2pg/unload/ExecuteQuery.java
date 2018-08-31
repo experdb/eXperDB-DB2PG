@@ -140,14 +140,14 @@ public class ExecuteQuery implements Runnable{
         	
         	stringBuffer = new StringBuffer("");
         	stringBuffer.append("SET client_encoding TO '");
-        	stringBuffer.append(ConfigInfo.TAR_DB_CHARSET);
+        	stringBuffer.append(ConfigInfo.TAR_DB_CONFIG.CHARSET);
         	stringBuffer.append("';\n\n");
         	stringBuffer.append("\\set ON_ERROR_STOP OFF\n\n");
         	stringBuffer.append("\\set ON_ERROR_ROLLBACK OFF\n\n");
         	if (ConfigInfo.TRUNCATE) {
             	stringBuffer.append("TRUNCATE TABLE \"");
-            	if(ConfigInfo.TAR_SCHEMA != null && !ConfigInfo.TAR_SCHEMA.equals("")) {
-            		stringBuffer.append(ConfigInfo.TAR_SCHEMA);
+            	if(ConfigInfo.TAR_DB_CONFIG.SCHEMA_NAME != null && !ConfigInfo.TAR_DB_CONFIG.SCHEMA_NAME.equals("")) {
+            		stringBuffer.append(ConfigInfo.TAR_DB_CONFIG.SCHEMA_NAME);
             		stringBuffer.append("\".\"");
             	}
             	stringBuffer.append(DevUtils.classifyString(this.tableName,ConfigInfo.CLASSIFY_STRING));
@@ -157,8 +157,8 @@ public class ExecuteQuery implements Runnable{
         		LogUtils.debug("[NO_TRUNCATE_COMMAND] " + this.tableName,ExecuteQuery.class);
         	}
 			stringBuffer.append("COPY \"");
-        	if(ConfigInfo.TAR_SCHEMA != null && !ConfigInfo.TAR_SCHEMA.equals("")) {
-        		stringBuffer.append(ConfigInfo.TAR_SCHEMA);
+        	if(ConfigInfo.TAR_DB_CONFIG.SCHEMA_NAME != null && !ConfigInfo.TAR_DB_CONFIG.SCHEMA_NAME.equals("")) {
+        		stringBuffer.append(ConfigInfo.TAR_DB_CONFIG.SCHEMA_NAME);
         		stringBuffer.append("\".\"");
         	}
         	stringBuffer.append(DevUtils.classifyString(this.tableName,ConfigInfo.CLASSIFY_STRING));
@@ -191,7 +191,7 @@ public class ExecuteQuery implements Runnable{
         	if (stringBuffer.length() != 0){
         		divideProcessing();
         	}
-			byteBuffer.put("\\.\n\n".toString().getBytes(ConfigInfo.TAR_DB_CHARSET));
+			byteBuffer.put("\\.\n\n".toString().getBytes(ConfigInfo.TAR_DB_CONFIG.CHARSET));
 			byteBuffer.flip();
 			outChannel.write(byteBuffer);
 			byteBuffer.clear();
@@ -215,8 +215,8 @@ public class ExecuteQuery implements Runnable{
 			}
 			LogUtils.error(
 					"\""
-					+ ( ConfigInfo.TAR_SCHEMA != null && !ConfigInfo.TAR_SCHEMA.equals("")
-						? DevUtils.classifyString(ConfigInfo.TAR_SCHEMA,ConfigInfo.CLASSIFY_STRING) + "\".\""
+					+ ( ConfigInfo.TAR_DB_CONFIG.CHARSET != null && !ConfigInfo.TAR_DB_CONFIG.CHARSET.equals("")
+						? DevUtils.classifyString(ConfigInfo.TAR_DB_CONFIG.CHARSET,ConfigInfo.CLASSIFY_STRING) + "\".\""
 						: "")
 					+ this.tableName + "\"",ExecuteQuery.class,e);
 		} finally {
@@ -252,7 +252,7 @@ public class ExecuteQuery implements Runnable{
 				if(ConfigInfo.SRC_IS_ASCII) {
 					byte[] b = rs.getBytes(index);
 					
-					if ( b != null) str = new String(b, ConfigInfo.SRC_DB_CHARSET);
+					if ( b != null) str = new String(b, ConfigInfo.SRC_DB_CONFIG.CHARSET);
 					else str = null;
 					
 				} else {
@@ -293,7 +293,7 @@ public class ExecuteQuery implements Runnable{
 						return str == null ? "\\N" : DevUtils.replaceEach(str, DevUtils.BackSlashSequence, DevUtils.BackSlashSequenceReplace);
 					} else {
 						if ( ConfigInfo.SRC_IS_ASCII ) {
-							reader = new BufferedReader(new InputStreamReader(clob.getAsciiStream(),ConfigInfo.SRC_DB_CHARSET));
+							reader = new BufferedReader(new InputStreamReader(clob.getAsciiStream(),ConfigInfo.SRC_DB_CONFIG.CHARSET));
 						} else {
 							reader = new BufferedReader(clob.getCharacterStream());
 						}
@@ -455,7 +455,7 @@ public class ExecuteQuery implements Runnable{
 	}
 	
 	private void divideProcessing () throws IOException {
-		byte[] bytes = stringBuffer.toString().getBytes(ConfigInfo.TAR_DB_CHARSET);
+		byte[] bytes = stringBuffer.toString().getBytes(ConfigInfo.TAR_DB_CONFIG.CHARSET);
 		
 		int bfsCnt = bytes.length/byteBuffer.capacity(); 
 		for(int i=0;i<bfsCnt;i++) {

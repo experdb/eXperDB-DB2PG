@@ -14,22 +14,22 @@ public class MakeSqlFile {
 		try {
 			File file = new File(filepath);
 			FileOutputStream fos = new FileOutputStream(file);
-			fos.write(String.format("SET client_encoding TO '%s';\n\n",ConfigInfo.TAR_DB_CHARSET).getBytes(ConfigInfo.TAR_DB_CHARSET));
+			fos.write(String.format("SET client_encoding TO '%s';\n\n",ConfigInfo.TAR_DB_CONFIG.CHARSET).getBytes(ConfigInfo.TAR_DB_CONFIG.CHARSET));
         	fos.write("\\set ON_ERROR_STOP OFF\n".getBytes());
         	fos.write("\\set ON_ERROR_ROLLBACK OFF\n\n".getBytes());
         	fos.write(String.format("\\echo [FILE_NAME] %s\n\n"
         			,filepath.substring(filepath.lastIndexOf('/')+1
-        			,filepath.lastIndexOf('.'))).getBytes(ConfigInfo.TAR_DB_CHARSET));
-        	fos.write("\\timing \n".getBytes(ConfigInfo.TAR_DB_CHARSET));
+        			,filepath.lastIndexOf('.'))).getBytes(ConfigInfo.TAR_DB_CONFIG.CHARSET));
+        	fos.write("\\timing \n".getBytes(ConfigInfo.TAR_DB_CONFIG.CHARSET));
 			for(T obj : list) {
 				String sql = obj.toString();
-				fos.write(String.format("\\echo [SQL] \"%s\"\n",sql.replace("\"", "")).getBytes(ConfigInfo.TAR_DB_CHARSET));
+				fos.write(String.format("\\echo [SQL] \"%s\"\n",sql.replace("\"", "")).getBytes(ConfigInfo.TAR_DB_CONFIG.CHARSET));
 				if(sql.startsWith("CREATE INDEX")){
 					int onIdx = sql.indexOf("ON");
-					sql =  String.format("%s%s.%s", sql.substring(0,onIdx+3),ConfigInfo.TAR_SCHEMA,sql.substring(onIdx+3));
+					sql =  String.format("%s%s.%s", sql.substring(0,onIdx+3),ConfigInfo.TAR_DB_CONFIG.SCHEMA_NAME,sql.substring(onIdx+3));
 				} else if (sql.startsWith("DROP INDEX")){
 					int onIdx = sql.indexOf("INDEX");
-					sql = String.format("%s\"%s\".%s", sql.substring(0,onIdx+6),ConfigInfo.TAR_SCHEMA,sql.substring(onIdx+6));
+					sql = String.format("%s\"%s\".%s", sql.substring(0,onIdx+6),ConfigInfo.TAR_DB_CONFIG.SCHEMA_NAME,sql.substring(onIdx+6));
 				}
 				fos.write(sql.getBytes());
 				fos.write('\n');

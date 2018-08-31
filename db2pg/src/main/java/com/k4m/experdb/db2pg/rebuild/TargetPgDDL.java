@@ -25,15 +25,7 @@ public class TargetPgDDL {
 		fkCreateList = new ArrayList<String>();
 		fkDropList = new ArrayList<String>();
 		
-		DBConfigInfo tarPgConf = new DBConfigInfo();
-		tarPgConf.SERVERIP = ConfigInfo.TAR_HOST;
-		tarPgConf.DB_TYPE = Constant.DB_TYPE.POG;
-		tarPgConf.PORT = Integer.toString(ConfigInfo.TAR_PORT);
-		tarPgConf.DBNAME = ConfigInfo.TAR_DATABASE;
-		tarPgConf.SCHEMA_NAME = ConfigInfo.TAR_SCHEMA;
-		tarPgConf.USERID = ConfigInfo.TAR_USER;
-		tarPgConf.DB_PW = ConfigInfo.TAR_PASSWORD;
-		tarPgConf.CHARSET = ConfigInfo.TAR_DB_CHARSET;
+		DBConfigInfo tarPgConf = ConfigInfo.SRC_DB_CONFIG;
 		try {
 			DBCPPoolManager.setupDriver(tarPgConf, Constant.POOLNAME.TARGET.name(), 1);
 			LogUtils.info("[GET_DATABASE_INFORM_START]",TargetPgDDL.class);
