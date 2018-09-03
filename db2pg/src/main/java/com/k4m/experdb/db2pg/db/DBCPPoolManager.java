@@ -92,7 +92,7 @@ public class DBCPPoolManager {
 					break;
 				case Constant.DB_TYPE.MYSQL :
 					driver = "com.mysql.jdbc.Driver" ;
-					connectURI = "jdbc:mysql://"+configInfo.SERVERIP+":"+configInfo.PORT+"/"+configInfo.DBNAME;
+					connectURI = "jdbc:mysql://"+configInfo.SERVERIP+":"+configInfo.PORT+"/"+configInfo.DBNAME+"?useCursorFetch=true";
 					break;
 				case Constant.DB_TYPE.CUB :
 					driver = "cubrid.jdbc.driver.CUBRIDDriver" ;
