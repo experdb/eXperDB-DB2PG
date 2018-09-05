@@ -31,7 +31,7 @@ import com.k4m.experdb.db2pg.mapper.TestMapper;
 
 public class DBCPPoolManager {
 	private DBCPPoolManager(){}
-	public static ConcurrentHashMap<String, PoolInfo> ConnInfoList = new ConcurrentHashMap<String, PoolInfo>();
+	public static ConcurrentHashMap<String, PoolInfo> connInfoList = new ConcurrentHashMap<String, PoolInfo>();
 	
 	private static SqlSessionFactoryBuilder sqlSessionFactoryBuilder = new SqlSessionFactoryBuilder();
 	
@@ -47,7 +47,7 @@ public class DBCPPoolManager {
 	public static void setupDriver(DBConfigInfo configInfo, String poolName, int maxActive) throws Exception {
 		LogUtils.info("************************************************************",DBCPPoolManager.class);
 		LogUtils.info("DBCPPool을 생성합니다. ["+poolName+"]",DBCPPoolManager.class);
-		Connection conn = null;
+		
 		// JDBC 클래스 로딩
 		try {
 			String driver = "";
@@ -157,16 +157,10 @@ public class DBCPPoolManager {
             //Pool 등록
             pDriver.registerPool(poolName, connectionPool);
             
-            ConnInfoList.put(poolName, new PoolInfo(configInfo,sqlSessionFactory));
-            conn = getConnection(poolName);
-            conn.setAutoCommit(false);
-            configInfo.DB_VER = conn.getMetaData().getDatabaseMajorVersion() + "." + conn.getMetaData().getDatabaseMinorVersion();
-            configInfo.DB_MAJOR_VER = conn.getMetaData().getDatabaseMajorVersion();
-            configInfo.DB_MINOR_VER = conn.getMetaData().getDatabaseMinorVersion();
-            configInfo.ORG_SCHEMA_NM= conn.getMetaData().getUserName();
-            if (conn != null){
-            	conn.close();
-            }
+            connInfoList.put(poolName, new PoolInfo(configInfo,sqlSessionFactory));
+            
+            setDBConnInfo(poolName, configInfo);
+            
 		} catch (Exception e) {
 			shutdownDriver(poolName);
 			throw e;
@@ -176,12 +170,34 @@ public class DBCPPoolManager {
 		}
 	}
 	
+	/**
+	 * DB 정보 setting
+	 * @param poolName
+	 * @param configInfo
+	 * @throws Exception
+	 */
+	private static void setDBConnInfo(String poolName, DBConfigInfo configInfo) throws Exception{
+		Connection conn = getConnection(poolName);
+		try {
+        conn.setAutoCommit(false);
+        configInfo.DB_VER = conn.getMetaData().getDatabaseMajorVersion() + "." + conn.getMetaData().getDatabaseMinorVersion();
+        configInfo.DB_MAJOR_VER = conn.getMetaData().getDatabaseMajorVersion();
+        configInfo.DB_MINOR_VER = conn.getMetaData().getDatabaseMinorVersion();
+        configInfo.ORG_SCHEMA_NM= conn.getMetaData().getUserName();
+		} catch(Exception e) {
+			
+		} finally {
+	        if (conn != null) conn.close();
+		}
+
+	}
+	
 	public static void shutdownDriver(String poolName) throws Exception {
 		PoolingDriver driver = (PoolingDriver) DriverManager.getDriver("jdbc:apache:commons:dbcp:");
 		driver.closePool(poolName);
 		
-		if (ConnInfoList.containsKey(poolName)) {
-			ConnInfoList.remove(poolName);
+		if (connInfoList.containsKey(poolName)) {
+			connInfoList.remove(poolName);
 		}		
 	}
 	
@@ -190,8 +206,8 @@ public class DBCPPoolManager {
 			PoolingDriver driver = (PoolingDriver) DriverManager.getDriver("jdbc:apache:commons:dbcp:");
 			for (String poolName : driver.getPoolNames()) {
 				driver.closePool(poolName);
-				if (ConnInfoList.containsKey(poolName)) {
-					ConnInfoList.remove(poolName);
+				if (connInfoList.containsKey(poolName)) {
+					connInfoList.remove(poolName);
 				}	
 			}
 		}catch(Exception e){
@@ -220,19 +236,19 @@ public class DBCPPoolManager {
     }
     
     public static SqlSession getSession(String poolName) throws Exception {
-		return ConnInfoList.get(poolName).sqlSessionFactory.openSession(false);
+		return connInfoList.get(poolName).sqlSessionFactory.openSession(false);
 	}
     
     public static DBConfigInfo getConfigInfo(String poolName) throws Exception {
-    	if (ConnInfoList.containsKey(poolName)){
-    		return ConnInfoList.get(poolName).configInfo;
+    	if (connInfoList.containsKey(poolName)){
+    		return connInfoList.get(poolName).configInfo;
     	}else{
     		return null;
     	}
     }
     
     public static boolean ContaintPool(String poolName) throws Exception {
-    	if (ConnInfoList.containsKey(poolName)){
+    	if (connInfoList.containsKey(poolName)){
     		return true;    		
     	}else{
     		return false;
@@ -245,6 +261,6 @@ public class DBCPPoolManager {
     }
     
     public static int getPoolCount() {
-    	return ConnInfoList.size(); 
+    	return connInfoList.size(); 
     }
 }
