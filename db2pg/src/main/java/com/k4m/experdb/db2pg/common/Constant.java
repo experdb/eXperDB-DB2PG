@@ -22,7 +22,7 @@ public class Constant {
     public static final String ORA_STAT_TABLE_NM = "DX$_$STAT"; //오라클  인덱스 통계정보 저장 테이블 명 
 
     //DB 종류 타입
-    public interface DB_TYPE
+    public class DB_TYPE
     {
     	public static final String ORA = "ORA";
     	public static final String POG = "POG";
@@ -47,7 +47,7 @@ public class Constant {
     public static final String SERVER_LOCAL_IP = "127.0.0.1";
 
 
-    public interface ERR_CD {
+    public class ERR_CD {
     	public static final int FAILED_CREATE_DIR_ERR = 550;
     	public static final int UNKNOWN_ERR = 500;
     	public static final int METHOD_NOT_ALLOWD_ERR = 405;
