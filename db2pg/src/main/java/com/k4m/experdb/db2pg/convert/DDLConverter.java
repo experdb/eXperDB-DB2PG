@@ -72,10 +72,10 @@ public class DDLConverter {
 		this.dbConfigInfo = ConfigInfo.SRC_DB_CONFIG;
 		if (dbConfigInfo.SCHEMA_NAME == null && dbConfigInfo.SCHEMA_NAME.trim().equals(""))
 			dbConfigInfo.SCHEMA_NAME = dbConfigInfo.USERID;
-		DBCPPoolManager.setupDriver(dbConfigInfo, Constant.POOLNAME.SOURCE_DDL.name(), 1);
+		//DBCPPoolManager.setupDriver(dbConfigInfo, Constant.POOLNAME.SOURCE_DDL.name(), 1);
 		tableNameList = ConfigInfo.SRC_ALLOW_TABLES;
 		if (tableNameList == null) {
-			tableNameList = DBUtils.getTableNames(ConfigInfo.TABLE_ONLY, Constant.POOLNAME.SOURCE_DDL.name(),
+			tableNameList = DBUtils.getTableNames(ConfigInfo.TABLE_ONLY, Constant.POOLNAME.SOURCE.name(),
 					dbConfigInfo);
 		}
 		if (excludes != null) {
@@ -93,15 +93,15 @@ public class DDLConverter {
 
 	public void start() throws DBTypeNotFoundException, IOException, NotSupportDatabaseTypeException {
 		DDLString ddlStrVO = null;
-		List<Table> tables = ConvertDBUtils.getTableInform(tableNameList, true, Constant.POOLNAME.SOURCE_DDL.name(),
+		List<Table> tables = ConvertDBUtils.getTableInform(tableNameList, true, Constant.POOLNAME.SOURCE.name(),
 				dbConfigInfo);
 		
 		PgDDLMaker<Table> maker = new PgDDLMaker<Table>(DDL_TYPE.CREATE);
 		Queue<DDLString> ddlQueue = new LinkedBlockingQueue<DDLString>();
 		for (Table table : tables) {
-			ConvertDBUtils.setColumnInform(table, Constant.POOLNAME.SOURCE_DDL.name(), dbConfigInfo);
-			ConvertDBUtils.setConstraintInform(table, Constant.POOLNAME.SOURCE_DDL.name(), dbConfigInfo);
-			ConvertDBUtils.setKeyInform(table, Constant.POOLNAME.SOURCE_DDL.name(), dbConfigInfo);
+			ConvertDBUtils.setColumnInform(table, Constant.POOLNAME.SOURCE.name(), dbConfigInfo);
+			ConvertDBUtils.setConstraintInform(table, Constant.POOLNAME.SOURCE.name(), dbConfigInfo);
+			ConvertDBUtils.setKeyInform(table, Constant.POOLNAME.SOURCE.name(), dbConfigInfo);
 
 			tableConvert(table);
 

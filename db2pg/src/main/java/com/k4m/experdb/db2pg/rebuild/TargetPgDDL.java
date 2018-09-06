@@ -25,9 +25,11 @@ public class TargetPgDDL {
 		fkCreateList = new ArrayList<String>();
 		fkDropList = new ArrayList<String>();
 		
-		DBConfigInfo tarPgConf = ConfigInfo.SRC_DB_CONFIG;
+		//DBConfigInfo tarPgConf = ConfigInfo.SRC_DB_CONFIG;
+		
+		DBConfigInfo tarPgConf = ConfigInfo.TAR_DB_CONFIG;
 		try {
-			DBCPPoolManager.setupDriver(tarPgConf, Constant.POOLNAME.TARGET.name(), 1);
+			//DBCPPoolManager.setupDriver(tarPgConf, Constant.POOLNAME.TARGET.name(), 1);
 			LogUtils.info("[GET_DATABASE_INFORM_START]",TargetPgDDL.class);
 			try {
 				LogUtils.info("[GET_CURRENT_SCHEMA_START]",TargetPgDDL.class);

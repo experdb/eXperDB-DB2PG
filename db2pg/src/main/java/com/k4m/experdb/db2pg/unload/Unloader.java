@@ -59,7 +59,7 @@ public class Unloader {
 			if (ConfigInfo.SRC_DB_CONFIG.SCHEMA_NAME == null && ConfigInfo.SRC_DB_CONFIG.SCHEMA_NAME.trim().equals("")) ConfigInfo.SRC_DB_CONFIG.SCHEMA_NAME = ConfigInfo.SRC_DB_CONFIG.USERID;
 			ExecutorService executorService = Executors.newFixedThreadPool(ConfigInfo.SRC_TABLE_SELECT_PARALLEL);
 			
-			DBCPPoolManager.setupDriver(ConfigInfo.SRC_DB_CONFIG, Constant.POOLNAME.SOURCE.name(), ConfigInfo.SRC_TABLE_SELECT_PARALLEL);
+			//DBCPPoolManager.setupDriver(ConfigInfo.SRC_DB_CONFIG, Constant.POOLNAME.SOURCE.name(), ConfigInfo.SRC_TABLE_SELECT_PARALLEL);
 
 			List<String> selSqlList = new ArrayList<String>();
 			tableNameList = ConfigInfo.SRC_ALLOW_TABLES;
