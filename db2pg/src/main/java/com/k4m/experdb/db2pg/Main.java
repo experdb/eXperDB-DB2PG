@@ -81,7 +81,10 @@ public class Main {
 	private static void createPool() throws Exception {
 		//DBCPPoolManager.setupDriver(ConfigInfo.SRC_DB_CONFIG, Constant.POOLNAME.SOURCE_DDL.name(), 1);
 		DBCPPoolManager.setupDriver(ConfigInfo.SRC_DB_CONFIG, Constant.POOLNAME.SOURCE.name(), ConfigInfo.SRC_TABLE_SELECT_PARALLEL);
-		DBCPPoolManager.setupDriver(ConfigInfo.TAR_DB_CONFIG, Constant.POOLNAME.TARGET.name(), 1);
+		
+		if(ConfigInfo.PG_CONSTRAINT_EXTRACT || ConfigInfo.SRC_DDL_EXPORT) {
+			DBCPPoolManager.setupDriver(ConfigInfo.TAR_DB_CONFIG, Constant.POOLNAME.TARGET.name(), 1);
+		}
 	}
 	
 	//pool 삭제
