@@ -30,18 +30,68 @@ import com.k4m.experdb.db2pg.db.datastructure.DBConfigInfo;
 
 public class Unloader {
 	
-//	public int  lobPreFetchSize = -1,rownum = -1, tableParallel = 1, FetchSize = 3000, LoadParallel = 1;
-//	String OUTPUT_FILE_NAME = null,configFile = null, outputDirectory = "./",charset = "MS949"
-//			,targetSchema = null, where = null;
-//	boolean truncate = false, tableOnly = true;
-	List<String> tableNameList = null, excludes = null;
+
+	
 	List<SelectQuery> selectQuerys = new ArrayList<SelectQuery>();
-//	StringType strType = StringType.original;
+
 	long startTime;
 	
 	public Unloader () {
 	}
 	
+	/**
+	 * 태이블 조회
+	 * @throws Exception
+	 */
+	private List<String> makeTableList() throws Exception {
+		List<String> excludes = ConfigInfo.SRC_EXCLUDE_TABLES;
+		
+		List<String>  tableNameList = ConfigInfo.SRC_ALLOW_TABLES;
+		
+		if(tableNameList == null){
+			tableNameList = DBUtils.getTableNames(ConfigInfo.TABLE_ONLY,Constant.POOLNAME.SOURCE.name(), ConfigInfo.SRC_DB_CONFIG);
+		}
+		
+		if(excludes!= null)
+		for(int eidx=0;eidx < excludes.size(); eidx++) {
+			String exclude = excludes.get(eidx);
+			for(String tableName : tableNameList) {
+				if(exclude.equals(tableName)){
+					tableNameList.remove(exclude);
+					break;
+				}
+			}
+		}
+		
+		return tableNameList;
+	}
+	
+	private String getConvertReplaceTableName(String strTableName) throws Exception {
+		String strReplaceTableName = "";
+		
+		if(ConfigInfo.SRC_DB_CONFIG.DB_TYPE.equals(Constant.DB_TYPE.MYSQL)) {
+			strReplaceTableName = "`" + strTableName + "`";
+		} else {
+			strReplaceTableName =  "\"" + strTableName + "\"";
+		}
+		
+		return strReplaceTableName;
+	}
+	
+	private String getWhere() throws Exception {
+		String strWhere ="";
+		
+		if(ConfigInfo.SRC_WHERE!=null && !ConfigInfo.SRC_WHERE.equals("")) {
+			strWhere = "WHERE "+ConfigInfo.SRC_WHERE;
+		}
+		return strWhere;
+	}
+	
+	private void setSchemaNameCheck() throws Exception {
+		if (ConfigInfo.SRC_DB_CONFIG.SCHEMA_NAME == null && ConfigInfo.SRC_DB_CONFIG.SCHEMA_NAME.trim().equals("")) {
+			ConfigInfo.SRC_DB_CONFIG.SCHEMA_NAME = ConfigInfo.SRC_DB_CONFIG.USERID;
+		}
+	}
 	
 	public void start() {
 		try {
@@ -49,74 +99,57 @@ public class Unloader {
 				loadSelectQuery(ConfigInfo.SELECT_QUERIES_FILE);
 			}
 			
-			if(ConfigInfo.SRC_EXCLUDE_TABLES != null)
-				excludes = ConfigInfo.SRC_EXCLUDE_TABLES;
+			if (ConfigInfo.SRC_DB_CONFIG.SCHEMA_NAME!=null && !ConfigInfo.SRC_DB_CONFIG.SCHEMA_NAME.equals("")) {
+				LogUtils.error("SCHEMA_NAME NOT FOUND", Unloader.class);
+				System.exit(0);
+			}
+			String schema = ConfigInfo.SRC_DB_CONFIG.SCHEMA_NAME+".";
+			
 			startTime = System.currentTimeMillis();
 			
-			LogUtils.debug("START UNLOADER !!!",Unloader.class);
+			LogUtils.debug("START UNLOADER !!!", Unloader.class);
+
+			setSchemaNameCheck();
 			
-			
-			if (ConfigInfo.SRC_DB_CONFIG.SCHEMA_NAME == null && ConfigInfo.SRC_DB_CONFIG.SCHEMA_NAME.trim().equals("")) ConfigInfo.SRC_DB_CONFIG.SCHEMA_NAME = ConfigInfo.SRC_DB_CONFIG.USERID;
 			ExecutorService executorService = Executors.newFixedThreadPool(ConfigInfo.SRC_TABLE_SELECT_PARALLEL);
 			
 			//DBCPPoolManager.setupDriver(ConfigInfo.SRC_DB_CONFIG, Constant.POOLNAME.SOURCE.name(), ConfigInfo.SRC_TABLE_SELECT_PARALLEL);
 
 			List<String> selSqlList = new ArrayList<String>();
-			tableNameList = ConfigInfo.SRC_ALLOW_TABLES;
-			if(tableNameList == null){
-				tableNameList = DBUtils.getTableNames(ConfigInfo.TABLE_ONLY,Constant.POOLNAME.SOURCE.name(), ConfigInfo.SRC_DB_CONFIG);
-			}
-			
-			if(excludes!= null)
-			for(int eidx=0;eidx < excludes.size(); eidx++) {
-				String exclude = excludes.get(eidx);
-				for(String tableName : tableNameList) {
-					if(exclude.equals(tableName)){
-						tableNameList.remove(exclude);
-						break;
-					}
-				}
-			}
-			
-			Map<String,Object> params = new HashMap<String,Object>();
+
+			//태이블조회
+			List<String> tableNameList = makeTableList();
+
 			for (String tableName : tableNameList) {
-				String schema = "", replaceTableName, where ="";
-				if (ConfigInfo.SRC_DB_CONFIG.SCHEMA_NAME!=null && !ConfigInfo.SRC_DB_CONFIG.SCHEMA_NAME.equals("")) {
-					schema = ConfigInfo.SRC_DB_CONFIG.SCHEMA_NAME+".";
-				}
-				if(ConfigInfo.SRC_DB_CONFIG.DB_TYPE.equals(Constant.DB_TYPE.MYSQL)) {
-					replaceTableName = "`"+tableName+"`";
-				} else {
-					replaceTableName =  "\""+tableName+"\"";
-				}
-				
-				
-				if(ConfigInfo.SRC_WHERE!=null && !ConfigInfo.SRC_WHERE.equals("")) {
-					where = "WHERE "+ConfigInfo.SRC_WHERE;
-				}
-				selSqlList.add(String.format("SELECT * FROM %s%s %s", schema,replaceTableName,where));
+
+				String replaceTableName = getConvertReplaceTableName(tableName);
+				String where = getWhere();
+
+				selSqlList.add(String.format("SELECT * FROM %s%s %s", schema, replaceTableName, where));
 			}
-			params.clear();
+
 			int jobSize = 0;
-			if(selSqlList!=null) {
+			if(selSqlList != null) {
 				jobSize += selSqlList.size();
 			}
-			if(selectQuerys!=null) {
+			
+			if(selectQuerys != null) {
 				jobSize += selectQuerys.size();
 			}
-			List<ExecuteQuery> jobList = new ArrayList<ExecuteQuery>(jobSize);
+			List<ExecuteDataTransfer> jobList = new ArrayList<ExecuteDataTransfer>(jobSize);
 			
 			
 			if(selSqlList != null) {
 				for(int i=0; i<selSqlList.size(); i++){
-	        		ExecuteQuery eq = new ExecuteQuery(Constant.POOLNAME.SOURCE.name(), selSqlList.get(i), tableNameList.get(i), ConfigInfo.SRC_DB_CONFIG);
+	        		ExecuteDataTransfer eq = new ExecuteDataTransfer(Constant.POOLNAME.SOURCE.name(), selSqlList.get(i), tableNameList.get(i), ConfigInfo.SRC_DB_CONFIG);
 	        		jobList.add(eq);
 	        		executorService.execute(eq);
 				}
 			}
+			
 			if(selectQuerys != null) {
 				for(int i=0; i<selectQuerys.size(); i++) {
-					ExecuteQuery eq = new ExecuteQuery(Constant.POOLNAME.SOURCE.name(), selectQuerys.get(i).query, selectQuerys.get(i).name, ConfigInfo.SRC_DB_CONFIG);
+					ExecuteDataTransfer eq = new ExecuteDataTransfer(Constant.POOLNAME.SOURCE.name(), selectQuerys.get(i).query, selectQuerys.get(i).name, ConfigInfo.SRC_DB_CONFIG);
 	        		jobList.add(eq);
 	        		executorService.execute(eq);
 				}
@@ -140,16 +173,16 @@ public class Unloader {
 	        	fos.write("\\set ON_ERROR_STOP OFF\n\n".getBytes(ConfigInfo.TAR_DB_CONFIG.CHARSET));
 	        	fos.write("\\set ON_ERROR_ROLLBACK OFF\n\n".getBytes(ConfigInfo.TAR_DB_CONFIG.CHARSET));
 	        	fos.write("\\timing\n\n".getBytes(ConfigInfo.TAR_DB_CONFIG.CHARSET));
-	        	for(ExecuteQuery executeQuery : jobList){
+	        	for(ExecuteDataTransfer ExecuteDataTransfer : jobList){
 //	        		fos.write("BEGIN;\n".getBytes(charset));
 //	        		fos.write("\\echo [COPY_START] `date +%Y-%m-%d_%k:%M:%S`\n".getBytes(ConfigInfo.TAR_DB_CHARSET));
-	        		fos.write(String.format("\\echo TABLE_NAME(ROW_COUNT) >>> %s.%s(%d)\n"
-	        				,DevUtils.classifyString(ConfigInfo.TAR_DB_CONFIG.SCHEMA_NAME,ConfigInfo.CLASSIFY_STRING)
-	        				,DevUtils.classifyString(executeQuery.getTableName()
-	        				,ConfigInfo.CLASSIFY_STRING),executeQuery.getRowCnt()).getBytes(ConfigInfo.TAR_DB_CONFIG.CHARSET));
-	        		fos.write(String.format("ALTER TABLE %s DISABLE TRIGGER USER;\n\n",executeQuery.getTableName()).getBytes(ConfigInfo.TAR_DB_CONFIG.CHARSET));
-	        		fos.write(String.format("\\i ./%s",executeQuery.getTableName().replace("$", "-")+".sql\n\n").getBytes(ConfigInfo.TAR_DB_CONFIG.CHARSET));
-	        		fos.write(String.format("ALTER TABLE %s ENABLE TRIGGER USER;\n",executeQuery.getTableName()).getBytes(ConfigInfo.TAR_DB_CONFIG.CHARSET));
+	        		//fos.write(String.format("\\echo TABLE_NAME(ROW_COUNT) >>> %s.%s(%d)\n"
+	        		//		,DevUtils.classifyString(ConfigInfo.TAR_DB_CONFIG.SCHEMA_NAME,ConfigInfo.CLASSIFY_STRING)
+	        				///,DevUtils.classifyString(executeQuery.getTableName()
+	        				//,ConfigInfo.CLASSIFY_STRING),executeQuery.getRowCnt()).getBytes(ConfigInfo.TAR_DB_CONFIG.CHARSET));
+	        		//fos.write(String.format("ALTER TABLE %s DISABLE TRIGGER USER;\n\n",executeQuery.getTableName()).getBytes(ConfigInfo.TAR_DB_CONFIG.CHARSET));
+	        		//fos.write(String.format("\\i ./%s",executeQuery.getTableName().replace("$", "-")+".sql\n\n").getBytes(ConfigInfo.TAR_DB_CONFIG.CHARSET));
+	        		//fos.write(String.format("ALTER TABLE %s ENABLE TRIGGER USER;\n",executeQuery.getTableName()).getBytes(ConfigInfo.TAR_DB_CONFIG.CHARSET));
 //	        		fos.write("\\echo [COPY_END] `date +%Y-%m-%d_%k:%M:%S`\n\n".getBytes(ConfigInfo.TAR_DB_CHARSET));
 //	        		fos.write("\\echo  \n".getBytes(ConfigInfo.TAR_DB_CHARSET));
 //	        		fos.write("\\echo  \n".getBytes(ConfigInfo.TAR_DB_CHARSET));
