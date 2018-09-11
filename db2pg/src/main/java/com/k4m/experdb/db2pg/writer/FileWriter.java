@@ -19,7 +19,7 @@ public class FileWriter {
 	public FileWriter(){}
 	
 	public FileWriter(String table_nm) throws IOException{		
-			fileCreater(ConfigInfo.OUTPUT_DIRECTORY + table_nm+ "out");			
+			fileCreater(ConfigInfo.OUTPUT_DIRECTORY + table_nm+ ".out");			
 	}
 	
 	public boolean dataWriteToFile(String lineStr, String table_nm) throws IOException {
