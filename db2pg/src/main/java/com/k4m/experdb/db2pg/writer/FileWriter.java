@@ -18,7 +18,7 @@ public class FileWriter {
 	
 	public FileWriter(){}
 	
-	public FileWriter(String lineStr, String table_nm) throws IOException{		
+	public FileWriter(String table_nm) throws IOException{		
 			fileCreater(ConfigInfo.OUTPUT_DIRECTORY + table_nm+ "out");			
 	}
 	
