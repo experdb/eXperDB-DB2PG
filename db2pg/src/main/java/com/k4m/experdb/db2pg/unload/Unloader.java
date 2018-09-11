@@ -99,7 +99,7 @@ public class Unloader {
 				loadSelectQuery(ConfigInfo.SELECT_QUERIES_FILE);
 			}
 			
-			if (ConfigInfo.SRC_DB_CONFIG.SCHEMA_NAME!=null && !ConfigInfo.SRC_DB_CONFIG.SCHEMA_NAME.equals("")) {
+			if (ConfigInfo.SRC_DB_CONFIG.SCHEMA_NAME==null && ConfigInfo.SRC_DB_CONFIG.SCHEMA_NAME.equals("")) {
 				LogUtils.error("SCHEMA_NAME NOT FOUND", Unloader.class);
 				System.exit(0);
 			}

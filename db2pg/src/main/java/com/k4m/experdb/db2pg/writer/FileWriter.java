@@ -22,7 +22,7 @@ public class FileWriter {
 			fileCreater(ConfigInfo.OUTPUT_DIRECTORY + table_nm+ "out");			
 	}
 	
-	public boolean FileWrite(String lineStr, String table_nm) throws IOException {
+	public boolean dataWriteToFile(String lineStr, String table_nm) throws IOException {
 		byte[] inputBytes = (lineStr + "\r\n").getBytes();
 		ByteBuffer byteBuffer = ByteBuffer.wrap(inputBytes);
 		try {
@@ -71,7 +71,7 @@ public class FileWriter {
 	}
 	
 	
-	public void closeFileChannels() {
+	public void closeFileChannels() throws Exception {
 		if (fileChannels != null && fileChannels.isOpen()) {
 			try {
 				WriterVO wv = new WriterVO();
@@ -83,10 +83,13 @@ public class FileWriter {
 				wv.setPorcessErrorLines(errByteCount);
 
 				fileChannels.close();
-				badFileChannels.close();
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
+		}
+		
+		if (badFileChannels != null && badFileChannels.isOpen()) {
+			badFileChannels.close();
 		}
 	}
 	

@@ -12,9 +12,9 @@ import com.k4m.experdb.db2pg.db.datastructure.DBConfigInfo;
 
 
 public class ConfigInfo {
-	public static boolean SRC_EXPORT
-			, SRC_DDL_EXPORT
-			, PG_CONSTRAINT_EXTRACT
+	public static boolean SRC_EXPORT;
+	public static boolean SRC_DDL_EXPORT;
+	public static boolean PG_CONSTRAINT_EXTRACT;
 			;
 	
 	//region SRC
@@ -69,6 +69,8 @@ public class ConfigInfo {
 	//endregion
 	
 	public static org.apache.log4j.Level LOG_LEVEL;
+	
+	public static boolean FILE_WRITER_MODE, DB_WRITER_MODE;
 	
 	public static class Loader {
 		public static void load(String configFilePath) {
@@ -137,6 +139,9 @@ public class ConfigInfo {
 				ConfigInfo.TAR_CONN_COUNT = (int)propertyCheck(prop.getProperty("TAR_CONN_COUNT"),1,Integer.class);
 				ConfigInfo.TAR_TABLE_BAD_COUNT = (int)propertyCheck(prop.getProperty("TAR_TABLE_BAD_COUNT"),-1,Integer.class);
 				ConfigInfo.TAR_COPY_OPTIONS = (String)propertyCheck(prop.getProperty("TAR_COPY_OPTIONS"),null,String.class);
+				
+				ConfigInfo.FILE_WRITER_MODE = (boolean)propertyCheck(prop.getProperty("FILE_WRITER_MODE"),false,Boolean.class);
+				ConfigInfo.DB_WRITER_MODE = (boolean)propertyCheck(prop.getProperty("DB_WRITER_MODE"),false,Boolean.class);
 				
 			} catch (FileNotFoundException fnfe) {
 				LogUtils.error("[CONFIG_FILE_NOT_FOUND_ERR]",ConfigInfo.Loader.class,fnfe);

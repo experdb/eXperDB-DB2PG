@@ -4,7 +4,6 @@ import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.PrintStream;
@@ -41,6 +40,7 @@ import com.k4m.experdb.db2pg.config.ConfigInfo;
 import com.k4m.experdb.db2pg.db.DBCPPoolManager;
 import com.k4m.experdb.db2pg.db.datastructure.DBConfigInfo;
 import com.k4m.experdb.db2pg.db.oracle.spatial.geometry.Process;
+import com.k4m.experdb.db2pg.writer.FileWriter;
 
 import oracle.jdbc.internal.OracleTypes;
 import oracle.spatial.geometry.JGeometry;
@@ -136,7 +136,7 @@ public class ExecuteDataTransfer implements Runnable{
         	LogUtils.debug("[START_FETCH_DATA]" + outputFileName,ExecuteQuery.class);
         	
  
-        	bf.append("SET client_encoding TO '");
+/*        	bf.append("SET client_encoding TO '");
         	bf.append(ConfigInfo.TAR_DB_CONFIG.CHARSET);
         	bf.append("';\n\n");
         	bf.append("\\set ON_ERROR_STOP OFF\n\n");
@@ -152,15 +152,26 @@ public class ExecuteDataTransfer implements Runnable{
             	LogUtils.debug("[ADD_TRUNCATE_COMMAND] " + this.tableName,ExecuteQuery.class);
         	} else {
         		LogUtils.debug("[NO_TRUNCATE_COMMAND] " + this.tableName,ExecuteQuery.class);
-        	}
+        	}*/
 
+        	
+        	FileWriter writer = new FileWriter(this.tableName);
+        	
 			
         	while (rs.next()){
+        		if(rowCnt == 312000) {
+        			System.out.println("rowCnt");
+        		}
+        		
         		for (int i = 1; i <= rsmd.getColumnCount(); i++) {	
         			int type = rsmd.getColumnType(i);
-        			ConvertDataToString(SrcConn,type, rs, i);
         			
-        			//bf.append(ConvertDataToString(SrcConn,type, rs, i));
+            		if(rowCnt == 312000) {
+            			System.out.println(ConvertDataToString(SrcConn,type, rs, i));
+            		}
+
+        			bf.append(ConvertDataToString(SrcConn,type, rs, i));
+        			
         			if (i != rsmd.getColumnCount()) {
         				bf.append("\t");
         			}
@@ -169,17 +180,17 @@ public class ExecuteDataTransfer implements Runnable{
         		rowCnt += 1;
 
         		if(rowCnt % ConfigInfo.STATEMENT_FETCH_SIZE == 0 && bf.length() > byteBuffer.capacity()) {
-        			//divideProcessing();
+        			writer.dataWriteToFile(bf.toString(), this.tableName);
+        			
+        			bf.delete(0, bf.length());
         		}
         	}
         	rs.close();
         	if (bf.length() != 0){
-        		//divideProcessing();
+        		writer.dataWriteToFile(bf.toString(), this.tableName);
         	}
-			byteBuffer.put("\\.\n\n".toString().getBytes(ConfigInfo.TAR_DB_CONFIG.CHARSET));
-			byteBuffer.flip();
-
-			byteBuffer.clear();
+			
+        	writer.closeFileChannels();
 
         	stopWatch.stop();
         	LogUtils.debug("[ELAPSED_TIME] "+tableName+" " + stopWatch.getTime()+"ms",ExecuteQuery.class);
@@ -210,7 +221,6 @@ public class ExecuteDataTransfer implements Runnable{
 			LogUtils.info("COMPLETE UNLOAD (TABLE_NAME : " +tableName + ", ROWNUM : " + rowCnt + ") !!!",ExecuteQuery.class);
 		}
 	}
-	
 	
 	private String ConvertDataToString(Connection SrcConn,int columnType, ResultSet rs, int index) throws SQLException, Exception {
 		try {
@@ -269,6 +279,8 @@ public class ExecuteDataTransfer implements Runnable{
 					
 					BufferedReader reader = null;
 					str = null;
+					char[] buffer = null;
+					int n = 0;
 					
 					if(clob.length() < 32766 && !ConfigInfo.SRC_IS_ASCII) { 
 						str = rs.getString(index);
@@ -279,19 +291,21 @@ public class ExecuteDataTransfer implements Runnable{
 						} else {
 							reader = new BufferedReader(clob.getCharacterStream());
 						}
-						//buffer = new char[ 4 * 1024 ];
-						char[] buffer = new char[ ConfigInfo.SRC_LOB_FETCH_SIZE ];
-
-						int n = 0;
-						StringBuffer sb = new StringBuffer();
-						while((n = reader.read(buffer)) != -1){
-							sb.append(buffer, 0, n);				
+						buffer = new char[ 4 * 1024 ];
+						 
+						if(bf.length()>0) {
+							//divideProcessing();
 						}
 						
 						
-						bf.append(DevUtils.replaceEach(sb.toString() , DevUtils.BackSlashSequence, DevUtils.BackSlashSequenceReplace));
-						
-
+						while((n = reader.read(buffer)) != -1) {
+							String s = DevUtils.replaceEach(new String(Arrays.copyOfRange(buffer, 0, n)), DevUtils.BackSlashSequence, DevUtils.BackSlashSequenceReplace);
+							bf.append(s);
+							
+							if(bf.length() > byteBuffer.capacity()) {
+								//divideProcessing();
+							}
+						}
 						reader.close();
 						return "";
 					}
@@ -433,8 +447,6 @@ public class ExecuteDataTransfer implements Runnable{
 			throw e;
 		}
 	}
-	
-
 	void CloseConn(Connection conn, PreparedStatement pStmt) {
 		try{
 			if(pStmt != null) {
