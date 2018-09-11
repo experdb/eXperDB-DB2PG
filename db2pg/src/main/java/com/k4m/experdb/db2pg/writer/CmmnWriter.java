@@ -39,11 +39,11 @@ public class CmmnWriter implements Writer{
 	@Override
 	public boolean write(String wrt_nm, String lineStr, String table_nm) throws IOException {
 		ConfigInfo.OUTPUT_DIRECTORY = "C:\\test\\";
-		FileWriter fw = new FileWriter(lineStr, table_nm);
+		FileWriter fw = new FileWriter( table_nm );
 		DBWriter dw = new DBWriter(); 
 		// FileWriter
 		if (wrt_nm == "file") {
-			fw.FileWrite(lineStr, table_nm);
+			fw.dataWriteToFile(lineStr, table_nm);
 			// DBWriter
 		} else {
 			dw.DBWrite(lineStr, table_nm);
