@@ -4,6 +4,7 @@ import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
 
+import com.k4m.experdb.db2pg.common.Constant;
 import com.k4m.experdb.db2pg.config.ConfigInfo;
 
 public class CmmnWriter implements Writer{
@@ -40,7 +41,7 @@ public class CmmnWriter implements Writer{
 	public boolean write(String wrt_nm, String lineStr, String table_nm) throws IOException {
 		ConfigInfo.OUTPUT_DIRECTORY = "C:\\test\\";
 		FileWriter fw = new FileWriter( table_nm );
-		DBWriter dw = new DBWriter(); 
+		DBWriter dw = new DBWriter(Constant.POOLNAME.TARGET.name()); 
 		// FileWriter
 		if (wrt_nm == "file") {
 			fw.dataWriteToFile(lineStr, table_nm);
