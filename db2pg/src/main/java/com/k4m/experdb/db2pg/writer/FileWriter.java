@@ -26,9 +26,9 @@ public class FileWriter {
 		byte[] inputBytes = (lineStr + "\r\n").getBytes();
 		ByteBuffer byteBuffer = ByteBuffer.wrap(inputBytes);
 		try {
-			if (lineStr.contains("시스템명")) {
-				throw new Exception();
-			}
+			///if (lineStr.contains("시스템명")) {
+			//	throw new Exception();
+			//}
 			successByteCount += fileChannels.write(byteBuffer);
 		} catch (Exception e) {
 			// bad파일 생성

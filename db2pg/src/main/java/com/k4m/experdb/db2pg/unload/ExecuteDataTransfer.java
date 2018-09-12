@@ -3,7 +3,6 @@ package com.k4m.experdb.db2pg.unload;
 import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.PrintStream;
@@ -40,6 +39,7 @@ import com.k4m.experdb.db2pg.config.ConfigInfo;
 import com.k4m.experdb.db2pg.db.DBCPPoolManager;
 import com.k4m.experdb.db2pg.db.datastructure.DBConfigInfo;
 import com.k4m.experdb.db2pg.db.oracle.spatial.geometry.Process;
+import com.k4m.experdb.db2pg.writer.DBWriter;
 import com.k4m.experdb.db2pg.writer.FileWriter;
 
 import oracle.jdbc.internal.OracleTypes;
@@ -109,6 +109,8 @@ public class ExecuteDataTransfer implements Runnable{
 		
 		Connection SrcConn = null;
 		PreparedStatement preSrcStmt = null;
+		FileWriter fileWriter = null;
+		DBWriter dbWriter = null;
 		
 		try {
 			stopWatch.start();
@@ -155,7 +157,15 @@ public class ExecuteDataTransfer implements Runnable{
         	}*/
 
         	
-        	FileWriter writer = new FileWriter(this.tableName);
+        	
+			if(ConfigInfo.DB_WRITER_MODE) {
+				dbWriter = new DBWriter(Constant.POOLNAME.TARGET.name());
+			}
+			
+			if(ConfigInfo.FILE_WRITER_MODE) {
+				fileWriter = new FileWriter(this.tableName);
+			}
+        	
         	
 			
         	while (rs.next()){
@@ -180,46 +190,65 @@ public class ExecuteDataTransfer implements Runnable{
         		rowCnt += 1;
 
         		if(rowCnt % ConfigInfo.STATEMENT_FETCH_SIZE == 0 && bf.length() > byteBuffer.capacity()) {
-        			writer.dataWriteToFile(bf.toString(), this.tableName);
+        			
+        			if(ConfigInfo.DB_WRITER_MODE) {
+        				
+        			}
+        			
+        			if(ConfigInfo.FILE_WRITER_MODE) {
+        				fileWriter.dataWriteToFile(bf.toString(), this.tableName);
+        			}
         			
         			bf.delete(0, bf.length());
         		}
         	}
         	rs.close();
         	if (bf.length() != 0){
-        		writer.dataWriteToFile(bf.toString(), this.tableName);
+        		fileWriter.dataWriteToFile(bf.toString(), this.tableName);
         	}
 			
-        	writer.closeFileChannels();
+        	
 
         	stopWatch.stop();
         	LogUtils.debug("[ELAPSED_TIME] "+tableName+" " + stopWatch.getTime()+"ms",ExecuteQuery.class);
         	
 		} catch(Exception e) {
 			this.success = false;
-			File output_file = new File(outputFileName+".error");
-			try {
-				PrintStream ps = new PrintStream(output_file);
-				ps.print("ERROR :\n");
-				e.printStackTrace(ps);
-				ps.print("SQL :\n");
-				ps.print(selectQuery);
-				ps.close();
-			} catch (FileNotFoundException e1) {
-				LogUtils.error("[SQL_ERROR]" + outputFileName+".error",ExecuteQuery.class);
-			}
-			LogUtils.error(
-					"\""
-					+ ( ConfigInfo.TAR_DB_CONFIG.CHARSET != null && !ConfigInfo.TAR_DB_CONFIG.CHARSET.equals("")
-						? DevUtils.classifyString(ConfigInfo.TAR_DB_CONFIG.CHARSET,ConfigInfo.CLASSIFY_STRING) + "\".\""
-						: "")
-					+ this.tableName + "\"",ExecuteQuery.class,e);
+
+				try {
+					writeError(outputFileName, e);
+				} catch (Exception e1) {
+				}
+
 		} finally {
+			try {
+				fileWriter.closeFileChannels();
+			} catch (Exception e) {
+			}
+			
 			CloseConn(SrcConn, preSrcStmt);
 			status = 0;
 			LogUtils.debug("[END_FETCH_DATA]" + outputFileName,ExecuteQuery.class);
 			LogUtils.info("COMPLETE UNLOAD (TABLE_NAME : " +tableName + ", ROWNUM : " + rowCnt + ") !!!",ExecuteQuery.class);
 		}
+	}
+	
+	private void writeError(String errFileName, Exception e) throws Exception {
+		File output_file = new File(errFileName+".error");
+
+		PrintStream ps = new PrintStream(output_file);
+		ps.print("ERROR :\n");
+		e.printStackTrace(ps);
+		ps.print("SQL :\n");
+		ps.print(selectQuery);
+		ps.close();
+
+		LogUtils.error(
+				"\""
+				+ ( ConfigInfo.TAR_DB_CONFIG.CHARSET != null && !ConfigInfo.TAR_DB_CONFIG.CHARSET.equals("")
+					? DevUtils.classifyString(ConfigInfo.TAR_DB_CONFIG.CHARSET,ConfigInfo.CLASSIFY_STRING) + "\".\""
+					: "")
+				+ this.tableName + "\"",ExecuteQuery.class,e);
 	}
 	
 	private String ConvertDataToString(Connection SrcConn,int columnType, ResultSet rs, int index) throws SQLException, Exception {

@@ -24,6 +24,8 @@ public class Main {
 		LogUtils.setVerbose(ConfigInfo.VERBOSE);
 		LogManager.getRootLogger().setLevel(ConfigInfo.LOG_LEVEL);
 		
+		checkConfigInfo();
+		
 		//pool 생성
 		createPool();
 		
@@ -39,6 +41,7 @@ public class Main {
 			}
 		}
 		if(ConfigInfo.SRC_DDL_EXPORT) {
+			
 			LogUtils.debug("[SRC_DDL_EXPORT_START]",Main.class);
 			DDLConverter ddlConv = DDLConverter.getInstance();
 			ddlConv.start();
@@ -82,7 +85,7 @@ public class Main {
 		//DBCPPoolManager.setupDriver(ConfigInfo.SRC_DB_CONFIG, Constant.POOLNAME.SOURCE_DDL.name(), 1);
 		DBCPPoolManager.setupDriver(ConfigInfo.SRC_DB_CONFIG, Constant.POOLNAME.SOURCE.name(), ConfigInfo.SRC_TABLE_SELECT_PARALLEL);
 		
-		if(ConfigInfo.PG_CONSTRAINT_EXTRACT || ConfigInfo.SRC_DDL_EXPORT) {
+		if(ConfigInfo.PG_CONSTRAINT_EXTRACT) {
 			DBCPPoolManager.setupDriver(ConfigInfo.TAR_DB_CONFIG, Constant.POOLNAME.TARGET.name(), 1);
 		}
 	}
@@ -91,6 +94,16 @@ public class Main {
 	private static void shutDownPool() throws Exception {
 		DBCPPoolManager.shutdownDriver(Constant.POOLNAME.SOURCE.name());
 		DBCPPoolManager.shutdownDriver(Constant.POOLNAME.TARGET.name());
+		
+	}
+	
+	private static void checkConfigInfo() throws Exception {
+		if(ConfigInfo.SRC_DDL_EXPORT) {
+			if(ConfigInfo.TAR_DB_CONFIG.CHARSET == null || ConfigInfo.TAR_DB_CONFIG.CHARSET.equals("")) {
+				System.exit(Constant.ERR_CD.CONFIG_NOT_FOUND);
+			}
+		}
+		
 		
 	}
 	

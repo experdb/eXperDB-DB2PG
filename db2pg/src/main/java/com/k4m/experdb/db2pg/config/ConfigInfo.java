@@ -122,6 +122,7 @@ public class ConfigInfo {
 				TAR_DB_CONFIG.DB_PW = prop.getProperty("TAR_PASSWORD");
 				TAR_DB_CONFIG.DBNAME = prop.getProperty("TAR_DATABASE");
 				TAR_DB_CONFIG.SCHEMA_NAME = prop.getProperty("TAR_SCHEMA");
+				TAR_DB_CONFIG.DB_TYPE = prop.getProperty("TAR_DB_TYPE");
 				TAR_DB_CONFIG.PORT = (String)propertyCheck(prop.getProperty("TAR_PORT"),"5432",String.class);
 				TAR_DB_CONFIG.CHARSET = (String)propertyCheck(prop.getProperty("TAR_DB_CHARSET"),null,String.class);
 				String outputDirectory = ((String)propertyCheck(prop.getProperty("OUTPUT_DIRECTORY"),"./",String.class)).trim().replace("\\", "/");
