@@ -44,13 +44,9 @@ public class DDLConverter {
 		DDLConverter ddlConverter = new DDLConverter();
 		switch (ConfigInfo.SRC_DB_CONFIG.DB_TYPE) {
 		case Constant.DB_TYPE.MYSQL:
-			ddlConverter.convertMapper = ConvertMapper.makeConvertMapper(MySqlConvertMapper.class);
-			break;
 		case Constant.DB_TYPE.ORA:
-			ddlConverter.convertMapper = null;
-			break;
 		case Constant.DB_TYPE.MSS:
-			ddlConverter.convertMapper = null;
+				ddlConverter.convertMapper = ConvertMapper.makeConvertMapper(MySqlConvertMapper.class);
 			break;
 		default:
 			throw new NotSupportDatabaseTypeException(ConfigInfo.SRC_DB_CONFIG.DB_TYPE);
