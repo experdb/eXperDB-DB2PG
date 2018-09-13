@@ -1,10 +1,8 @@
 package com.k4m.experdb.db2pg.convert;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 import java.text.MessageFormat;
@@ -26,7 +24,6 @@ import com.k4m.experdb.db2pg.convert.map.MySqlConvertMapper;
 import com.k4m.experdb.db2pg.convert.table.Column;
 import com.k4m.experdb.db2pg.convert.table.Table;
 import com.k4m.experdb.db2pg.convert.type.DDL_TYPE;
-import com.k4m.experdb.db2pg.db.DBCPPoolManager;
 import com.k4m.experdb.db2pg.db.DBUtils;
 import com.k4m.experdb.db2pg.db.datastructure.DBConfigInfo;
 import com.k4m.experdb.db2pg.db.datastructure.exception.DBTypeNotFoundException;
@@ -89,8 +86,7 @@ public class DDLConverter {
 
 	public void start() throws DBTypeNotFoundException, IOException, NotSupportDatabaseTypeException {
 		DDLString ddlStrVO = null;
-		List<Table> tables = ConvertDBUtils.getTableInform(tableNameList, true, Constant.POOLNAME.SOURCE.name(),
-				dbConfigInfo);
+		List<Table> tables = ConvertDBUtils.getTableInform(tableNameList, true, Constant.POOLNAME.SOURCE.name(),dbConfigInfo);
 		
 		PgDDLMaker<Table> maker = new PgDDLMaker<Table>(DDL_TYPE.CREATE);
 		Queue<DDLString> ddlQueue = new LinkedBlockingQueue<DDLString>();

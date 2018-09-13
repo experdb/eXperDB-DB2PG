@@ -10,7 +10,6 @@ import com.k4m.experdb.db2pg.config.ArgsParser;
 import com.k4m.experdb.db2pg.config.ConfigInfo;
 import com.k4m.experdb.db2pg.convert.DDLConverter;
 import com.k4m.experdb.db2pg.db.DBCPPoolManager;
-import com.k4m.experdb.db2pg.db.datastructure.DBConfigInfo;
 import com.k4m.experdb.db2pg.rebuild.MakeSqlFile;
 import com.k4m.experdb.db2pg.rebuild.TargetPgDDL;
 import com.k4m.experdb.db2pg.unload.Unloader;
