@@ -28,26 +28,18 @@ public class DBWriter {
 	}
 	
 	public void DBCPPoolManagerConn() {
-
-
-    	try {	
-    		// 풀이 존재하는지 확인 (존재: true 미존재:false)
-    		ContaintPool = DBCPPoolManager.ContaintPool(poolName);
-
-    	}catch(Exception e) {
-    		e.printStackTrace();
-    	}
 	}
 
 	public void DBWrite(String lineStr, String table_nm) {
 		try {
-			System.out.println(lineStr);
-			conn =DBCPPoolManager.getConnection("TEST");
+
+			conn = DBCPPoolManager.getConnection(poolName);
 			
 			CopyManager copyManager = new CopyManager(((DelegatingConnection<?>)conn).getInnermostDelegate().unwrap(BaseConnection.class));
-			copyIn = copyManager.copyIn("COPY \"" + ConfigInfo.TAR_DB_CONFIG.SCHEMA_NAME + "\".\"" + table_nm + "\" FROM STDIN");
+			copyIn = copyManager.copyIn("COPY " + ConfigInfo.TAR_DB_CONFIG.SCHEMA_NAME + "." + table_nm + " FROM STDIN");
 			//copyIn = copyManager.copyIn("COPY \"" + ConfigInfo.TAR_SCHEMA + "\".\"" + table_nm + "\" FROM STDIN WITH " + ConfigInfo.TAR_COPY_OPTIONS);
-			byte[] bytes = (lineStr + "\r\n").getBytes(ConfigInfo.TAR_DB_CONFIG.CHARSET);
+			//byte[] bytes = (lineStr + "\r\n").getBytes(ConfigInfo.TAR_DB_CONFIG.CHARSET);
+			byte[] bytes = (lineStr).getBytes(ConfigInfo.TAR_DB_CONFIG.CHARSET);
 			copyIn.writeToCopy(bytes, 0, bytes.length);
 			successByteCount +=bytes.length;
 			insCnt += copyIn.endCopy();

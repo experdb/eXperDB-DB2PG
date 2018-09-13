@@ -163,37 +163,7 @@ public class Unloader {
         	long estimatedTime = System.currentTimeMillis() - startTime;
         	
         		   	
-//        	for(int i=0;i<jobList.size();i++) {
-//        		LogUtils.info("COMPLETE UNLOAD (TABLE_NAME : " + jobList.get(i).getTableName() + ", ROWNUM : " + jobList.get(i).getRowCnt() + ") !!!",Unloader.class);
-//        	}
-        	try {
-	        	File sqlFile = new File(ConfigInfo.OUTPUT_DIRECTORY+"import.sql");
-	        	FileOutputStream fos = new FileOutputStream(sqlFile);
-	        	fos.write(String.format("SET client_encoding TO '%s';\n\n",ConfigInfo.TAR_DB_CONFIG.CHARSET).getBytes(ConfigInfo.TAR_DB_CONFIG.CHARSET));
-	        	fos.write("\\set ON_ERROR_STOP OFF\n\n".getBytes(ConfigInfo.TAR_DB_CONFIG.CHARSET));
-	        	fos.write("\\set ON_ERROR_ROLLBACK OFF\n\n".getBytes(ConfigInfo.TAR_DB_CONFIG.CHARSET));
-	        	fos.write("\\timing\n\n".getBytes(ConfigInfo.TAR_DB_CONFIG.CHARSET));
-	        	for(ExecuteDataTransfer ExecuteDataTransfer : jobList){
-//	        		fos.write("BEGIN;\n".getBytes(charset));
-//	        		fos.write("\\echo [COPY_START] `date +%Y-%m-%d_%k:%M:%S`\n".getBytes(ConfigInfo.TAR_DB_CHARSET));
-	        		//fos.write(String.format("\\echo TABLE_NAME(ROW_COUNT) >>> %s.%s(%d)\n"
-	        		//		,DevUtils.classifyString(ConfigInfo.TAR_DB_CONFIG.SCHEMA_NAME,ConfigInfo.CLASSIFY_STRING)
-	        				///,DevUtils.classifyString(executeQuery.getTableName()
-	        				//,ConfigInfo.CLASSIFY_STRING),executeQuery.getRowCnt()).getBytes(ConfigInfo.TAR_DB_CONFIG.CHARSET));
-	        		//fos.write(String.format("ALTER TABLE %s DISABLE TRIGGER USER;\n\n",executeQuery.getTableName()).getBytes(ConfigInfo.TAR_DB_CONFIG.CHARSET));
-	        		//fos.write(String.format("\\i ./%s",executeQuery.getTableName().replace("$", "-")+".sql\n\n").getBytes(ConfigInfo.TAR_DB_CONFIG.CHARSET));
-	        		//fos.write(String.format("ALTER TABLE %s ENABLE TRIGGER USER;\n",executeQuery.getTableName()).getBytes(ConfigInfo.TAR_DB_CONFIG.CHARSET));
-//	        		fos.write("\\echo [COPY_END] `date +%Y-%m-%d_%k:%M:%S`\n\n".getBytes(ConfigInfo.TAR_DB_CHARSET));
-//	        		fos.write("\\echo  \n".getBytes(ConfigInfo.TAR_DB_CHARSET));
-//	        		fos.write("\\echo  \n".getBytes(ConfigInfo.TAR_DB_CHARSET));
-//	        		fos.write("COMMIT;\n\\echo \n\n".getBytes(charset));
-	        	}
-	        	fos.flush();
-	        	fos.close();
-	        	LogUtils.debug("[MAKE_ALL_IMPORT_SCRIPT_SUCCESS]",Unloader.class);
-        	} catch (Exception e) {
-        		LogUtils.error("[MAKE_ALL_IMPORT_SCRIPT_FAIL]",Unloader.class,e);
-        	}
+
         	LogUtils.debug("\n",Unloader.class);
         	LogUtils.info("[SUMMARY_INFO]",Unloader.class);
         	

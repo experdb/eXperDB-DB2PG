@@ -56,7 +56,7 @@ public class ExecuteDataTransfer implements Runnable{
 	private DBConfigInfo dbConfigInfo;
 
 	private TestFileWriter writer;
-	private ByteBuffer byteBuffer;
+	//private ByteBuffer byteBuffer;
 	private StopWatch stopWatch = new StopWatch();
 	
 	public ExecuteDataTransfer(String srcPoolName, String selectQuery,String outputFileName,DBConfigInfo dbConfigInfo){
@@ -67,7 +67,8 @@ public class ExecuteDataTransfer implements Runnable{
 		this.outputFileName = ConfigInfo.OUTPUT_DIRECTORY
 								+ DevUtils.classifyString(outputFileName,ConfigInfo.CLASSIFY_STRING).replace("$", "-")+".sql";
 		this.dbConfigInfo = dbConfigInfo;
-		this.byteBuffer = ByteBuffer.allocateDirect(ConfigInfo.BUFFER_SIZE);
+
+		//this.byteBuffer = ByteBuffer.allocateDirect(ConfigInfo.BUFFER_SIZE);
 		this.success = true;
 	}
 	
@@ -169,42 +170,42 @@ public class ExecuteDataTransfer implements Runnable{
         	
 			
         	while (rs.next()){
-        		if(rowCnt == 312000) {
-        			System.out.println("rowCnt");
-        		}
-        		
+
         		for (int i = 1; i <= rsmd.getColumnCount(); i++) {	
         			int type = rsmd.getColumnType(i);
         			
-            		if(rowCnt == 312000) {
-            			System.out.println(ConvertDataToString(SrcConn,type, rs, i));
-            		}
-
         			bf.append(ConvertDataToString(SrcConn,type, rs, i));
         			
         			if (i != rsmd.getColumnCount()) {
         				bf.append("\t");
         			}
         		}
-        		bf.append("\n");
+        		
+        		bf.append(Constant.R);
         		rowCnt += 1;
+        		
+        		ByteBuffer byteBuffer = ByteBuffer.allocateDirect(ConfigInfo.BUFFER_SIZE);
 
         		if(rowCnt % ConfigInfo.STATEMENT_FETCH_SIZE == 0 && bf.length() > byteBuffer.capacity()) {
         			
         			if(ConfigInfo.DB_WRITER_MODE) {
-        				
-        			}
-        			
-        			if(ConfigInfo.FILE_WRITER_MODE) {
+        				dbWriter.DBWrite(bf.toString(), this.tableName);
+        			} else if(ConfigInfo.FILE_WRITER_MODE) {
         				fileWriter.dataWriteToFile(bf.toString(), this.tableName);
         			}
         			
-        			bf.delete(0, bf.length());
+        			bf.setLength(0);
         		}
         	}
         	rs.close();
+        	
         	if (bf.length() != 0){
-        		fileWriter.dataWriteToFile(bf.toString(), this.tableName);
+        		
+    			if(ConfigInfo.DB_WRITER_MODE) {
+    				dbWriter.DBWrite(bf.toString(), this.tableName);
+    			} else if(ConfigInfo.FILE_WRITER_MODE) {
+    				fileWriter.dataWriteToFile(bf.toString(), this.tableName);
+    			}
         	}
 			
         	
@@ -330,10 +331,7 @@ public class ExecuteDataTransfer implements Runnable{
 						while((n = reader.read(buffer)) != -1) {
 							String s = DevUtils.replaceEach(new String(Arrays.copyOfRange(buffer, 0, n)), DevUtils.BackSlashSequence, DevUtils.BackSlashSequenceReplace);
 							bf.append(s);
-							
-							if(bf.length() > byteBuffer.capacity()) {
-								//divideProcessing();
-							}
+
 						}
 						reader.close();
 						return "";
@@ -369,9 +367,7 @@ public class ExecuteDataTransfer implements Runnable{
 								buffeOutr.flush();
 								bf.append(DatatypeConverter.printHexBinary(buffeOutr.toByteArray()));
 			        			buffeOutr.reset();
-			        			if(bf.length() > byteBuffer.capacity()) {
-			        				//divideProcessing();
-			        			}
+
 							}
 						}
 						buffeOutr.close();	
@@ -402,9 +398,7 @@ public class ExecuteDataTransfer implements Runnable{
 						buffeOutr.flush();
 						bf.append(DatatypeConverter.printHexBinary(buffeOutr.toByteArray()));
 	        			buffeOutr.reset();
-	        			if(bf.length() > byteBuffer.capacity()) {
-	        				//divideProcessing();
-	        			}
+
 					}
 					
 					buffeOutr.close();	
@@ -457,9 +451,7 @@ public class ExecuteDataTransfer implements Runnable{
 						while((n = reader.read(buffer)) != -1) {
 							String s = DevUtils.replaceEach(new String(Arrays.copyOfRange(buffer, 0, n)), DevUtils.BackSlashSequence, DevUtils.BackSlashSequenceReplace);
 							bf.append(s);
-							if(bf.length() > byteBuffer.capacity()) {
-								//divideProcessing();
-							}
+
 						}
 						reader.close();
 						return "";

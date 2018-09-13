@@ -85,7 +85,7 @@ public class Main {
 		//DBCPPoolManager.setupDriver(ConfigInfo.SRC_DB_CONFIG, Constant.POOLNAME.SOURCE_DDL.name(), 1);
 		DBCPPoolManager.setupDriver(ConfigInfo.SRC_DB_CONFIG, Constant.POOLNAME.SOURCE.name(), ConfigInfo.SRC_TABLE_SELECT_PARALLEL);
 		
-		if(ConfigInfo.PG_CONSTRAINT_EXTRACT) {
+		if(ConfigInfo.PG_CONSTRAINT_EXTRACT || ConfigInfo.SRC_EXPORT) {
 			DBCPPoolManager.setupDriver(ConfigInfo.TAR_DB_CONFIG, Constant.POOLNAME.TARGET.name(), 1);
 		}
 	}
