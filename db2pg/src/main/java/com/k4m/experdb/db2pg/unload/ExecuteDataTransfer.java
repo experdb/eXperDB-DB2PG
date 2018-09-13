@@ -111,13 +111,14 @@ public class ExecuteDataTransfer implements Runnable{
 		Connection conn = DBCPPoolManager.getConnection(poolName);
 		
 		try {
-			String sql =  CreateDbStmt.GetTruncateTblDDL(DBCPPoolManager.getConfigInfo(srcPoolName).DB_TYPE, ConfigInfo.TAR_DB_CONFIG.SCHEMA_NAME, strTableName);
+			String sql =  CreateDbStmt.GetTruncateTblDDL(DBCPPoolManager.getConfigInfo(poolName).DB_TYPE, ConfigInfo.TAR_DB_CONFIG.SCHEMA_NAME, strTableName);
 		
 			psmt = conn.prepareStatement(sql);
 			
 			psmt.execute();
+
 		} catch(Exception e) {
-			
+			conn.rollback();
 		} finally {
 			CloseConn(conn, psmt);
 		}
@@ -158,6 +159,10 @@ public class ExecuteDataTransfer implements Runnable{
         	LogUtils.debug(String.format("[%s-CREATE_BUFFEREDOUTPUTSTREAM]",this.tableName),ExecuteQuery.class);
         	LogUtils.debug("[START_FETCH_DATA]" + outputFileName,ExecuteQuery.class);
         	
+        	if(this.tableName.equals("TAXCARD_MERCHINFO")) {
+        		System.out.println("===== " + this.tableName);
+        	}
+        	
         	if (ConfigInfo.TRUNCATE) {
         		execTruncTable(Constant.POOLNAME.TARGET.name(), this.tableName);
         	}
@@ -189,7 +194,7 @@ public class ExecuteDataTransfer implements Runnable{
         		
         		ByteBuffer byteBuffer = ByteBuffer.allocateDirect(ConfigInfo.BUFFER_SIZE);
 
-        		if(rowCnt % ConfigInfo.STATEMENT_FETCH_SIZE == 0 && bf.length() > byteBuffer.capacity()) {
+        		if((rowCnt % ConfigInfo.STATEMENT_FETCH_SIZE == 0) || (bf.length() > byteBuffer.capacity())) {
         			
         			if(ConfigInfo.DB_WRITER_MODE) {
         				dbWriter.DBWrite(bf.toString(), this.tableName);

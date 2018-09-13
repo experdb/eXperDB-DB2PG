@@ -30,13 +30,15 @@ public class CreateDbStmt {
 		String DDL = "";
 		
 		switch(DB_TYPE){
-			case Constant.DB_TYPE.ORA : case Constant.DB_TYPE.POG : case Constant.DB_TYPE.MSS : case Constant.DB_TYPE.TBR : 
+			case Constant.DB_TYPE.ORA : case Constant.DB_TYPE.MSS : case Constant.DB_TYPE.TBR : 
 				DDL = "TRUNCATE TABLE \"" + SCHEMA_NM + "\".\"" + TABLE_NM + "\"";
 				break;
 			case Constant.DB_TYPE.DB2 :
 				DDL = "TRUNCATE TABLE " + SCHEMA_NM + "." + TABLE_NM + " IMMEDIATE";
 				break;
 			case Constant.DB_TYPE.ASE :
+				DDL = "TRUNCATE TABLE " + SCHEMA_NM + "." + TABLE_NM;
+			case Constant.DB_TYPE.POG :
 				DDL = "TRUNCATE TABLE " + SCHEMA_NM + "." + TABLE_NM;
 			default:
 				DDL = "TRUNCATE TABLE " + SCHEMA_NM + "." + TABLE_NM;
