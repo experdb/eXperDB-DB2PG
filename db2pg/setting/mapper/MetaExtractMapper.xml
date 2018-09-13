@@ -2,7 +2,7 @@
 <!DOCTYPE mapper
      PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
      "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-
+     
 <mapper namespace="com.k4m.experdb.db2pg.mapper.MetaExtractMapper">
 	<select id="getTableNames" parameterType="map" resultType="java.lang.String" databaseId="ORA">
 		SELECT OBJECT_NAME as TABLE_NAME FROM ALL_OBJECTS 
@@ -22,6 +22,145 @@
 	<select id="getSourceTableData" parameterType="map" resultType="map" databaseId="ORA">
 		SELECT * FROM ${SCHEMA}${TABLE} ${WHERE}
 	</select>
+	<select id="getTableInform" parameterType="map" resultType="com.k4m.experdb.db2pg.common.LowerKeyMap" databaseId="ORA">
+		SELECT UT.OBJECT_NAME AS TABLE_NAME,
+               NVL(SUBSTRB(UTC.COMMENTS,1,500),'') AS TABLE_COMMENT,
+               UT.OWNER AS SCHEMA_NAME
+        FROM   ALL_OBJECTS UT, 
+               ALL_TAB_COMMENTS UTC
+         WHERE UT.OBJECT_NAME = UTC.TABLE_NAME
+         AND UT.OWNER = UTC.OWNER
+         --EAXM AND UT.OBJECT_TYPE IN ('TABLE','VIEW','MATERIALIZED VIEW')
+         AND UT.OBJECT_TYPE IN ('TABLE')
+         AND UT.OWNER =#{TABLE_SCHEMA}
+         <if test="TABLE_LIST != '' and TABLE_LIST != null">
+         	AND UT.OBJECT_NAME IN ( ${TABLE_LIST} )
+         </if>
+         AND UT.OBJECT_NAME NOT LIKE 'BIN$%'
+         AND UT.OWNER NOT IN ('SCOTT',
+                              'OWBSYS_AUDIT',
+                              'OWBSYS',
+                              'APEX_030200',
+                              'FLOWS_FILES',
+                              'APEX_PUBLIC_USER',
+                              'MGMT_VIEW',
+                              'SYSMAN',
+                              'SPATIAL_CSW_ADMIN_USR',
+                              'SPATIAL_WFS_ADMIN_USR',
+                              'MDDATA',
+                              'OLAPSYS',
+                              'ORDSYS',
+                              'ORDDATA',
+                              'ORDPLUGINS',
+                              'MDSYS',
+                              'SI_INFORMTN_SCHEMA',
+                              'XS$NULL',
+                              'ANONYMOUS',
+                              'XDB',
+                              'CTXSYS',
+                              'EXFSYS',
+                              'WMSYS',
+                              'APPQOSSYS',
+                              'DBSNMP',
+                              'ORACLE_OCM',
+                              'DIP',
+                              'OUTLN',
+                              'SYSTEM',
+                              'SYS',
+                              --EAXM 'PM',
+                              'BI',
+                              'IX',
+                              'OE',
+                              'HR',
+                              'SH')
+		ORDER BY SCHEMA_NAME, TABLE_NAME
+	</select>
+	<select id="getColumnInform" parameterType="map" resultType="com.k4m.experdb.db2pg.common.LowerKeyMap" databaseId="ORA">
+	           SELECT USER AS SCHEMA_NM,
+                   UTC.TABLE_NAME AS TBL_ENM,
+                   NVL(UTC.COLUMN_NAME,'') AS COL_ENM,
+                   UTC.COLUMN_ID AS COL_SNO,
+                   NVL(SUBSTRB(UCT.COMMENTS,1,500),'') AS COL_KNM,
+                   NVL((SELECT 'Y' AS PK_YN
+                          FROM ALL_CONSTRAINTS A, ALL_CONS_COLUMNS B
+                         WHERE A.CONSTRAINT_TYPE='P'
+                           AND A.OWNER = B.OWNER
+                           AND A.TABLE_NAME=UTC.TABLE_NAME
+                           AND A.TABLE_NAME=B.TABLE_NAME
+                           AND A.CONSTRAINT_NAME=B.CONSTRAINT_NAME
+                           AND B.COLUMN_NAME=UTC.COLUMN_NAME
+                           AND A.OWNER = UTC.OWNER),'N') AS PK_YN,
+                   UTC.DATA_TYPE AS DATA_TYPE,
+                   CASE WHEN UTC.DATA_TYPE='VARCHAR2' OR UTC.DATA_TYPE='VARCHAR' OR UTC.DATA_TYPE='CHAR'
+                           THEN UTC.DATA_LENGTH
+                        WHEN UTC.DATA_TYPE = 'NUMBER' AND UTC.DATA_PRECISION > 0 AND UTC.DATA_SCALE >= 0
+                           THEN UTC.DATA_PRECISION
+                        WHEN UTC.DATA_TYPE = 'NUMBER'
+                           THEN NULL
+                        WHEN UTC.DATA_TYPE='CLOB' OR UTC.DATA_TYPE='BLOB' OR UTC.DATA_TYPE='LONG' OR UTC.DATA_TYPE LIKE '%ROW%'
+                           THEN NULL
+                        ELSE DATA_LENGTH
+                    END AS DATA_PZN_LEN, 
+                    CASE WHEN UTC.DATA_TYPE = 'NUMBER' AND UTC.DATA_PRECISION > 0 AND UTC.DATA_SCALE > 0
+                          THEN UTC.DATA_SCALE
+                     END AS DATA_DCL_LEN, 
+                   UTC.NULLABLE AS NULL_YN,
+                   --NVL(UTC.DATA_DEFAULT,'') AS DEF_VL,
+                   UTC.OWNER AS GRANTED_SCHEMA_NM
+              FROM ALL_TAB_COLUMNS UTC, 
+                   ALL_COL_COMMENTS UCT
+             WHERE UTC.TABLE_NAME = UCT.TABLE_NAME
+               AND UTC.TABLE_NAME NOT LIKE 'BIN$%'
+               AND UTC.COLUMN_NAME = UCT.COLUMN_NAME(+)
+               AND UTC.OWNER = UCT.OWNER
+               AND UTC.OWNER = #{TABLE_SCHEMA}
+               AND UTC.TABLE_NAME = #{TABLE_NAME}
+               AND UTC.OWNER NOT IN ('SCOTT',
+                                    'OWBSYS_AUDIT',
+                                    'OWBSYS',
+                                    'APEX_030200',
+                                    'FLOWS_FILES',
+                                    'APEX_PUBLIC_USER',
+                                    'MGMT_VIEW',
+                                    'SYSMAN',
+                                    'SPATIAL_CSW_ADMIN_USR',
+                                    'SPATIAL_WFS_ADMIN_USR',
+                                    'MDDATA',
+                                    'OLAPSYS',
+                                    'ORDSYS',
+                                    'ORDDATA',
+                                    'ORDPLUGINS',
+                                    'MDSYS',
+                                    'SI_INFORMTN_SCHEMA',
+                                    'XS$NULL',
+                                    'ANONYMOUS',
+                                    'XDB',
+                                    'CTXSYS',
+                                    'EXFSYS',
+                                    'WMSYS',
+                                    'APPQOSSYS',
+                                    'DBSNMP',
+                                    'ORACLE_OCM',
+                                    'DIP',
+                                    'OUTLN',
+                                    'SYSTEM',
+                                    'SYS',
+                                    --'PM',
+                                    'BI',
+                                    'IX',
+                                    'OE',
+                                    'HR',
+                                    'SH')
+             ORDER BY GRANTED_SCHEMA_NM, TBL_ENM, COL_SNO
+	</select>
+	<select id="getConstraintInform" parameterType="map" resultType="map" databaseId="ORA">
+		
+	</select>
+	<select id="getKeyInform" parameterType="map" resultType="map" databaseId="ORA">
+	
+	</select>
+	
+	
 	
 	<select id="getTableNames" parameterType="map" resultType="java.lang.String" databaseId="MSS">
 		SELECT name as table_name

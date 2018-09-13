@@ -8,7 +8,6 @@ import java.util.Map;
 
 import com.k4m.experdb.db2pg.common.Constant;
 import com.k4m.experdb.db2pg.common.LogUtils;
-import com.k4m.experdb.db2pg.config.ConfigInfo;
 import com.k4m.experdb.db2pg.convert.table.Column;
 import com.k4m.experdb.db2pg.convert.table.Table;
 import com.k4m.experdb.db2pg.convert.table.key.ForeignKey;
@@ -63,6 +62,7 @@ public class ConvertDBUtils {
 			MetaExtractWorker mew = new MetaExtractWorker(srcPoolName, new MetaExtractWork(WORK_TYPE.GET_TABLE_INFORM, params));
 			mew.run();
 			List<Map<String,Object>> results = (List<Map<String,Object>>)mew.getListResult();
+			LogUtils.info("[GET_TABLE_INFORM]"+results,ConvertDBUtils.class);
 			Object obj = null;
 			for (Map<String,Object> result : results) {
 				Table table = new Table();
@@ -107,6 +107,7 @@ public class ConvertDBUtils {
 			MetaExtractWorker mew = new MetaExtractWorker(srcPoolName, new MetaExtractWork(WORK_TYPE.GET_COLUMN_INFORM, params));
 			mew.run();
 			List<Map<String,Object>> results = (List<Map<String,Object>>)mew.getListResult();
+			LogUtils.info("[GET_SET_COLUMN_INFORM]"+results,ConvertDBUtils.class);
 			Object obj = null;
         	for (Map<String,Object> result : results) {
         		Column column = new Column();
