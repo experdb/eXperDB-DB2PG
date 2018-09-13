@@ -23,7 +23,7 @@ public class FileWriter {
 	}
 	
 	public boolean dataWriteToFile(String lineStr, String table_nm) throws IOException {
-		byte[] inputBytes = (lineStr + "\r\n").getBytes();
+		byte[] inputBytes = (lineStr).getBytes();
 		ByteBuffer byteBuffer = ByteBuffer.wrap(inputBytes);
 		try {
 			///if (lineStr.contains("시스템명")) {

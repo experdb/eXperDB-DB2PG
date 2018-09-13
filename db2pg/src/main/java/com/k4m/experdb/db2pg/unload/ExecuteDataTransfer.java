@@ -33,6 +33,7 @@ import javax.xml.bind.DatatypeConverter;
 import org.apache.commons.lang3.time.StopWatch;
 
 import com.k4m.experdb.db2pg.common.Constant;
+import com.k4m.experdb.db2pg.common.CreateDbStmt;
 import com.k4m.experdb.db2pg.common.DevUtils;
 import com.k4m.experdb.db2pg.common.LogUtils;
 import com.k4m.experdb.db2pg.config.ConfigInfo;
@@ -103,6 +104,25 @@ public class ExecuteDataTransfer implements Runnable{
 		return rowCnt;
 	}
 	
+	
+	private void execTruncTable(String poolName, String strTableName) throws Exception {
+		PreparedStatement psmt = null;
+		
+		Connection conn = DBCPPoolManager.getConnection(poolName);
+		
+		try {
+			String sql =  CreateDbStmt.GetTruncateTblDDL(DBCPPoolManager.getConfigInfo(srcPoolName).DB_TYPE, ConfigInfo.TAR_DB_CONFIG.SCHEMA_NAME, strTableName);
+		
+			psmt = conn.prepareStatement(sql);
+			
+			psmt.execute();
+		} catch(Exception e) {
+			
+		} finally {
+			CloseConn(conn, psmt);
+		}
+		
+	}
 
 	@Override
 	public void run(){
@@ -138,27 +158,10 @@ public class ExecuteDataTransfer implements Runnable{
         	LogUtils.debug(String.format("[%s-CREATE_BUFFEREDOUTPUTSTREAM]",this.tableName),ExecuteQuery.class);
         	LogUtils.debug("[START_FETCH_DATA]" + outputFileName,ExecuteQuery.class);
         	
- 
-/*        	bf.append("SET client_encoding TO '");
-        	bf.append(ConfigInfo.TAR_DB_CONFIG.CHARSET);
-        	bf.append("';\n\n");
-        	bf.append("\\set ON_ERROR_STOP OFF\n\n");
-        	bf.append("\\set ON_ERROR_ROLLBACK OFF\n\n");
         	if (ConfigInfo.TRUNCATE) {
-            	bf.append("TRUNCATE TABLE \"");
-            	if(ConfigInfo.TAR_DB_CONFIG.SCHEMA_NAME != null && !ConfigInfo.TAR_DB_CONFIG.SCHEMA_NAME.equals("")) {
-            		bf.append(ConfigInfo.TAR_DB_CONFIG.SCHEMA_NAME);
-            		bf.append("\".\"");
-            	}
-            	bf.append(DevUtils.classifyString(this.tableName,ConfigInfo.CLASSIFY_STRING));
-            	bf.append("\";\n\n");
-            	LogUtils.debug("[ADD_TRUNCATE_COMMAND] " + this.tableName,ExecuteQuery.class);
-        	} else {
-        		LogUtils.debug("[NO_TRUNCATE_COMMAND] " + this.tableName,ExecuteQuery.class);
-        	}*/
+        		execTruncTable(Constant.POOLNAME.TARGET.name(), this.tableName);
+        	}
 
-        	
-        	
 			if(ConfigInfo.DB_WRITER_MODE) {
 				dbWriter = new DBWriter(Constant.POOLNAME.TARGET.name());
 			}
@@ -468,7 +471,8 @@ public class ExecuteDataTransfer implements Runnable{
 			throw e;
 		}
 	}
-	void CloseConn(Connection conn, PreparedStatement pStmt) {
+	
+	private void CloseConn(Connection conn, PreparedStatement pStmt) {
 		try{
 			if(pStmt != null) {
 				pStmt.close();
@@ -483,7 +487,7 @@ public class ExecuteDataTransfer implements Runnable{
 		}
 	}
 	
-	void CloseConn(Connection conn, Statement stmt) {
+	private void CloseConn(Connection conn, Statement stmt) {
 		try{
 			if(stmt != null) {
 				stmt.close();
