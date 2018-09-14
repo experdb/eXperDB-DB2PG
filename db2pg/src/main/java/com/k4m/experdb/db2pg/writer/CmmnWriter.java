@@ -47,7 +47,12 @@ public class CmmnWriter implements Writer{
 			fw.dataWriteToFile(lineStr, table_nm);
 			// DBWriter
 		} else {
-			dw.DBWrite(lineStr, table_nm);
+			try {
+				dw.DBWrite(lineStr, table_nm);
+			} catch (Exception e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 		}
 		return true;
 	}

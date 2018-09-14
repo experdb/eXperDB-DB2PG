@@ -159,9 +159,6 @@ public class ExecuteDataTransfer implements Runnable{
         	LogUtils.debug(String.format("[%s-CREATE_BUFFEREDOUTPUTSTREAM]",this.tableName),ExecuteQuery.class);
         	LogUtils.debug("[START_FETCH_DATA]" + outputFileName,ExecuteQuery.class);
         	
-        	if(this.tableName.equals("TAXCARD_MERCHINFO")) {
-        		System.out.println("===== " + this.tableName);
-        	}
         	
         	if (ConfigInfo.TRUNCATE) {
         		execTruncTable(Constant.POOLNAME.TARGET.name(), this.tableName);
@@ -228,7 +225,7 @@ public class ExecuteDataTransfer implements Runnable{
 					writeError(outputFileName, e);
 				} catch (Exception e1) {
 				}
-
+				LogUtils.error("EXCEPTION!!!!", ExecuteDataTransfer.class,e);
 		} finally {
 			try {
 				fileWriter.closeFileChannels();

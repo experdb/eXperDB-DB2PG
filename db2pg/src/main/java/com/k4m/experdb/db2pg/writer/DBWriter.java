@@ -30,7 +30,7 @@ public class DBWriter {
 	public void DBCPPoolManagerConn() {
 	}
 
-	public void DBWrite(String lineStr, String table_nm) {
+	public void DBWrite(String lineStr, String table_nm) throws Exception {
 		try {
 
 			conn = DBCPPoolManager.getConnection(poolName);
@@ -52,6 +52,9 @@ public class DBWriter {
 				ee.printStackTrace();
 			}
 			e.printStackTrace();
+			
+			throw e;
+
 		}finally{
 			try {					
 				conn.commit();					
