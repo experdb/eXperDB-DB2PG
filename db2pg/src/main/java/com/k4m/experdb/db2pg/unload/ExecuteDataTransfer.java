@@ -229,6 +229,7 @@ public class ExecuteDataTransfer implements Runnable{
         			
         			if(ConfigInfo.FILE_WRITER_MODE) {
         				fileWriter.dataWriteToFile(bf.toString(), this.tableName);
+        				intRunNo = 0;
         			}
         			
         			lngPreRunCnt = rowCnt;
