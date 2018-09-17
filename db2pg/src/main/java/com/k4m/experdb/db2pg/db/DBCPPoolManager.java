@@ -119,7 +119,9 @@ public class DBCPPoolManager {
 	        
 	        // ConnectionFactory의 래퍼 클래스인 PoolableConnectionFactory를 생성
 	        PoolableConnectionFactory poolableConnectionFactory = new PoolableConnectionFactory(connectionFactory, null);	        
-	        
+	        if (configInfo.DB_TYPE.equals(Constant.DB_TYPE.CUB)) {
+	        	poolableConnectionFactory.setValidationQuery("SELECT 1 FROM db_root");
+	        }
 	        // 커넥션 풀로 사용할 commons-collections의 genericOjbectPool을 생성 
 	        GenericObjectPool<PoolableConnection> connectionPool = new GenericObjectPool<PoolableConnection>(poolableConnectionFactory);
 	        
@@ -128,9 +130,9 @@ public class DBCPPoolManager {
 	        // Active하지 않으면 해당 Connection을 다시 생성합니다
 	        //CUBRID는 setTestOnBorrow 속성 시에 Cannot get a connection, pool error: Unable to validate object 에러 발생
 	        
-	        if (!configInfo.DB_TYPE.equals("CUB")) {
+//	        if (!configInfo.DB_TYPE.equals("CUB")) {
 		        connectionPool.setTestOnBorrow(true);	
-	        }
+//	        }
 	        
 	        connectionPool.setTestOnReturn(true);
 	        connectionPool.setTestWhileIdle(true);
