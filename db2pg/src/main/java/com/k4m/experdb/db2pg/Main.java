@@ -29,16 +29,10 @@ public class Main {
 		createPool();
 		
 		LogUtils.info("[DB2PG_START]",Main.class);
-		File dir = new File(ConfigInfo.OUTPUT_DIRECTORY);
-		if(!dir.exists()){
-			LogUtils.info(String.format("%s directory is not existed.", dir.getPath()), Main.class);
-			if(dir.mkdirs()) {
-				LogUtils.info(String.format("Success to create %s directory.", dir.getPath()), Main.class);
-			} else {
-				LogUtils.error(String.format("Failed to create %s directory.", dir.getPath()), Main.class);
-				System.exit(Constant.ERR_CD.FAILED_CREATE_DIR_ERR);
-			}
-		}
+		
+		//check output directory 
+		checkDirectory(ConfigInfo.OUTPUT_DIRECTORY);
+		
 		if(ConfigInfo.SRC_DDL_EXPORT) {
 			
 			LogUtils.debug("[SRC_DDL_EXPORT_START]",Main.class);
@@ -56,21 +50,9 @@ public class Main {
 		
 		if(ConfigInfo.PG_CONSTRAINT_EXTRACT) {
 			LogUtils.debug("[PG_CONSTRAINT_EXTRACT_START]",Main.class);
-			TargetPgDDL dbInform = new TargetPgDDL();
-			dir = new File(ConfigInfo.OUTPUT_DIRECTORY+"rebuild/");
-			if(!dir.exists()){
-				LogUtils.info(String.format("%s directory is not existed.", dir.getPath()), Main.class);
-				if(dir.mkdirs()) {
-					LogUtils.info(String.format("Success to create %s directory.", dir.getPath()), Main.class);
-				} else {
-					LogUtils.error(String.format("Failed to create %s directory.", dir.getPath()), Main.class);
-					System.exit(Constant.ERR_CD.FAILED_CREATE_DIR_ERR);
-				}
-			}
-			MakeSqlFile.listToSqlFile(ConfigInfo.OUTPUT_DIRECTORY + "rebuild/fk_drop.sql", dbInform.getFkDropList());
-			MakeSqlFile.listToSqlFile(ConfigInfo.OUTPUT_DIRECTORY + "rebuild/idx_drop.sql", dbInform.getIdxDropList());
-			MakeSqlFile.listToSqlFile(ConfigInfo.OUTPUT_DIRECTORY + "rebuild/idx_create.sql", dbInform.getIdxCreateList());
-			MakeSqlFile.listToSqlFile(ConfigInfo.OUTPUT_DIRECTORY + "rebuild/fk_create.sql", dbInform.getFkCreateList());
+			
+			makeSqlFile();
+
 			LogUtils.debug("[PG_CONSTRAINT_EXTRACT_END]",Main.class);
 		}
 		
@@ -106,6 +88,31 @@ public class Main {
 		
 	}
 	
+	private static File checkDirectory(String strDirectory) throws Exception {
+		File dir = new File(strDirectory);
+		if(!dir.exists()){
+			LogUtils.info(String.format("%s directory is not existed.", dir.getPath()), Main.class);
+			if(dir.mkdirs()) {
+				LogUtils.info(String.format("Success to create %s directory.", dir.getPath()), Main.class);
+			} else {
+				LogUtils.error(String.format("Failed to create %s directory.", dir.getPath()), Main.class);
+				System.exit(Constant.ERR_CD.FAILED_CREATE_DIR_ERR);
+			}
+		}
+		
+		return dir;
+	}
 	
+	private static void makeSqlFile() throws Exception {
+		
+		checkDirectory(ConfigInfo.OUTPUT_DIRECTORY+"rebuild/");
+		
+		TargetPgDDL dbInform = new TargetPgDDL();
+		
+		MakeSqlFile.listToSqlFile(ConfigInfo.OUTPUT_DIRECTORY + "rebuild/fk_drop.sql", dbInform.getFkDropList());
+		MakeSqlFile.listToSqlFile(ConfigInfo.OUTPUT_DIRECTORY + "rebuild/idx_drop.sql", dbInform.getIdxDropList());
+		MakeSqlFile.listToSqlFile(ConfigInfo.OUTPUT_DIRECTORY + "rebuild/idx_create.sql", dbInform.getIdxCreateList());
+		MakeSqlFile.listToSqlFile(ConfigInfo.OUTPUT_DIRECTORY + "rebuild/fk_create.sql", dbInform.getFkCreateList());
+	}
 	
 }
