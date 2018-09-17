@@ -25,8 +25,6 @@ import java.sql.Types;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 import javax.xml.bind.DatatypeConverter;
 
@@ -127,10 +125,11 @@ public class ExecuteDataTransfer implements Runnable{
 
 	@Override
 	public void run(){
-		ExecutorService executorService = Executors.newFixedThreadPool(1);
+		//ExecutorService executorService = Executors.newFixedThreadPool(1);
 		
 		Connection SrcConn = null;
 		PreparedStatement preSrcStmt = null;
+		ResultSet rs = null;
 		FileWriter fileWriter = null;
 		DBWriter dbWriter = null;
 		
@@ -146,7 +145,7 @@ public class ExecuteDataTransfer implements Runnable{
 			}
 			
 			preSrcStmt.setFetchSize(ConfigInfo.STATEMENT_FETCH_SIZE);
-        	ResultSet rs = preSrcStmt.executeQuery();
+        	rs = preSrcStmt.executeQuery();
         	
         	List<String> columnNames = new ArrayList<String>();
         	ResultSetMetaData rsmd = rs.getMetaData();	
@@ -173,32 +172,66 @@ public class ExecuteDataTransfer implements Runnable{
 			}
         	
         	
+			long lngPreRunCnt = 0;
+			int intErrLine = -1;
+			int intRunNo = 0;
 			
         	while (rs.next()){
-
-        		for (int i = 1; i <= rsmd.getColumnCount(); i++) {	
-        			int type = rsmd.getColumnType(i);
-        			
-        			bf.append(ConvertDataToString(SrcConn,type, rs, i));
-        			
-        			if (i != rsmd.getColumnCount()) {
-        				bf.append("\t");
-        			}
-        		}
-        		
-        		bf.append(Constant.R);
         		rowCnt += 1;
+        		intRunNo += 1;
+        		
+        		if(intErrLine == intRunNo) {
+        			StringBuffer bfErrLine = new StringBuffer();
+        			
+	        		for (int i = 1; i <= rsmd.getColumnCount(); i++) {	
+	        			int type = rsmd.getColumnType(i);
+	        			
+	        			bfErrLine.append(ConvertDataToString(SrcConn,type, rs, i));
+	        			
+	        			if (i != rsmd.getColumnCount()) {
+	        				bfErrLine.append("\t");
+	        			}
+	        		}
+        			fileWriter.badFileCreater(ConfigInfo.OUTPUT_DIRECTORY + this.tableName + ".bad");
+        			fileWriter.badFileWrite(bfErrLine.toString());
+        			
+        			LogUtils.debug("[Err Line Skip] ErrLine : " + rowCnt,ExecuteQuery.class);
+        		} else {
+	        		for (int i = 1; i <= rsmd.getColumnCount(); i++) {	
+	        			int type = rsmd.getColumnType(i);
+	        			
+	        			bf.append(ConvertDataToString(SrcConn,type, rs, i));
+	        			
+	        			if (i != rsmd.getColumnCount()) {
+	        				bf.append("\t");
+	        			}
+	        		}
+	        		bf.append(Constant.R);
+        		}
+
         		
         		ByteBuffer byteBuffer = ByteBuffer.allocateDirect(ConfigInfo.BUFFER_SIZE);
 
         		if((rowCnt % ConfigInfo.STATEMENT_FETCH_SIZE == 0) || (bf.length() > byteBuffer.capacity())) {
         			
         			if(ConfigInfo.DB_WRITER_MODE) {
-        				dbWriter.DBWrite(bf.toString(), this.tableName);
-        			} else if(ConfigInfo.FILE_WRITER_MODE) {
+        				try {
+        					dbWriter.DBWrite(bf.toString(), this.tableName);
+        					
+        					intRunNo = 0;
+        				} catch(Exception e) {
+        					intErrLine = dbWriter.getErrLine();
+        					if(intErrLine > -1) {
+        						rowCnt = lngPreRunCnt;
+        					}
+        				}
+        			} 
+        			
+        			if(ConfigInfo.FILE_WRITER_MODE) {
         				fileWriter.dataWriteToFile(bf.toString(), this.tableName);
         			}
         			
+        			lngPreRunCnt = rowCnt;
         			bf.setLength(0);
         		}
         	}
@@ -208,7 +241,9 @@ public class ExecuteDataTransfer implements Runnable{
         		
     			if(ConfigInfo.DB_WRITER_MODE) {
     				dbWriter.DBWrite(bf.toString(), this.tableName);
-    			} else if(ConfigInfo.FILE_WRITER_MODE) {
+    			} 
+    			
+    			if(ConfigInfo.FILE_WRITER_MODE) {
     				fileWriter.dataWriteToFile(bf.toString(), this.tableName);
     			}
         	}
@@ -474,13 +509,11 @@ public class ExecuteDataTransfer implements Runnable{
 		}
 	}
 	
-	private void CloseConn(Connection conn, PreparedStatement pStmt) {
+	private void CloseConn(Connection conn, PreparedStatement pStmt, ResultSet rs) {
 		try{
-			if(pStmt != null) {
-				pStmt.close();
-			}
+			if(rs != null) rs.close();
+			if(pStmt != null) pStmt.close();
 			if (conn != null && !conn.isClosed()) {
-				conn.commit();
 				conn.close();
 				conn = null;
 			}	

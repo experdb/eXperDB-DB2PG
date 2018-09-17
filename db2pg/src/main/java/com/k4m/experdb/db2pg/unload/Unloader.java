@@ -94,6 +94,9 @@ public class Unloader {
 	}
 	
 	public void start() {
+		
+		ExecutorService executorService = Executors.newFixedThreadPool(ConfigInfo.SRC_TABLE_SELECT_PARALLEL);
+		
 		try {
 			if(!ConfigInfo.SELECT_QUERIES_FILE.equals("")) {
 				loadSelectQuery(ConfigInfo.SELECT_QUERIES_FILE);
@@ -111,7 +114,7 @@ public class Unloader {
 
 			setSchemaNameCheck();
 			
-			ExecutorService executorService = Executors.newFixedThreadPool(ConfigInfo.SRC_TABLE_SELECT_PARALLEL);
+			
 			
 			//DBCPPoolManager.setupDriver(ConfigInfo.SRC_DB_CONFIG, Constant.POOLNAME.SOURCE.name(), ConfigInfo.SRC_TABLE_SELECT_PARALLEL);
 
@@ -190,6 +193,8 @@ public class Unloader {
 		}catch(Exception e){
 			LogUtils.error("EXCEPTION!!!!",Unloader.class,e);
 			System.exit(Constant.ERR_CD.UNKNOWN_ERR);
+		} finally {
+			if(executorService != null) executorService.shutdown();
 		}
 	}
 	
