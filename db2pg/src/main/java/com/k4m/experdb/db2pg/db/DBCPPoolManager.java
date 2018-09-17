@@ -92,6 +92,7 @@ public class DBCPPoolManager {
 					break;
 				case Constant.DB_TYPE.MYSQL :
 					driver = "com.mysql.jdbc.Driver" ;
+					// useCursorFetch=false로 주면 setFetchSize가 동작하지 않는다.
 					connectURI = "jdbc:mysql://"+configInfo.SERVERIP+":"+configInfo.PORT+"/"+configInfo.DBNAME+"?useCursorFetch=true";
 					break;
 				case Constant.DB_TYPE.CUB :
