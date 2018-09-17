@@ -522,13 +522,13 @@ public class ExecuteDataTransfer implements Runnable{
 		}
 	}
 	
-	private void CloseConn(Connection conn, Statement stmt) {
+	private void CloseConn(Connection conn, Statement stmt, ResultSet rs) {
 		try{
 			if(stmt != null) {
 				stmt.close();
 			}
+			if(rs != null) rs.close();
 			if (conn != null && !conn.isClosed()) {
-				conn.commit();
 				conn.close();
 				conn = null;
 			}	
@@ -537,6 +537,19 @@ public class ExecuteDataTransfer implements Runnable{
 		}
 	}
 	
-	
+	private void CloseConn(Connection conn, Statement stmt) {
+		try{
+			if(stmt != null) {
+				stmt.close();
+			}
+
+			if (conn != null && !conn.isClosed()) {
+				conn.close();
+				conn = null;
+			}	
+		}catch(Exception e){
+			LogUtils.error(e.getMessage(),ExecuteQuery.class,e);
+		}
+	}
 
 }
