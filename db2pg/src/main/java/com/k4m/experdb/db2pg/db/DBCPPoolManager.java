@@ -3,6 +3,7 @@ package com.k4m.experdb.db2pg.db;
 import java.io.FileReader;
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.text.MessageFormat;
 import java.util.Properties;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -99,6 +100,10 @@ public class DBCPPoolManager {
 					driver = "cubrid.jdbc.driver.CUBRIDDriver" ;
 					connectURI = "jdbc:CUBRID:"+configInfo.SERVERIP+":"+configInfo.PORT+":"+configInfo.DBNAME+":"+configInfo.DBNAME+"::";
 					break;
+				case Constant.DB_TYPE.ALTI :
+					driver = "Altibase.jdbc.driver.AltibaseDriver" ;
+					connectURI = MessageFormat.format("jdbc:Altibase://{0}:{1}/{2}", configInfo.SERVERIP,configInfo.PORT,configInfo.DBNAME);
+					break;
     		}
     		
 			Class.forName(driver);
@@ -119,10 +124,15 @@ public class DBCPPoolManager {
 	        ConnectionFactory connectionFactory = new DriverManagerConnectionFactory(connectURI, props);
 	        
 	        // ConnectionFactory의 래퍼 클래스인 PoolableConnectionFactory를 생성
-	        PoolableConnectionFactory poolableConnectionFactory = new PoolableConnectionFactory(connectionFactory, null);	        
+	        PoolableConnectionFactory poolableConnectionFactory = new PoolableConnectionFactory(connectionFactory, null);
+	        
+	        //아래의 데이터베이스들은 validationQuery가 기본 설정안되어 설정을 해주어야함.
 	        if (configInfo.DB_TYPE.equals(Constant.DB_TYPE.CUB)) {
 	        	poolableConnectionFactory.setValidationQuery("SELECT 1 FROM db_root");
+	        } else if (configInfo.DB_TYPE.equals(Constant.DB_TYPE.ALTI)) {
+	        	poolableConnectionFactory.setValidationQuery("SELECT 1 FROM dual");
 	        }
+	        
 	        // 커넥션 풀로 사용할 commons-collections의 genericOjbectPool을 생성 
 	        GenericObjectPool<PoolableConnection> connectionPool = new GenericObjectPool<PoolableConnection>(poolableConnectionFactory);
 	        

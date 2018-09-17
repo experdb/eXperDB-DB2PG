@@ -34,6 +34,7 @@ public class Constant {
 	    public static final String MYSQL = "MYSQL";
 	    public static final String CUB = "CUB";
 	    public static final String IQ = "IQ";
+	    public static final String ALTI = "ALTI";
     }
     
     

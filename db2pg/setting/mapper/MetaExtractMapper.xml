@@ -319,6 +319,16 @@
 		SELECT owner.name, db_serial.* FROM db_serial WHERE class_name=#{TABLE_NAME}
 	</select>
 	
+	<select id="getTableNames" parameterType="map" resultType="java.lang.String" databaseId="ALTI">
+		SELECT table_name 
+			  FROM system_.sys_tables_ 
+			 WHERE table_type='T'
+			       AND user_id IN (SELECT user_id FROM system_.sys_users_ WHERE user_name IN ('${TABLE_SCHEMA}'));
+	</select>
+	<select id="getSourceTableData" parameterType="map" resultType="map" databaseId="ALTI">
+		SELECT * FROM ${SCHEMA}${TABLE} ${WHERE}
+	</select>
+	
 	<select id="getPgFkDdl" resultType="map" databaseId="POG">
 		SELECT psat1.schemaname AS "SCHEMA_NM",
 			pc.conname AS "CONSTRAINT_NAME",
