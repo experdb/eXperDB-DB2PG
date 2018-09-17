@@ -142,6 +142,11 @@
 			<artifactId>mysql-connector-java</artifactId>
 			<version>5.1.44</version>
 		</dependency>
+		<dependency>
+			<groupId>altibase</groupId>
+			<artifactId>altibase-jdbc</artifactId>
+			<version>6.5</version>
+		</dependency>
 
 		<dependency>
 			<groupId>org.mybatis</groupId>
