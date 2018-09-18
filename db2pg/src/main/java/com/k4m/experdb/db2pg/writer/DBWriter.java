@@ -59,9 +59,10 @@ public class DBWriter {
 			try {	
 				String strErrLine = StrUtil.strGetLine(e.toString());
 				int intErrLine = -1;
-				if(strErrLine != null && strErrLine.equals("")) {
+				if(strErrLine != null || strErrLine.equals("") || strErrLine.equals("0")) {
 					intErrLine = Integer.parseInt(strErrLine);
 				}
+				System.out.println("intErrLine : " + intErrLine);
 				this.setErrLine(intErrLine);
 				
 				conn.rollback();

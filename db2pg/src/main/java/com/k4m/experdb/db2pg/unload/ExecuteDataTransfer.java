@@ -108,15 +108,25 @@ public class ExecuteDataTransfer implements Runnable{
 		
 		Connection conn = DBCPPoolManager.getConnection(poolName);
 		
+    	if(tableName.equals("TEST_UNQ")) {
+    		System.out.println("TEST_UNQ debug");
+    	}
+		
 		try {
+			if(!tableName.equals("TEST_UNQ")) {
 			String sql =  CreateDbStmt.GetTruncateTblDDL(DBCPPoolManager.getConfigInfo(poolName).DB_TYPE, ConfigInfo.TAR_DB_CONFIG.SCHEMA_NAME, strTableName);
 		
 			psmt = conn.prepareStatement(sql);
 			
 			psmt.execute();
+			
+			
+	    		conn.commit();
+	    	}
 
 		} catch(Exception e) {
 			conn.rollback();
+			throw e;
 		} finally {
 			CloseConn(conn, psmt);
 		}
@@ -158,6 +168,9 @@ public class ExecuteDataTransfer implements Runnable{
         	LogUtils.debug(String.format("[%s-CREATE_BUFFEREDOUTPUTSTREAM]",this.tableName),ExecuteQuery.class);
         	LogUtils.debug("[START_FETCH_DATA]" + outputFileName,ExecuteQuery.class);
         	
+        	if(tableName.equals("TEST_UNQ")) {
+        		System.out.println("TEST_UNQ debug");
+        	}
         	
         	if (ConfigInfo.TRUNCATE) {
         		execTruncTable(Constant.POOLNAME.TARGET.name(), this.tableName);
@@ -209,10 +222,10 @@ public class ExecuteDataTransfer implements Runnable{
 	        		bf.append(Constant.R);
         		}
 
-        		
-        		ByteBuffer byteBuffer = ByteBuffer.allocateDirect(ConfigInfo.BUFFER_SIZE);
+        		int intBUFFER_SIZE = ConfigInfo.BUFFER_SIZE * 1000000;
+        		//ByteBuffer byteBuffer = ByteBuffer.allocateDirect(ConfigInfo.BUFFER_SIZE);
 
-        		if((rowCnt % ConfigInfo.STATEMENT_FETCH_SIZE == 0) || (bf.length() > byteBuffer.capacity())) {
+        		if((rowCnt % ConfigInfo.STATEMENT_FETCH_SIZE == 0) || (bf.length() > intBUFFER_SIZE)) {
         			
         			if(ConfigInfo.DB_WRITER_MODE) {
         				try {
@@ -235,6 +248,7 @@ public class ExecuteDataTransfer implements Runnable{
         			lngPreRunCnt = rowCnt;
         			bf.setLength(0);
         		}
+        		
         	}
         	rs.close();
         	
