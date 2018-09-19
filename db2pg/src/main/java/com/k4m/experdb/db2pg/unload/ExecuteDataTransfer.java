@@ -7,7 +7,6 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.PrintStream;
 import java.math.BigDecimal;
-import java.nio.ByteBuffer;
 import java.sql.Blob;
 import java.sql.Clob;
 import java.sql.Connection;
@@ -108,12 +107,8 @@ public class ExecuteDataTransfer implements Runnable{
 		
 		Connection conn = DBCPPoolManager.getConnection(poolName);
 		
-    	if(tableName.equals("TEST_UNQ")) {
-    		System.out.println("TEST_UNQ debug");
-    	}
-		
 		try {
-			if(!tableName.equals("TEST_UNQ")) {
+
 			String sql =  CreateDbStmt.GetTruncateTblDDL(DBCPPoolManager.getConfigInfo(poolName).DB_TYPE, ConfigInfo.TAR_DB_CONFIG.SCHEMA_NAME, strTableName);
 		
 			psmt = conn.prepareStatement(sql);
@@ -121,8 +116,8 @@ public class ExecuteDataTransfer implements Runnable{
 			psmt.execute();
 			
 			
-	    		conn.commit();
-	    	}
+	    	conn.commit();
+
 
 		} catch(Exception e) {
 			conn.rollback();
@@ -193,51 +188,28 @@ public class ExecuteDataTransfer implements Runnable{
         		rowCnt += 1;
         		intRunNo += 1;
         		
-        		if(intErrLine == intRunNo) {
-        			StringBuffer bfErrLine = new StringBuffer();
-        			
-	        		for (int i = 1; i <= rsmd.getColumnCount(); i++) {	
-	        			int type = rsmd.getColumnType(i);
-	        			
-	        			bfErrLine.append(ConvertDataToString(SrcConn,type, rs, i));
-	        			
-	        			if (i != rsmd.getColumnCount()) {
-	        				bfErrLine.append("\t");
-	        			}
-	        		}
-        			fileWriter.badFileCreater(ConfigInfo.OUTPUT_DIRECTORY + this.tableName + ".bad");
-        			fileWriter.badFileWrite(bfErrLine.toString());
-        			
-        			LogUtils.debug("[Err Line Skip] ErrLine : " + rowCnt,ExecuteQuery.class);
-        		} else {
-	        		for (int i = 1; i <= rsmd.getColumnCount(); i++) {	
-	        			int type = rsmd.getColumnType(i);
-	        			
-	        			bf.append(ConvertDataToString(SrcConn,type, rs, i));
-	        			
-	        			if (i != rsmd.getColumnCount()) {
-	        				bf.append("\t");
-	        			}
-	        		}
-	        		bf.append(Constant.R);
-        		}
 
-        		int intBUFFER_SIZE = ConfigInfo.BUFFER_SIZE * 1000000;
+        		for (int i = 1; i <= rsmd.getColumnCount(); i++) {	
+        			int type = rsmd.getColumnType(i);
+        			
+        			bf.append(ConvertDataToString(SrcConn,type, rs, i));
+        			
+        			if (i != rsmd.getColumnCount()) {
+        				bf.append("\t");
+        			}
+        		}
+        		bf.append(Constant.R);
+
+        		int intBUFFER_SIZE = ConfigInfo.BUFFER_SIZE;
         		//ByteBuffer byteBuffer = ByteBuffer.allocateDirect(ConfigInfo.BUFFER_SIZE);
+        		
 
         		if((rowCnt % ConfigInfo.STATEMENT_FETCH_SIZE == 0) || (bf.length() > intBUFFER_SIZE)) {
         			
         			if(ConfigInfo.DB_WRITER_MODE) {
-        				try {
-        					dbWriter.DBWrite(bf.toString(), this.tableName);
-        					
+
+        					dbWriterN(dbWriter);
         					intRunNo = 0;
-        				} catch(Exception e) {
-        					intErrLine = dbWriter.getErrLine();
-        					if(intErrLine > -1) {
-        						rowCnt = lngPreRunCnt;
-        					}
-        				}
         			} 
         			
         			if(ConfigInfo.FILE_WRITER_MODE) {
@@ -250,7 +222,6 @@ public class ExecuteDataTransfer implements Runnable{
         		}
         		
         	}
-        	rs.close();
         	
         	if (bf.length() != 0){
         		
@@ -279,13 +250,23 @@ public class ExecuteDataTransfer implements Runnable{
 		} finally {
 			try {
 				fileWriter.closeFileChannels();
+				if(rs != null) rs.close();
 			} catch (Exception e) {
 			}
 			
+
 			CloseConn(SrcConn, preSrcStmt);
 			status = 0;
 			LogUtils.debug("[END_FETCH_DATA]" + outputFileName,ExecuteQuery.class);
 			LogUtils.info("COMPLETE UNLOAD (TABLE_NAME : " +tableName + ", ROWNUM : " + rowCnt + ") !!!",ExecuteQuery.class);
+		}
+	}
+	
+	private void dbWriterN(DBWriter dbWriter) throws Exception {
+		try {
+			dbWriter.DBWrite(bf.toString(), this.tableName);
+		} catch (Exception e) {
+			throw e;
 		}
 	}
 	
