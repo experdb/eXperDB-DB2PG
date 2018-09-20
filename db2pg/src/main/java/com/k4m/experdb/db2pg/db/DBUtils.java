@@ -6,7 +6,6 @@ import java.util.Map;
 
 import org.apache.commons.lang3.time.StopWatch;
 
-import com.k4m.experdb.db2pg.common.Constant;
 import com.k4m.experdb.db2pg.common.LogUtils;
 import com.k4m.experdb.db2pg.db.datastructure.DBConfigInfo;
 import com.k4m.experdb.db2pg.work.db.impl.MetaExtractWork;
@@ -28,6 +27,7 @@ public class DBUtils {
 			MetaExtractWorker mew = new MetaExtractWorker(srcPoolName,new MetaExtractWork(WORK_TYPE.GET_TABLE_NAMES, params));
 			mew.run();
 			tableNames = (List<String>)mew.getResult();
+			LogUtils.info("[GET_TABLE_NAMES]"+tableNames,DBUtils.class);
 			stopWatch.stop();
 			LogUtils.debug("[GET_TABLE_NAMES_ELAPSED_TIME] "+dbConfigInfo.DB_TYPE+" " + stopWatch.getTime()+"ms",DBUtils.class);
 		} catch(Exception e){
