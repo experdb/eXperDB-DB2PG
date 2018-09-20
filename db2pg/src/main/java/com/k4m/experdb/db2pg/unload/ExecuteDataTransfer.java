@@ -180,13 +180,10 @@ public class ExecuteDataTransfer implements Runnable{
 			}
         	
         	
-			long lngPreRunCnt = 0;
-			int intErrLine = -1;
-			int intRunNo = 0;
 			
         	while (rs.next()){
         		rowCnt += 1;
-        		intRunNo += 1;
+
         		
 
         		for (int i = 1; i <= rsmd.getColumnCount(); i++) {	
@@ -209,15 +206,14 @@ public class ExecuteDataTransfer implements Runnable{
         			if(ConfigInfo.DB_WRITER_MODE) {
 
         					dbWriterN(dbWriter);
-        					intRunNo = 0;
+
         			} 
         			
         			if(ConfigInfo.FILE_WRITER_MODE) {
         				fileWriter.dataWriteToFile(bf.toString(), this.tableName);
-        				intRunNo = 0;
+
         			}
         			
-        			lngPreRunCnt = rowCnt;
         			bf.setLength(0);
         		}
         		
