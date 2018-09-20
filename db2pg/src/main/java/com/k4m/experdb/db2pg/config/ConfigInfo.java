@@ -72,6 +72,8 @@ public class ConfigInfo {
 	
 	public static boolean FILE_WRITER_MODE, DB_WRITER_MODE;
 	
+	public static boolean TAR_TABLE_BAD;
+	
 	public static class Loader {
 		public static void load(String configFilePath) {
 			try {
@@ -93,6 +95,7 @@ public class ConfigInfo {
 				ConfigInfo.SRC_TABLE_SELECT_PARALLEL = (int)propertyCheck(prop.getProperty("SRC_TABLE_SELECT_PARALLEL"),1,Integer.class);
 				ConfigInfo.SRC_TABLE_COPY_SEGMENT_SIZE = (int)propertyCheck(prop.getProperty("SRC_TABLE_COPY_SEGMENT_SIZE"),10000,Integer.class);
 				ConfigInfo.VERBOSE = (boolean)propertyCheck(prop.getProperty("VERBOSE"),true,Boolean.class);
+				ConfigInfo.TAR_TABLE_BAD = (boolean)propertyCheck(prop.getProperty("TAR_TABLE_BAD"),true,Boolean.class);
 				ConfigInfo.SRC_WHERE = prop.getProperty("SRC_WHERE");
 				ConfigInfo.TABLE_ONLY = (boolean)propertyCheck(prop.getProperty("TABLE_ONLY"),true,Boolean.class);
 				ConfigInfo.TRUNCATE = (boolean)propertyCheck(prop.getProperty("TRUNCATE"),true,Boolean.class);

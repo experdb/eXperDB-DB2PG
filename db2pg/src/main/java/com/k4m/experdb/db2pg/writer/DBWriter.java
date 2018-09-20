@@ -120,10 +120,12 @@ public class DBWriter {
 	}
 	
 	private void errDataFileWrite(String strErrLine, String tableName, int intErrLine) throws Exception {
-		FileWriter fileWriter = new FileWriter(tableName);
-		fileWriter.badFileCreater(ConfigInfo.OUTPUT_DIRECTORY + tableName + ".bad");
-		fileWriter.badFileWrite(strErrLine);
-		LogUtils.debug("[Err Line Skip] ErrLine : " + intErrLine + " ErrData : " + strErrLine, DBWriter.class);
+		if(ConfigInfo.TAR_TABLE_BAD) {
+			FileWriter fileWriter = new FileWriter(tableName);
+			fileWriter.badFileCreater(ConfigInfo.OUTPUT_DIRECTORY + tableName + ".bad");
+			fileWriter.badFileWrite(strErrLine);
+			LogUtils.debug("[Err Line Skip] ErrLine : " + intErrLine + " ErrData : " + strErrLine, DBWriter.class);
+		}
 	}
 	
 	public static void main(String[] args) throws Exception {
