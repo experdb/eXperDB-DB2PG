@@ -48,8 +48,11 @@ public class DBWriter {
 			if(conn == null)
 			conn = DBCPPoolManager.getConnection(poolName);
 			
+			String strCopyOptions = ConfigInfo.TAR_COPY_OPTIONS;
+			if(strCopyOptions.equals("")) strCopyOptions = " " + strCopyOptions;
+			
 			CopyManager copyManager = new CopyManager(((DelegatingConnection<?>)conn).getInnermostDelegate().unwrap(BaseConnection.class));
-			copyIn = copyManager.copyIn("COPY " + ConfigInfo.TAR_DB_CONFIG.SCHEMA_NAME + "." + table_nm + " FROM STDIN");
+			copyIn = copyManager.copyIn("COPY " + ConfigInfo.TAR_DB_CONFIG.SCHEMA_NAME + "." + table_nm + " FROM STDIN" + strCopyOptions);
 
 			byte[] bytes = (lineStr).getBytes(ConfigInfo.TAR_DB_CONFIG.CHARSET);
 			copyIn.writeToCopy(bytes, 0, bytes.length);
