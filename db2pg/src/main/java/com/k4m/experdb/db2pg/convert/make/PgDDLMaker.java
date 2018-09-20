@@ -10,6 +10,7 @@ import com.k4m.experdb.db2pg.convert.DDLString;
 import com.k4m.experdb.db2pg.convert.pattern.SqlPattern;
 import com.k4m.experdb.db2pg.convert.table.Column;
 import com.k4m.experdb.db2pg.convert.table.Table;
+import com.k4m.experdb.db2pg.convert.table.key.CLUSTER;
 import com.k4m.experdb.db2pg.convert.table.key.ForeignKey;
 import com.k4m.experdb.db2pg.convert.table.key.Key;
 import com.k4m.experdb.db2pg.convert.table.key.NormalKey;
@@ -144,6 +145,7 @@ public class PgDDLMaker<T> {
 		}//end column
 		
 		for(Key<?> key : table.getKeys()) {
+			System.out.println("@@@@@@@@@@@@@@@@@="+key.getType());
 			switch(key.getType()) {
 			case PRIMARY:
 				try {
@@ -238,6 +240,20 @@ public class PgDDLMaker<T> {
 					e.printStackTrace();
 				}
 				break;
+			case CLUSTER:
+				try {
+					CLUSTER cluster = key.unwrap(CLUSTER.class);
+					tmpsb.append("CLUSTER  \"");
+					tmpsb.append(cluster.getTableName());
+					tmpsb.append("\" USING \"");
+					tmpsb.append(cluster.getTableName()+"_"+cluster.getIndex_name());
+					tmpsb.append("\" ");
+					tmpStringVOs.add(new DDLString().setString(tmpsb.toString()).setDDLType(DDL_TYPE.CREATE)
+							.setCommandType(COMMAND_TYPE.INDEX).setPriority(3));
+					tmpsb.setLength(0);
+				} catch (TableKeyException e) {
+					e.printStackTrace();
+				}
 			default:
 				break;
 			}

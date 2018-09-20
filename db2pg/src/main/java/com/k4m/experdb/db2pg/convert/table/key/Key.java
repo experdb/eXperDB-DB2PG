@@ -129,7 +129,7 @@ public abstract class Key<T> {
 	}
 
 	public enum Type {
-		NORMAL, PRIMARY, UNIQUE, FOREIGN
+		NORMAL, PRIMARY, UNIQUE, FOREIGN, CLUSTER
 	}
 
 	public enum IndexType {

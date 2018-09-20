@@ -10,6 +10,7 @@ import com.k4m.experdb.db2pg.common.Constant;
 import com.k4m.experdb.db2pg.common.LogUtils;
 import com.k4m.experdb.db2pg.convert.table.Column;
 import com.k4m.experdb.db2pg.convert.table.Table;
+import com.k4m.experdb.db2pg.convert.table.key.CLUSTER;
 import com.k4m.experdb.db2pg.convert.table.key.ForeignKey;
 import com.k4m.experdb.db2pg.convert.table.key.Key.IndexType;
 import com.k4m.experdb.db2pg.convert.table.key.Key.Type;
@@ -103,12 +104,15 @@ public class MsSQLConvertDBUtils {
 		try {
 			LogUtils.info("[START_SET_COLUMN_INFORM]",MsSQLConvertDBUtils.class);
 			Map<String,Object> params = new HashMap<String,Object>();
+			
 			params.put("TABLE_SCHEMA", table.getSchemaName());
 			params.put("TABLE_NAME", table.getName());
+			
 			MetaExtractWorker mew = new MetaExtractWorker(srcPoolName, new MetaExtractWork(WORK_TYPE.GET_COLUMN_INFORM, params));
 			mew.run();
 			List<Map<String,Object>> results = (List<Map<String,Object>>)mew.getListResult();
 			LogUtils.info("[GET_SET_COLUMN_INFORM]"+results,MsSQLConvertDBUtils.class);
+			
 			Object obj = null;
         	for (Map<String,Object> result : results) {
         		Column column = new Column();
@@ -162,8 +166,14 @@ public class MsSQLConvertDBUtils {
 	   <br>&nbsp - U : unique key
 	   <br>&nbsp - F : foreign key
 	 * <br>Index's type : index_type (enum)
-	   <br>&nbsp - HASH : hash index
-	   <br>&nbsp - BTREE : btree index
+		<br>0 = Heap				
+		<br>1 = Clustered		
+		<br>2 = Nonclustered				
+		<br>3 = XML				
+		<br>4 = Spatial				
+		<br>5 = Clustered columnstore index. Applies to: SQL Server 2014 (12.x) through SQL Server 2017.				
+		<br>6 = Nonclustered columnstore index. Applies to: SQL Server 2012 (11.x) through SQL Server 2017.				
+		<br>7 = Nonclustered hash index. Applies to: SQL Server 2014 (12.x) through SQL Server 2017.
 	 * <br>Match option of the foreign key constraint : match_option (enum)
 	   <br>&nbsp - FULL : MATCH FULL
 	   <br>&nbsp - PARTIAL : PostgreSQL is not yet implemented. ( 2018.07.30 )
@@ -185,10 +195,9 @@ public class MsSQLConvertDBUtils {
 		try {
 			LogUtils.info("[START_SET_CONSTRAINT_INFORM]",MsSQLConvertDBUtils.class);
 			Map<String,Object> params = new HashMap<String,Object>();
-			if(dbConfigInfo.DB_TYPE.equals(Constant.DB_TYPE.MYSQL)) {
+
 				params.put("TABLE_SCHEMA", table.getSchemaName());
 				params.put("TABLE_NAME", table.getName());
-			}
 			
 			MetaExtractWorker mew = new MetaExtractWorker(srcPoolName, new MetaExtractWork(WORK_TYPE.GET_CONSTRAINT_INFORM, params));
 			mew.run();
@@ -240,10 +249,16 @@ public class MsSQLConvertDBUtils {
         			pkey.setName(keyName);
         			if (indexType == null){
         				pkey.setIndexType(IndexType.BTREE);
-        			} else if(indexType.equals("HASH")) {
-        				pkey.setIndexType(IndexType.HASH);
-        			} else if (indexType.equals("BTREE")) {
+        			} else if(indexType.equals("1")) {
         				pkey.setIndexType(IndexType.BTREE);
+        			} else if (indexType.equals("2")) {
+        				pkey.setIndexType(IndexType.BTREE);
+        			} else if (indexType.equals("5")) {
+        				pkey.setIndexType(IndexType.BTREE);
+        			} else if (indexType.equals("6")) {
+        				pkey.setIndexType(IndexType.BTREE);
+        			} else if (indexType.equals("7")) {
+        				pkey.setIndexType(IndexType.HASH);
         			}
         			table.getKeys().add(pkey);
         		} else if (constraintType.equals("U")) {
@@ -287,10 +302,16 @@ public class MsSQLConvertDBUtils {
         			ukey.setName(keyName);
         			if (indexType == null){
         				ukey.setIndexType(IndexType.BTREE);
-        			} else if(indexType.equals("HASH")) {
-        				ukey.setIndexType(IndexType.HASH);
-        			} else if (indexType.equals("BTREE")) {
+        			} else if(indexType.equals("1")) {
         				ukey.setIndexType(IndexType.BTREE);
+        			} else if (indexType.equals("2")) {
+        				ukey.setIndexType(IndexType.BTREE);
+        			} else if (indexType.equals("5")) {
+        				ukey.setIndexType(IndexType.BTREE);
+        			} else if (indexType.equals("6")) {
+        				ukey.setIndexType(IndexType.BTREE);
+        			} else if (indexType.equals("7")) {
+        				ukey.setIndexType(IndexType.HASH);
         			}
         			table.getKeys().add(ukey);
         		} else if (constraintType.equals("F")) {
@@ -395,10 +416,16 @@ public class MsSQLConvertDBUtils {
         			fkey.setRefTable(refTable);
         			if (indexType == null){
         				fkey.setIndexType(IndexType.BTREE);
-        			} else if(indexType.equals("HASH")) {
-        				fkey.setIndexType(IndexType.HASH);
-        			} else if (indexType.equals("BTREE")) {
+        			} else if(indexType.equals("1")) {
         				fkey.setIndexType(IndexType.BTREE);
+        			} else if (indexType.equals("2")) {
+        				fkey.setIndexType(IndexType.BTREE);
+        			} else if (indexType.equals("5")) {
+        				fkey.setIndexType(IndexType.BTREE);
+        			} else if (indexType.equals("6")) {
+        				fkey.setIndexType(IndexType.BTREE);
+        			} else if (indexType.equals("7")) {
+        				fkey.setIndexType(IndexType.HASH);
         			}
         			table.getKeys().add(fkey);
         		}
@@ -421,18 +448,23 @@ public class MsSQLConvertDBUtils {
 	 *<br>Column's name : column_name (string) 
 	 *<br>Column's index ordinal position : ordinal_position (int)
 	 *<br>Index's type : index_type (enum)
-	  <br>&nbsp - HASH : hash index
-	  <br>&nbsp - BTREE : btree index
+		<br>0 = Heap				
+		<br>1 = Clustered		
+		<br>2 = Nonclustered				
+		<br>3 = XML				
+		<br>4 = Spatial				
+		<br>5 = Clustered columnstore index. Applies to: SQL Server 2014 (12.x) through SQL Server 2017.				
+		<br>6 = Nonclustered columnstore index. Applies to: SQL Server 2012 (11.x) through SQL Server 2017.				
+		<br>7 = Nonclustered hash index. Applies to: SQL Server 2014 (12.x) through SQL Server 2017.
 	 * */
 	public static Table setKeyInform(Table table, String srcPoolName, DBConfigInfo dbConfigInfo) {
 		try {
 			LogUtils.info("[START_SET_KEY_INFORM]",MsSQLConvertDBUtils.class);
 			Map<String,Object> params = new HashMap<String,Object>();
-			if(dbConfigInfo.DB_TYPE.equals(Constant.DB_TYPE.MYSQL)) {
+
 				params.put("TABLE_SCHEMA", table.getSchemaName());
 				params.put("TABLE_NAME", table.getName());
-			}
-			
+		
 			MetaExtractWorker mew = new MetaExtractWorker(srcPoolName, new MetaExtractWork(WORK_TYPE.GET_KEY_INFORM, params));
 			mew.run();
 			List<Map<String,Object>> results = (List<Map<String,Object>>)mew.getListResult();
@@ -456,6 +488,7 @@ public class MsSQLConvertDBUtils {
     			String indexType = obj!=null?obj.toString():null;
     			
     			NormalKey nkey = new NormalKey();
+    			CLUSTER cluster = new CLUSTER();
     			
     			boolean isAdded = false;
     			for(int i=0; i<table.getKeys().size();i++) {
@@ -483,12 +516,22 @@ public class MsSQLConvertDBUtils {
     			nkey.setTableName(tableName);
     			nkey.setKeySchema(keySchema);
     			nkey.setName(keyName);
+
     			if (indexType == null){
     				nkey.setIndexType(IndexType.BTREE);
-    			} else if(indexType.equals("HASH")) {
-    				nkey.setIndexType(IndexType.HASH);
-    			} else if (indexType.equals("BTREE")) {
+    			} else if(indexType.equals("1")) {
     				nkey.setIndexType(IndexType.BTREE);
+    				cluster.setTableName(tableName);
+    				cluster.setIndex_name(result.get("index_name").toString());
+    				table.getKeys().add(cluster);
+    			} else if (indexType.equals("2")) {
+    				nkey.setIndexType(IndexType.BTREE);
+    			} else if (indexType.equals("5")) {
+    				nkey.setIndexType(IndexType.BTREE);
+    			} else if (indexType.equals("6")) {
+    				nkey.setIndexType(IndexType.BTREE);
+    			} else if (indexType.equals("7")) {
+    				nkey.setIndexType(IndexType.HASH);
     			}
     			table.getKeys().add(nkey);
         	}

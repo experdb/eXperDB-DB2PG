@@ -174,6 +174,7 @@
 				AND type in ('U', 'V')
 			</otherwise>
 		</choose>
+		ORDER BY 1
 	</select>
 	<select id="getSourceTableData" parameterType="map" resultType="map" databaseId="MSS">
 		SELECT * FROM ${SCHEMA}${TABLE} ${WHERE}
@@ -183,8 +184,8 @@
 			s.name AS schema_name ,
 			o.name AS table_name ,
 			(
-			SELECT
-				VALUE
+			SELECT	
+				CONVERT(varchar(500), VALUE) as VALUE
 			FROM
 				SYS.EXTENDED_PROPERTIES
 			WHERE
@@ -213,7 +214,7 @@
 			END AS is_null ,
 			(
 			SELECT
-				CAST( value AS VARCHAR ) AS value
+				CONVERT(varchar(500), value) AS value
 			FROM
 				fn_listextendedproperty ( 'MS_DESCRIPTION',
 				'schema',
@@ -222,13 +223,13 @@
 				o.name,
 				'column',
 				c.name )) AS column_comment ,
-			c.precision AS numeric_precision ,
-			c.scale AS numeric_scale ,
+			CONVERT(varchar(500),c.precision) AS numeric_precision ,
+			CONVERT(varchar(500),c.scale) AS numeric_scale ,
 			CONVERT( BIGINT,
 			i.last_value ) + CONVERT( BIGINT,
 			i.increment_value ) AS seq_start ,
-			i.seed_value AS seq_min_value ,
-			i.increment_value AS seq_inc_value ,
+			CONVERT(varchar(500),i.seed_value) AS seq_min_value ,
+			CONVERT(varchar(500),i.increment_value) AS seq_inc_value ,
 			NULL AS extra
 		FROM
 			sys.columns c
@@ -241,8 +242,108 @@
 			object_schema_name( o.object_id )=#{TABLE_SCHEMA}
 			AND o.name=#{TABLE_NAME}
 	</select>
+	
 	<select id="getConstraintInform" parameterType="map" resultType="map" databaseId="MSS">
-		
+			SELECT 
+			     c.table_schema AS table_schema
+			    ,c.table_name AS table_name
+			    ,c.column_name AS column_name
+				,CASE WHEN KeyConstraints.constraint_type='PRIMARY KEY' THEN 'P'
+							 WHEN KeyConstraints.constraint_type='FOREIGN KEY' THEN 'F'
+							 WHEN KeyConstraints.constraint_type='UNIQUE' THEN 'U'
+							 ELSE NULL
+						END AS constraint_type
+			    ,KeyConstraints.constraint_schema AS constraint_schema
+			    ,KeyConstraints.constraint_name AS constraint_name
+			    ,KeyConstraints.referenced_table_schema AS ref_table_schema
+			    ,KeyConstraints.referenced_table_name AS ref_table_name
+			    ,KeyConstraints.referenced_column_name AS ref_column_name
+			    ,KeyConstraints.update_rule AS update_rule
+			    ,KeyConstraints.delete_rule AS delete_rule
+				,KeyConstraints.INDEX_TYPE AS index_type
+				,KeyConstraints.ORDINAL_POSITION AS ordinal_position
+			FROM information_schema.columns AS c 
+			iNNER JOIN 
+			    (
+			        SELECT 
+			             FK.table_schema AS TABLE_SCHEMA
+			            ,FK.table_name
+			            ,CU.column_name
+			            ,FK.constraint_type
+			            ,c.constraint_schema
+			            ,C.constraint_name 
+			            ,PK.table_schema AS REFERENCED_TABLE_SCHEMA
+			            ,PK.table_name AS REFERENCED_TABLE_NAME
+			            ,CCU.column_name AS REFERENCED_COLUMN_NAME
+			            ,C.update_rule AS UPDATE_RULE
+			            ,C.delete_rule AS DELETE_RULE
+						,SI.type AS INDEX_TYPE
+						,CU.ORDINAL_POSITION as ORDINAL_POSITION
+			        FROM information_schema.referential_constraints AS C 			
+			        INNER JOIN information_schema.table_constraints AS FK 
+			            ON C.constraint_name = FK.constraint_name 			
+			        INNER JOIN information_schema.table_constraints AS PK 
+			            ON C.unique_constraint_name = PK.constraint_name 			
+			        INNER JOIN information_schema.key_column_usage AS CU 
+			            ON C.constraint_name = CU.constraint_name 			
+			        INNER JOIN information_schema.constraint_column_usage AS CCU 
+			            ON PK.constraint_name = CCU.constraint_name 
+					INNER JOIN sys.indexes AS SI
+			            ON PK.constraint_name = SI.name 			
+			        WHERE PK.TABLE_SCHEMA = #{TABLE_SCHEMA}
+			
+			        UNION 
+			
+			        SELECT 
+			             ccu.table_schema
+			            ,ccu.table_name
+			            ,ccu.column_name
+			            ,tc.constraint_type
+			            ,ccu.constraint_schema
+			            ,ccu.constraint_name
+			            ,NULL
+			            ,NULL
+			            ,NULL
+			            ,NULL
+			            ,NULL
+						,NULL
+						,NULL
+			        FROM information_schema.constraint_column_usage ccu 			
+			        INNER JOIN information_schema.table_constraints tc 
+			            ON ccu.table_schema = tc.table_schema 
+			            AND ccu.table_name = tc.table_name 			
+			        WHERE tc.TABLE_SCHEMA = #{TABLE_SCHEMA}				
+			    ) AS KeyConstraints 
+			    ON c.table_schema = KeyConstraints.table_schema 
+			    AND c.table_name = KeyConstraints.table_name 
+			    AND c.column_name = KeyConstraints.column_name 
+			WHERE c.TABLE_NAME = #{TABLE_NAME}
+			ORDER BY  c.table_schema 
+			         ,c.table_name 
+			         ,c.column_name 		
+	</select>
+	
+	<select id="getKeyInform" parameterType="map" resultType="map" databaseId="MSS">
+			SELECT SCHEMA_NAME(t.schema_id)  AS table_schema,
+					object_schema_name(t.object_id) AS index_schema,
+			        t.name AS table_name,
+					i.name AS index_name,
+					i.type AS index_type, 
+					COL_NAME(t.object_id, c.column_id) AS column_name,
+					c.key_ordinal AS ordinal_position	 
+			FROM sys.tables t,
+					sys.index_columns AS c, 
+			        sys.indexes i,
+					sys.stats s
+			WHERE t.object_id = i.object_id
+				AND t.object_id = s.object_id
+				AND i.index_id = s.stats_id
+				AND i.index_id = c.index_id
+				AND i.object_id = c.object_id
+				AND c.is_included_column = 0
+				AND SCHEMA_NAME(t.schema_id) = #{TABLE_SCHEMA}	
+				AND t.name = #{TABLE_NAME}
+			ORDER BY t.name, i.name, c.index_column_id	
 	</select>
 	
 	<select id="getTableNames" parameterType="map" resultType="java.lang.String" databaseId="ASE" >
