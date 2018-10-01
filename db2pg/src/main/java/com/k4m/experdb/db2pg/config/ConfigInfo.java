@@ -146,7 +146,7 @@ public class ConfigInfo {
 				ConfigInfo.TAR_TABLE_BAD_COUNT = (int)propertyCheck(prop.getProperty("TAR_TABLE_BAD_COUNT"),-1,Integer.class);
 				ConfigInfo.TAR_COPY_OPTIONS = (String)propertyCheck(prop.getProperty("TAR_COPY_OPTIONS"),null,String.class);
 				
-				ConfigInfo.TAR_TABLE_ERR_CNT_EXIT = (int)propertyCheck(prop.getProperty("TAR_TABLE_BAD_COUNT"),0,Integer.class);
+				ConfigInfo.TAR_TABLE_ERR_CNT_EXIT = (int)propertyCheck(prop.getProperty("TAR_TABLE_ERR_CNT_EXIT"),0,Integer.class);
 				
 				ConfigInfo.FILE_WRITER_MODE = (boolean)propertyCheck(prop.getProperty("FILE_WRITER_MODE"),false,Boolean.class);
 				ConfigInfo.DB_WRITER_MODE = (boolean)propertyCheck(prop.getProperty("DB_WRITER_MODE"),false,Boolean.class);
