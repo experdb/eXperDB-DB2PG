@@ -180,6 +180,7 @@ public class ExecuteDataTransfer implements Runnable{
 			}
         	
         	
+			int intErrCnt = 0;
 			
         	while (rs.next()){
         		rowCnt += 1;
@@ -206,7 +207,8 @@ public class ExecuteDataTransfer implements Runnable{
         			if(ConfigInfo.DB_WRITER_MODE) {
 
         					dbWriterN(dbWriter);
-
+        					
+        					intErrCnt += dbWriter.getErrCount();
         			} 
         			
         			if(ConfigInfo.FILE_WRITER_MODE) {
@@ -215,15 +217,24 @@ public class ExecuteDataTransfer implements Runnable{
         			}
         			
         			bf.setLength(0);
+        			
+        			if(intErrCnt > ConfigInfo.TAR_TABLE_ERR_CNT_EXIT) {
+        				break;
+        			}
         		}
         		
         	}
         	
         	if (bf.length() != 0){
         		
-    			if(ConfigInfo.DB_WRITER_MODE) {
-    				dbWriter.DBWrite(bf.toString(), this.tableName);
-    			} 
+    			if(intErrCnt > ConfigInfo.TAR_TABLE_ERR_CNT_EXIT) {
+
+    			} else {
+        		
+	    			if(ConfigInfo.DB_WRITER_MODE) {
+	    				dbWriter.DBWrite(bf.toString(), this.tableName);
+	    			} 
+    			}
     			
     			if(ConfigInfo.FILE_WRITER_MODE) {
     				fileWriter.dataWriteToFile(bf.toString(), this.tableName);

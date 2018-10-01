@@ -74,6 +74,8 @@ public class ConfigInfo {
 	
 	public static boolean TAR_TABLE_BAD;
 	
+	public static int TAR_TABLE_ERR_CNT_EXIT;
+	
 	public static class Loader {
 		public static void load(String configFilePath) {
 			try {
@@ -143,6 +145,8 @@ public class ConfigInfo {
 				ConfigInfo.TAR_CONN_COUNT = (int)propertyCheck(prop.getProperty("TAR_CONN_COUNT"),1,Integer.class);
 				ConfigInfo.TAR_TABLE_BAD_COUNT = (int)propertyCheck(prop.getProperty("TAR_TABLE_BAD_COUNT"),-1,Integer.class);
 				ConfigInfo.TAR_COPY_OPTIONS = (String)propertyCheck(prop.getProperty("TAR_COPY_OPTIONS"),null,String.class);
+				
+				ConfigInfo.TAR_TABLE_ERR_CNT_EXIT = (int)propertyCheck(prop.getProperty("TAR_TABLE_BAD_COUNT"),0,Integer.class);
 				
 				ConfigInfo.FILE_WRITER_MODE = (boolean)propertyCheck(prop.getProperty("FILE_WRITER_MODE"),false,Boolean.class);
 				ConfigInfo.DB_WRITER_MODE = (boolean)propertyCheck(prop.getProperty("DB_WRITER_MODE"),false,Boolean.class);

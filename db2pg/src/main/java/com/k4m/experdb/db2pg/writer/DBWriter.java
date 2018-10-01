@@ -21,11 +21,20 @@ public class DBWriter {
 	private static int successByteCount;
 	private static int insCnt = 0;
 	private int errLine = -1;
+	private int errCount = 0;
 	
 	boolean ContaintPool;
 	private String poolName = "";
 	
 	
+	public int getErrCount() {
+		return errCount;
+	}
+
+	public void setErrCount(int errCount) {
+		this.errCount = errCount;
+	}
+
 	public int getErrLine() {
 		return errLine;
 	}
@@ -48,8 +57,9 @@ public class DBWriter {
 			if(conn == null)
 			conn = DBCPPoolManager.getConnection(poolName);
 			
-			String strCopyOptions = ConfigInfo.TAR_COPY_OPTIONS;
-			if(strCopyOptions.equals("")) strCopyOptions = " " + strCopyOptions;
+			String strTarCopyOptions = ConfigInfo.TAR_COPY_OPTIONS;
+			String strCopyOptions = "";
+			if(strTarCopyOptions != null && !strTarCopyOptions.equals("")) strCopyOptions = " " + strTarCopyOptions;
 			
 			CopyManager copyManager = new CopyManager(((DelegatingConnection<?>)conn).getInnermostDelegate().unwrap(BaseConnection.class));
 			copyIn = copyManager.copyIn("COPY " + ConfigInfo.TAR_DB_CONFIG.SCHEMA_NAME + "." + table_nm + " FROM STDIN" + strCopyOptions);
@@ -63,6 +73,8 @@ public class DBWriter {
 			
 		} catch (Exception e) {
 			try {	
+				errCount += 1;
+				
 				String strErrLine = StrUtil.strGetLine(e.toString());
 				int intErrLine = -1;
 				if(strErrLine != null || strErrLine.equals("") || strErrLine.equals("0")) {
