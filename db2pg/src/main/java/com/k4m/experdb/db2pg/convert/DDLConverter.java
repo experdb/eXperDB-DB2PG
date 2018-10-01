@@ -39,13 +39,9 @@ public class DDLConverter {
 
 	public static DDLConverter getInstance() throws Exception {
 		DDLConverter ddlConverter = new DDLConverter();
-		switch (ConfigInfo.SRC_DB_CONFIG.DB_TYPE) {
-		case Constant.DB_TYPE.MYSQL:
-		case Constant.DB_TYPE.ORA:
-		case Constant.DB_TYPE.MSS:
-				ddlConverter.convertMapper = ConvertMapper.makeConvertMapper(MySqlConvertMapper.class);
-			break;
-		default:
+		if(ConfigInfo.SRC_DB_CONFIG.DB_TYPE.equals(Constant.DB_TYPE.MYSQL) || ConfigInfo.SRC_DB_CONFIG.DB_TYPE.equals(Constant.DB_TYPE.ORA) || ConfigInfo.SRC_DB_CONFIG.DB_TYPE.equals(Constant.DB_TYPE.MSS)){
+			ddlConverter.convertMapper = ConvertMapper.makeConvertMapper(MySqlConvertMapper.class);
+		}else{
 			throw new NotSupportDatabaseTypeException(ConfigInfo.SRC_DB_CONFIG.DB_TYPE);
 		}
 		return ddlConverter;

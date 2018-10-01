@@ -4,7 +4,7 @@
      "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
      
 <mapper namespace="com.k4m.experdb.db2pg.mapper.MetaExtractMapper">
-	<select id="getTableNames" parameterType="map" resultType="java.lang.String" databaseId="ORA">
+<select id="getTableNames" parameterType="map" resultType="java.lang.String" databaseId="ORA">
 		SELECT OBJECT_NAME as TABLE_NAME FROM ALL_OBJECTS 
 		WHERE OWNER=#{TABLE_SCHEMA} 
 			AND OBJECT_NAME NOT IN ('TOAD_PLAN_TABLE','PLAN_TABLE') 
@@ -76,22 +76,14 @@
 		ORDER BY SCHEMA_NAME, TABLE_NAME
 	</select>
 	<select id="getColumnInform" parameterType="map" resultType="com.k4m.experdb.db2pg.common.LowerKeyMap" databaseId="ORA">
-	           SELECT USER AS SCHEMA_NM,
-                   UTC.TABLE_NAME AS TBL_ENM,
-                   NVL(UTC.COLUMN_NAME,'') AS COL_ENM,
-                   UTC.COLUMN_ID AS COL_SNO,
-                   NVL(SUBSTRB(UCT.COMMENTS,1,500),'') AS COL_KNM,
-                   NVL((SELECT 'Y' AS PK_YN
-                          FROM ALL_CONSTRAINTS A, ALL_CONS_COLUMNS B
-                         WHERE A.CONSTRAINT_TYPE='P'
-                           AND A.OWNER = B.OWNER
-                           AND A.TABLE_NAME=UTC.TABLE_NAME
-                           AND A.TABLE_NAME=B.TABLE_NAME
-                           AND A.CONSTRAINT_NAME=B.CONSTRAINT_NAME
-                           AND B.COLUMN_NAME=UTC.COLUMN_NAME
-                           AND A.OWNER = UTC.OWNER),'N') AS PK_YN,
-                   UTC.DATA_TYPE AS DATA_TYPE,
-                   CASE WHEN UTC.DATA_TYPE='VARCHAR2' OR UTC.DATA_TYPE='VARCHAR' OR UTC.DATA_TYPE='CHAR'
+  			SELECT 
+                   UTC.COLUMN_ID AS ORDINAL_POSITION,
+                   NVL(UTC.COLUMN_NAME,'') AS COLUMN_NAME,
+                   UTC.DATA_TYPE AS COLUMN_TYPE,  
+                   --UTC.DATA_DEFAULT AS COLUMN_DEFAULT,
+                   CASE WHEN UTC.NULLABLE ='Y' THEN 'TRUE' ELSE 'FALSE'END AS IS_NULL,
+                   NVL(SUBSTRB(UCT.COMMENTS,1,500),'') AS COLUMN_COMMENT,     
+                                      CASE WHEN UTC.DATA_TYPE='VARCHAR2' OR UTC.DATA_TYPE='VARCHAR' OR UTC.DATA_TYPE='CHAR'
                            THEN UTC.DATA_LENGTH
                         WHEN UTC.DATA_TYPE = 'NUMBER' AND UTC.DATA_PRECISION > 0 AND UTC.DATA_SCALE >= 0
                            THEN UTC.DATA_PRECISION
@@ -100,13 +92,9 @@
                         WHEN UTC.DATA_TYPE='CLOB' OR UTC.DATA_TYPE='BLOB' OR UTC.DATA_TYPE='LONG' OR UTC.DATA_TYPE LIKE '%ROW%'
                            THEN NULL
                         ELSE DATA_LENGTH
-                    END AS DATA_PZN_LEN, 
-                    CASE WHEN UTC.DATA_TYPE = 'NUMBER' AND UTC.DATA_PRECISION > 0 AND UTC.DATA_SCALE > 0
-                          THEN UTC.DATA_SCALE
-                     END AS DATA_DCL_LEN, 
-                   UTC.NULLABLE AS NULL_YN,
-                   --NVL(UTC.DATA_DEFAULT,'') AS DEF_VL,
-                   UTC.OWNER AS GRANTED_SCHEMA_NM
+                    END AS EXTRA,
+                   UTC.DATA_PRECISION AS NUMERIC_PRECISION,
+                   UTC.DATA_SCALE AS NUMERIC_SCALE              
               FROM ALL_TAB_COLUMNS UTC, 
                    ALL_COL_COMMENTS UCT
              WHERE UTC.TABLE_NAME = UCT.TABLE_NAME
@@ -151,15 +139,43 @@
                                     'OE',
                                     'HR',
                                     'SH')
-             ORDER BY GRANTED_SCHEMA_NM, TBL_ENM, COL_SNO
+                                    ORDER BY ORDINAL_POSITION
 	</select>
-	<select id="getConstraintInform" parameterType="map" resultType="map" databaseId="ORA">
-		
+	<select id="getConstraintInform" parameterType="map" resultType="com.k4m.experdb.db2pg.common.LowerKeyMap" databaseId="ORA">
+		  SELECT  
+		  		  UC.OWNER AS CONSTRAINT_SCHEMA,
+		  		  UC.R_CONSTRAINT_NAME AS CONSTRAINT_NAME,
+		  		  UC.TABLE_NAME AS TABLE_NAME,
+		  		  UIC.COLUMN_NAME AS COLUMN_NAME,
+		  		  UC.CONSTRAINT_TYPE AS CONSTRAINT_TYPE,
+				  UI.INDEX_TYPE AS INDEX_TYPE,
+				  UC.DELETE_RULE AS DELETE_RULE
+          FROM ALL_CONSTRAINTS UC , ALL_INDEXES UI, USER_IND_COLUMNS UIC
+          WHERE 
+           	   UI.INDEX_NAME = UC.INDEX_NAME
+           	AND UI.OWNER = UC.OWNER
+           	AND UI.INDEX_NAME = UIC.INDEX_NAME
+          	AND UI.OWNER = #{TABLE_SCHEMA} 
+          	AND UC.TABLE_NAME = #{TABLE_NAME}
 	</select>
-	<select id="getKeyInform" parameterType="map" resultType="map" databaseId="ORA">
-	
+	<select id="getKeyInform" parameterType="map" resultType="com.k4m.experdb.db2pg.common.LowerKeyMap" databaseId="ORA">
+		    SELECT 	UI.TABLE_OWNER AS INDEX_SCHEMA,
+		          	UI.INDEX_NAME AS INDEX_NAME,                         
+		          	UI.TABLE_NAME AS TABLE_NAME,
+		          	UIC.COLUMN_NAME AS COLUMN_NAME,
+		          	UI.INDEX_TYPE AS INDX_TYPE             
+		    FROM 	ALL_INDEXES UI, 
+		          	ALL_CONSTRAINTS UC, 
+		          	USER_IND_COLUMNS UIC 
+		    WHERE 	UI.TABLE_OWNER = #{TABLE_SCHEMA}
+		      		AND UI.TABLE_NAME = #{TABLE_NAME}
+		      		AND UI.INDEX_NAME =UIC.INDEX_NAME(+)  
+		      		AND UI.INDEX_NAME = UC.INDEX_NAME(+)                    
+		      		AND UI.TABLE_NAME = UC.TABLE_NAME(+)   
+		      		AND UI.OWNER = UC.OWNER(+)
+		      		AND UI.INDEX_TYPE NOT IN('LOB','IOT - TOP')
+		      	ORDER BY TABLE_NAME, INDEX_NAME
 	</select>
-	
 	
 	
 	<select id="getTableNames" parameterType="map" resultType="java.lang.String" databaseId="MSS">
