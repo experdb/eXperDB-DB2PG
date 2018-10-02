@@ -1,6 +1,8 @@
 package com.k4m.experdb.db2pg.writer;
 
 import java.sql.Connection;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.apache.commons.dbcp2.DelegatingConnection;
 import org.postgresql.copy.CopyIn;
@@ -18,8 +20,8 @@ public class DBWriter {
 	
 	private CopyIn copyIn = null;
 	private Connection conn;
-	private static int processBytes = 0;
-	private static int processLines = 0;
+	private int processBytes = 0;
+	private int processLines = 0;
 	private int processErrorLInes = 0;
 	private int errLine = -1;
 	private int errCount = 0;
@@ -36,20 +38,20 @@ public class DBWriter {
 		this.processErrorLInes = processErrorLInes;
 	}
 
-	public static int getProcessBytes() {
+	public int getProcessBytes() {
 		return processBytes;
 	}
 
-	public static void setProcessBytes(int processBytes) {
-		DBWriter.processBytes = processBytes;
+	public void setProcessBytes(int processBytes) {
+		this.processBytes = processBytes;
 	}
 
-	public static int getProcessLines() {
+	public int getProcessLines() {
 		return processLines;
 	}
 
-	public static void setProcessLines(int processLines) {
-		DBWriter.processLines = processLines;
+	public void setProcessLines(int processLines) {
+		this.processLines = processLines;
 	}
 
 	public int getErrCount() {
@@ -70,6 +72,9 @@ public class DBWriter {
 
 	public DBWriter(String poolName){
 		this.poolName = poolName;
+		this.processLines = 0;
+		this.processBytes = 0;
+		this.errCount = 0;
 	}
 	
 	public void DBCPPoolManagerConn() {
@@ -77,7 +82,6 @@ public class DBWriter {
 
 	public void DBWrite(String lineStr, String table_nm) throws Exception {
 		try {
-			processLines = 0;
 			
 			if(conn == null)
 			conn = DBCPPoolManager.getConnection(poolName);
@@ -91,7 +95,7 @@ public class DBWriter {
 
 			byte[] bytes = (lineStr).getBytes(ConfigInfo.TAR_DB_CONFIG.CHARSET);
 			copyIn.writeToCopy(bytes, 0, bytes.length);
-			processBytes +=bytes.length;
+			processBytes += bytes.length;
 			processLines += copyIn.endCopy();
 			
 			conn.commit();
@@ -102,8 +106,14 @@ public class DBWriter {
 				processErrorLInes = errCount;
 				String strErrLine = StrUtil.strGetLine(e.toString());
 				int intErrLine = -1;
+				
+				Pattern p = Pattern.compile("(^[0-9]*$)");
+				 Matcher m = p.matcher(strErrLine);
+
 				if(strErrLine != null && !strErrLine.equals("")) {
-					intErrLine = Integer.parseInt(strErrLine);
+					if(m.find()) {
+						intErrLine = Integer.parseInt(strErrLine);
+					}
 				}
 				System.out.println("intErrLine : " + intErrLine);
 				

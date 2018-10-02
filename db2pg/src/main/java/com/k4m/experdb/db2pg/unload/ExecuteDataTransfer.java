@@ -256,6 +256,10 @@ public class ExecuteDataTransfer implements Runnable{
 		} finally {
 			try {
 				if(ConfigInfo.FILE_WRITER_MODE) fileWriter.closeFileChannels();
+				
+				if(ConfigInfo.DB_WRITER_MODE) {
+					LogUtils.info("COMPLETE UNLOAD (TABLE_NAME : " +tableName + ", getProcessLines : " + dbWriter.getProcessLines() + ", getProcessBytes : " + dbWriter.getProcessBytes() + " , getProcessErrorLInes : " + dbWriter.getProcessErrorLInes() + ") !!!",ExecuteQuery.class);
+				}
 				if(rs != null) rs.close();
 			} catch (Exception e) {
 			}
