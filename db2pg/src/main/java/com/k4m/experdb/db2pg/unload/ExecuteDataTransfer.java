@@ -227,14 +227,13 @@ public class ExecuteDataTransfer implements Runnable{
         	
         	if (bf.length() != 0){
         		
-    			if(intErrCnt > ConfigInfo.TAR_TABLE_ERR_CNT_EXIT) {
-
-    			} else {
         		
-	    			if(ConfigInfo.DB_WRITER_MODE) {
+	    		if(ConfigInfo.DB_WRITER_MODE) {
+	       			if(!(intErrCnt > ConfigInfo.TAR_TABLE_ERR_CNT_EXIT)) {
 	    				dbWriter.DBWrite(bf.toString(), this.tableName);
-	    			} 
-    			}
+	    			}
+	    		} 
+   
     			
     			if(ConfigInfo.FILE_WRITER_MODE) {
     				fileWriter.dataWriteToFile(bf.toString(), this.tableName);
@@ -256,7 +255,7 @@ public class ExecuteDataTransfer implements Runnable{
 				LogUtils.error("EXCEPTION!!!!", ExecuteDataTransfer.class,e);
 		} finally {
 			try {
-				fileWriter.closeFileChannels();
+				if(ConfigInfo.FILE_WRITER_MODE) fileWriter.closeFileChannels();
 				if(rs != null) rs.close();
 			} catch (Exception e) {
 			}

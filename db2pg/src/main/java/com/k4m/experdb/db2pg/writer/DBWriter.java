@@ -18,8 +18,9 @@ public class DBWriter {
 	
 	private CopyIn copyIn = null;
 	private Connection conn;
-	private static int successByteCount;
-	private static int insCnt = 0;
+	private static int processBytes = 0;
+	private static int processLines = 0;
+	private int processErrorLInes = 0;
 	private int errLine = -1;
 	private int errCount = 0;
 	
@@ -27,6 +28,30 @@ public class DBWriter {
 	private String poolName = "";
 	
 	
+	public int getProcessErrorLInes() {
+		return processErrorLInes;
+	}
+
+	public void setProcessErrorLInes(int processErrorLInes) {
+		this.processErrorLInes = processErrorLInes;
+	}
+
+	public static int getProcessBytes() {
+		return processBytes;
+	}
+
+	public static void setProcessBytes(int processBytes) {
+		DBWriter.processBytes = processBytes;
+	}
+
+	public static int getProcessLines() {
+		return processLines;
+	}
+
+	public static void setProcessLines(int processLines) {
+		DBWriter.processLines = processLines;
+	}
+
 	public int getErrCount() {
 		return errCount;
 	}
@@ -52,7 +77,7 @@ public class DBWriter {
 
 	public void DBWrite(String lineStr, String table_nm) throws Exception {
 		try {
-			insCnt = 0;
+			processLines = 0;
 			
 			if(conn == null)
 			conn = DBCPPoolManager.getConnection(poolName);
@@ -66,18 +91,18 @@ public class DBWriter {
 
 			byte[] bytes = (lineStr).getBytes(ConfigInfo.TAR_DB_CONFIG.CHARSET);
 			copyIn.writeToCopy(bytes, 0, bytes.length);
-			successByteCount +=bytes.length;
-			insCnt += copyIn.endCopy();
+			processBytes +=bytes.length;
+			processLines += copyIn.endCopy();
 			
 			conn.commit();
 			
 		} catch (Exception e) {
 			try {	
 				errCount += 1;
-				
+				processErrorLInes = errCount;
 				String strErrLine = StrUtil.strGetLine(e.toString());
 				int intErrLine = -1;
-				if(strErrLine != null || strErrLine.equals("") || strErrLine.equals("0")) {
+				if(strErrLine != null && !strErrLine.equals("")) {
 					intErrLine = Integer.parseInt(strErrLine);
 				}
 				System.out.println("intErrLine : " + intErrLine);
@@ -104,8 +129,8 @@ public class DBWriter {
 				}
 			}catch(Exception e){
 			}
-			System.out.println("[" + table_nm + "] successByteCnt : " + successByteCount);
-			System.out.println("[" + table_nm + "] InsertCnt : " + insCnt);
+			System.out.println("[" + table_nm + "] successByteCnt : " + processBytes);
+			System.out.println("[" + table_nm + "] InsertCnt : " + processLines);
 		}
 				
 	}
