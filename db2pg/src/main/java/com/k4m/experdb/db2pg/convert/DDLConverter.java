@@ -20,7 +20,7 @@ import com.k4m.experdb.db2pg.convert.db.ConvertDBUtils;
 import com.k4m.experdb.db2pg.convert.exception.NotSupportDatabaseTypeException;
 import com.k4m.experdb.db2pg.convert.make.PgDDLMaker;
 import com.k4m.experdb.db2pg.convert.map.ConvertMapper;
-import com.k4m.experdb.db2pg.convert.map.MySqlConvertMapper;
+import com.k4m.experdb.db2pg.convert.map.SqlConvertMapper;
 import com.k4m.experdb.db2pg.convert.table.Column;
 import com.k4m.experdb.db2pg.convert.table.Table;
 import com.k4m.experdb.db2pg.convert.type.DDL_TYPE;
@@ -40,7 +40,7 @@ public class DDLConverter {
 	public static DDLConverter getInstance() throws Exception {
 		DDLConverter ddlConverter = new DDLConverter();
 		if(ConfigInfo.SRC_DB_CONFIG.DB_TYPE.equals(Constant.DB_TYPE.MYSQL) || ConfigInfo.SRC_DB_CONFIG.DB_TYPE.equals(Constant.DB_TYPE.ORA) || ConfigInfo.SRC_DB_CONFIG.DB_TYPE.equals(Constant.DB_TYPE.MSS)){
-			ddlConverter.convertMapper = ConvertMapper.makeConvertMapper(MySqlConvertMapper.class);
+			ddlConverter.convertMapper = ConvertMapper.makeConvertMapper(SqlConvertMapper.class);
 		}else{
 			throw new NotSupportDatabaseTypeException(ConfigInfo.SRC_DB_CONFIG.DB_TYPE);
 		}

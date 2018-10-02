@@ -18,7 +18,7 @@ import com.k4m.experdb.db2pg.convert.DDLString;
 import com.k4m.experdb.db2pg.convert.db.ConvertDBUtils;
 import com.k4m.experdb.db2pg.convert.make.PgDDLMaker;
 import com.k4m.experdb.db2pg.convert.map.ConvertMapper;
-import com.k4m.experdb.db2pg.convert.map.MySqlConvertMapper;
+import com.k4m.experdb.db2pg.convert.map.SqlConvertMapper;
 import com.k4m.experdb.db2pg.convert.map.exception.MapperNotFoundException;
 import com.k4m.experdb.db2pg.convert.table.Column;
 import com.k4m.experdb.db2pg.convert.table.Table;
@@ -35,7 +35,7 @@ public class DDLConvertTest {
 	public DDLConvertTest() {
 		try {
 			
-			ConvertMapper<?> convertMapper = ConvertMapper.makeConvertMapper(MySqlConvertMapper.class);
+			ConvertMapper<?> convertMapper = ConvertMapper.makeConvertMapper(SqlConvertMapper.class);
 			DBConfigInfo dbConfigInfo = new DBConfigInfo();
 			dbConfigInfo.SERVERIP = "PIDSVR";
 			dbConfigInfo.PORT = String.valueOf(3306);

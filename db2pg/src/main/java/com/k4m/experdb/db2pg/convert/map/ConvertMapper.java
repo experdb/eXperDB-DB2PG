@@ -14,8 +14,8 @@ public abstract class ConvertMapper <T> {
 	protected List<ConvertObject> convertPatternValues;
 	
 	public static ConvertMapper<?> makeConvertMapper(Class<?> clazz) throws MapperNotFoundException {
-		if(clazz == MySqlConvertMapper.class) {
-			return new MySqlConvertMapper();
+		if(clazz == SqlConvertMapper.class) {
+			return new SqlConvertMapper();
 		}
 		throw new MapperNotFoundException();
 	}
