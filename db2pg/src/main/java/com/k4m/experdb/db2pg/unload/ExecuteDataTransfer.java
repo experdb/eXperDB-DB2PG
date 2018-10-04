@@ -161,7 +161,10 @@ public class ExecuteDataTransfer implements Runnable{
         	
         	LogUtils.debug(String.format("[%s-CREATE_PIPE_LINE]",this.tableName),ExecuteQuery.class);
         	LogUtils.debug(String.format("[%s-CREATE_BUFFEREDOUTPUTSTREAM]",this.tableName),ExecuteQuery.class);
+        	
+        	if(ConfigInfo.FILE_WRITER_MODE) {
         	LogUtils.debug("[START_FETCH_DATA]" + outputFileName,ExecuteQuery.class);
+        	}
         	
         	if(tableName.equals("TEST_UNQ")) {
         		System.out.println("TEST_UNQ debug");
@@ -267,7 +270,9 @@ public class ExecuteDataTransfer implements Runnable{
 
 			CloseConn(SrcConn, preSrcStmt);
 			status = 0;
-			LogUtils.debug("[END_FETCH_DATA]" + outputFileName,ExecuteQuery.class);
+			if(ConfigInfo.FILE_WRITER_MODE) {
+				LogUtils.debug("[END_FETCH_DATA]" + outputFileName,ExecuteQuery.class);
+			}
 			LogUtils.info("COMPLETE UNLOAD (TABLE_NAME : " +tableName + ", ROWNUM : " + rowCnt + ") !!!",ExecuteQuery.class);
 		}
 	}
