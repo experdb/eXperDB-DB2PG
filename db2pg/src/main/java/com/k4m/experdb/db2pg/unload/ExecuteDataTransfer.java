@@ -205,7 +205,7 @@ public class ExecuteDataTransfer implements Runnable{
         		//ByteBuffer byteBuffer = ByteBuffer.allocateDirect(ConfigInfo.BUFFER_SIZE);
         		
 
-        		if((rowCnt % ConfigInfo.STATEMENT_FETCH_SIZE == 0) || (bf.length() > intBUFFER_SIZE)) {
+        		if((rowCnt % ConfigInfo.SRC_TABLE_COPY_SEGMENT_SIZE == 0) || (bf.length() > intBUFFER_SIZE)) {
         			
         			if(ConfigInfo.DB_WRITER_MODE) {
 
