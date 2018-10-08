@@ -198,6 +198,7 @@ public class DDLConverter {
 			case Constant.DB_TYPE.ORA:
 				break;
 			case Constant.DB_TYPE.MSS:
+				mssqlTableConvert(table);
 				break;
 			default:
 				throw new NotSupportDatabaseTypeException(ConfigInfo.SRC_DB_CONFIG.DB_TYPE);
@@ -247,6 +248,28 @@ public class DDLConverter {
 						+ "\n * Column : {0}.{1}.{2}" + "\n */", table.getSchemaName(), table.getName(),
 						column.getName()));
 			}
+		}
+	}
+	
+	
+	private void mssqlTableConvert(Table table) throws NotSupportDatabaseTypeException {
+		for (Column column : table.getColumns()) {
+			for (ConvertObject convertVO : convertMapper.getPatternList()) {
+				if (convertVO.getPattern().matcher(column.getType()).find()) {		
+					if (convertVO.getToValue().equals("VARCHAR")) {
+						if(column.getTypeLength() == -1){
+							column.setType(String.format("%s", "TEXT"));
+						}else{
+							column.setType(String.format("%s(%d)", convertVO.getToValue(),column.getTypeLength()));	
+						}
+					}else{
+						column.setType(convertVO.getToValue());
+					}
+					break;
+				}
+			}
+			String onUptRedix = "^(?i)on update \\w*$";
+			Pattern onUptPattern = Pattern.compile(onUptRedix);
 		}
 	}
 }

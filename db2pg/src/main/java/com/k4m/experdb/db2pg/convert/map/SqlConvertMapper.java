@@ -32,16 +32,17 @@ public class SqlConvertMapper extends ConvertMapper<SqlConvertMapper> {
 	
 	@Override
 	protected void init() throws FileNotFoundException, IOException, ParseException {
-		DBConfigInfo dbConfigInfo = new DBConfigInfo();
+		System.out.println("ConfigInfo.SRC_DB_CONFIG.DB_TYPE="+ConfigInfo.SRC_DB_CONFIG.DB_TYPE);
 		JSONParser jsonParser = new JSONParser();
 		JSONObject convMapObj = (JSONObject)jsonParser.parse(new InputStreamReader(SqlConvertMapper.class.getResourceAsStream("/convert_map.json")));
-		
 		convertPatternValues = new ArrayList<ConvertObject>(30);
 		convertDefaultValues = new ArrayList<ConvertObject>(5);
 		for(Object key : convMapObj.keySet().toArray()) {
 			JSONObject jobj = (JSONObject)convMapObj.get(key);
 			String toValue = (String)jobj.get("postgres");
-			JSONArray asValues = (JSONArray) jobj.get(dbConfigInfo.DB_TYPE);
+			//JSONArray asValues = (JSONArray) jobj.get("mysql");
+			JSONArray asValues = (JSONArray) jobj.get("mss");
+			//JSONArray asValues = (JSONArray) jobj.get((ConfigInfo.SRC_DB_CONFIG.DB_TYPE).toLowerCase());
 			if(toValue != null && asValues != null) {
 				for (Object asValue : asValues) {
 					if(asValue instanceof String) {

@@ -130,6 +130,8 @@ public class MsSQLConvertDBUtils {
         		if(obj != null) column.setNumericScale(Integer.valueOf(obj.toString()));
         		obj = result.get("column_type");
         		column.setType(obj!=null?obj.toString():null);
+        		obj = result.get("type_length");
+        		if(obj != null) column.setTypeLength(Integer.valueOf(obj.toString()));
         		obj = result.get("column_comment");
         		column.setComment(obj!=null?obj.toString():null);
         		obj = result.get("seq_start");

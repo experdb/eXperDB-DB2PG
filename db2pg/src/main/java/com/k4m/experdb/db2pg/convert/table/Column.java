@@ -15,6 +15,14 @@ public class Column {
 	private long seqStart;
 	private long seqMinValue;
 	private long seqIncValue;
+	private Integer typeLength;
+	
+	public Integer getTypeLength() {
+		return typeLength;
+	}
+	public void setTypeLength(Integer typeLength) {
+		this.typeLength = typeLength;
+	}
 	public Integer getOrdinalPosition() {
 		return ordinalPosition;
 	}

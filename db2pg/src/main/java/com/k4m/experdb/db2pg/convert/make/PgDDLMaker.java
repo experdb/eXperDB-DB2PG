@@ -145,7 +145,6 @@ public class PgDDLMaker<T> {
 		}//end column
 		
 		for(Key<?> key : table.getKeys()) {
-			System.out.println("@@@@@@@@@@@@@@@@@="+key.getType());
 			switch(key.getType()) {
 			case PRIMARY:
 				try {
