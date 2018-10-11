@@ -40,9 +40,7 @@ public class SqlConvertMapper extends ConvertMapper<SqlConvertMapper> {
 		for(Object key : convMapObj.keySet().toArray()) {
 			JSONObject jobj = (JSONObject)convMapObj.get(key);
 			String toValue = (String)jobj.get("postgres");
-			//JSONArray asValues = (JSONArray) jobj.get("mysql");
-			JSONArray asValues = (JSONArray) jobj.get("mss");
-			//JSONArray asValues = (JSONArray) jobj.get((ConfigInfo.SRC_DB_CONFIG.DB_TYPE).toLowerCase());
+			JSONArray asValues = (JSONArray) jobj.get(ConfigInfo.SRC_DB_CONFIG.DB_TYPE.toLowerCase());
 			if(toValue != null && asValues != null) {
 				for (Object asValue : asValues) {
 					if(asValue instanceof String) {
