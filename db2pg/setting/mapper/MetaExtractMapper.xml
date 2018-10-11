@@ -10,7 +10,7 @@
 <result property="ORDINAL_POSITION" column="ORDINAL_POSITION" /> 
 <result property="COLUMN_NAME" column="COLUMN_NAME" /> 
 <result property="COLUMN_TYPE" column="COLUMN_TYPE" /> 
-<result property="COLUMN_DEFAULT" column="COLUMN_DEFAULT" jdbcType="CLOB" javaType="java.lang.String" />
+<result property="COLUMN_DEFAULT" column="COLUMN_DEFAULT" jdbcType="VARCHAR" javaType="java.lang.String" />
 <result property="IS_NULL" column="IS_NULL" />
 <result property="COLUMN_COMMENT" column="COLUMN_COMMENT" /> 
 <result property="NUMERIC_PRECISION" column="NUMERIC_PRECISION" />
