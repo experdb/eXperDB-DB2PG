@@ -97,7 +97,22 @@ public class PgDDLMaker<T> {
 						+ "\n * But, PostgresQL has needed enum type create."
 						+ "\n * So, eXperDB-DB2PG is automatically enum type create."
 						+ "\n * TypeName : {1}_{2}\n */", table.getSchemaName(),table.getName(),column.getName()));
-			} else {
+			}else if(ConfigInfo.SRC_DB_CONFIG.DB_TYPE.equals(Constant.DB_TYPE.MSS) && SqlPattern.check(column.getType(), SqlPattern.MYSQL.ENUM)) {
+				String typeName = String.format("%s_%s_enum", table.getName(), column.getName());
+				tmpsb.append("CREATE TYPE \"");
+				tmpsb.append(typeName);
+				tmpsb.append("\" AS ");
+				tmpsb.append(column.getType());
+				tmpStringVOs.add(new DDLString().setString(tmpsb.toString()).setDDLType(DDL_TYPE.CREATE)
+						.setCommandType(COMMAND_TYPE.TYPE).setPriority(1));
+				tmpsb.setLength(0);
+				ctsb.append(typeName);
+				table.alertComments().add(MessageFormat.format("/*"
+						+ "\n * MS-SQL {0}.{1} table''s {2} column type is enum."
+						+ "\n * But, PostgresQL has needed enum type create."
+						+ "\n * So, eXperDB-DB2PG is automatically enum type create."
+						+ "\n * TypeName : {1}_{2}\n */", table.getSchemaName(),table.getName(),column.getName()));
+			}else {
 				ctsb.append(column.getType());
 			}
 
