@@ -4,7 +4,20 @@
      "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
      
 <mapper namespace="com.k4m.experdb.db2pg.mapper.MetaExtractMapper">
-<select id="getTableNames" parameterType="map" resultType="java.lang.String" databaseId="ORA">
+
+
+<resultMap id="getColumnListResult" type="HashMap"> 
+<result property="ORDINAL_POSITION" column="ORDINAL_POSITION" /> 
+<result property="COLUMN_NAME" column="COLUMN_NAME" /> 
+<result property="COLUMN_TYPE" column="COLUMN_TYPE" /> 
+<result property="COLUMN_DEFAULT" column="COLUMN_DEFAULT" jdbcType="CLOB" javaType="java.lang.String" />
+<result property="IS_NULL" column="IS_NULL" />
+<result property="COLUMN_COMMENT" column="COLUMN_COMMENT" /> 
+<result property="NUMERIC_PRECISION" column="NUMERIC_PRECISION" />
+<result property="NUMERIC_SCALE" column="NUMERIC_SCALE" /> </resultMap>
+
+
+	<select id="getTableNames" parameterType="map" resultType="java.lang.String" databaseId="ORA">
 		SELECT OBJECT_NAME as TABLE_NAME FROM ALL_OBJECTS 
 		WHERE OWNER=#{TABLE_SCHEMA} 
 			AND OBJECT_NAME NOT IN ('TOAD_PLAN_TABLE','PLAN_TABLE') 
@@ -75,71 +88,82 @@
                               'SH')
 		ORDER BY SCHEMA_NAME, TABLE_NAME
 	</select>
-	<select id="getColumnInform" parameterType="map" resultType="com.k4m.experdb.db2pg.common.LowerKeyMap" databaseId="ORA">
-  			SELECT 
-                   UTC.COLUMN_ID AS ORDINAL_POSITION,
-                   NVL(UTC.COLUMN_NAME,'') AS COLUMN_NAME,
-                   UTC.DATA_TYPE AS COLUMN_TYPE,  
-                   --UTC.DATA_DEFAULT AS COLUMN_DEFAULT,
-                   CASE WHEN UTC.NULLABLE ='Y' THEN 'TRUE' ELSE 'FALSE'END AS IS_NULL,
-                   NVL(SUBSTRB(UCT.COMMENTS,1,500),'') AS COLUMN_COMMENT,     
-                                      CASE WHEN UTC.DATA_TYPE='VARCHAR2' OR UTC.DATA_TYPE='VARCHAR' OR UTC.DATA_TYPE='CHAR'
-                           THEN UTC.DATA_LENGTH
-                        WHEN UTC.DATA_TYPE = 'NUMBER' AND UTC.DATA_PRECISION > 0 AND UTC.DATA_SCALE >= 0
-                           THEN UTC.DATA_PRECISION
-                        WHEN UTC.DATA_TYPE = 'NUMBER'
-                           THEN NULL
-                        WHEN UTC.DATA_TYPE='CLOB' OR UTC.DATA_TYPE='BLOB' OR UTC.DATA_TYPE='LONG' OR UTC.DATA_TYPE LIKE '%ROW%'
-                           THEN NULL
-                        ELSE DATA_LENGTH
-                    END AS EXTRA,
-                   UTC.DATA_PRECISION AS NUMERIC_PRECISION,
-                   UTC.DATA_SCALE AS NUMERIC_SCALE              
-              FROM ALL_TAB_COLUMNS UTC, 
-                   ALL_COL_COMMENTS UCT
-             WHERE UTC.TABLE_NAME = UCT.TABLE_NAME
-               AND UTC.TABLE_NAME NOT LIKE 'BIN$%'
-               AND UTC.COLUMN_NAME = UCT.COLUMN_NAME(+)
-               AND UTC.OWNER = UCT.OWNER
-               AND UTC.OWNER = #{TABLE_SCHEMA}
-               AND UTC.TABLE_NAME = #{TABLE_NAME}
-               AND UTC.OWNER NOT IN ('SCOTT',
-                                    'OWBSYS_AUDIT',
-                                    'OWBSYS',
-                                    'APEX_030200',
-                                    'FLOWS_FILES',
-                                    'APEX_PUBLIC_USER',
-                                    'MGMT_VIEW',
-                                    'SYSMAN',
-                                    'SPATIAL_CSW_ADMIN_USR',
-                                    'SPATIAL_WFS_ADMIN_USR',
-                                    'MDDATA',
-                                    'OLAPSYS',
-                                    'ORDSYS',
-                                    'ORDDATA',
-                                    'ORDPLUGINS',
-                                    'MDSYS',
-                                    'SI_INFORMTN_SCHEMA',
-                                    'XS$NULL',
-                                    'ANONYMOUS',
-                                    'XDB',
-                                    'CTXSYS',
-                                    'EXFSYS',
-                                    'WMSYS',
-                                    'APPQOSSYS',
-                                    'DBSNMP',
-                                    'ORACLE_OCM',
-                                    'DIP',
-                                    'OUTLN',
-                                    'SYSTEM',
-                                    'SYS',
-                                    --'PM',
-                                    'BI',
-                                    'IX',
-                                    'OE',
-                                    'HR',
-                                    'SH')
-                                    ORDER BY ORDINAL_POSITION
+	<select id="getColumnInform" parameterType="map" resultType="HashMap" resultMap="getColumnListResult" databaseId="ORA"> 
+  			SELECT
+  			A.ORDINAL_POSITION AS ORDINAL_POSITION,
+  			A.COLUMN_NAME AS COLUMN_NAME,
+  			CASE WHEN A.EXTRA IS NULL  THEN A.COLUMN_TYPE ELSE A.COLUMN_TYPE || '('|| EXTRA || ')' END AS COLUMN_TYPE,
+  			A.COLUMN_DEFAULT AS COLUMN_DEFAULT,
+  			A.IS_NULL AS IS_NULL,
+  			A.COLUMN_COMMENT AS COLUMN_COMMENT,
+  			A.NUMERIC_PRECISION AS NUMERIC_PRECISION,
+	        A.NUMERIC_SCALE AS NUMERIC_SCALE
+  			FROM( 
+  				SELECT 
+	                   UTC.COLUMN_ID AS ORDINAL_POSITION,
+	                   NVL(UTC.COLUMN_NAME,'') AS COLUMN_NAME,
+	                   UTC.DATA_TYPE AS COLUMN_TYPE,  
+	                   UTC.DATA_DEFAULT AS COLUMN_DEFAULT,
+	                   CASE WHEN UTC.NULLABLE ='Y' THEN 'TRUE' ELSE 'FALSE'END AS IS_NULL,
+	                   NVL(SUBSTRB(UCT.COMMENTS,1,500),'') AS COLUMN_COMMENT,     
+	                   CASE WHEN UTC.DATA_TYPE='VARCHAR2' OR UTC.DATA_TYPE='VARCHAR' OR UTC.DATA_TYPE='CHAR'
+	                           THEN UTC.DATA_LENGTH
+	                        WHEN UTC.DATA_TYPE = 'NUMBER' AND UTC.DATA_PRECISION > 0 AND UTC.DATA_SCALE >= 0
+	                           THEN UTC.DATA_PRECISION
+	                        WHEN UTC.DATA_TYPE = 'NUMBER'
+	                           THEN NULL
+	                        WHEN UTC.DATA_TYPE='CLOB' OR UTC.DATA_TYPE='BLOB' OR UTC.DATA_TYPE='LONG' OR UTC.DATA_TYPE LIKE '%ROW%'
+	                           THEN NULL
+	                        ELSE DATA_LENGTH
+	                    END AS EXTRA,
+	                   UTC.DATA_PRECISION AS NUMERIC_PRECISION,
+	                   UTC.DATA_SCALE AS NUMERIC_SCALE              
+	              FROM ALL_TAB_COLUMNS UTC, 
+	                   ALL_COL_COMMENTS UCT
+	             WHERE UTC.TABLE_NAME = UCT.TABLE_NAME
+	               AND UTC.TABLE_NAME NOT LIKE 'BIN$%'
+	               AND UTC.COLUMN_NAME = UCT.COLUMN_NAME(+)
+	               AND UTC.OWNER = UCT.OWNER
+	               AND UTC.OWNER = #{TABLE_SCHEMA}
+	               AND UTC.TABLE_NAME = #{TABLE_NAME}
+	               AND UTC.OWNER NOT IN ('SCOTT',
+	                                    'OWBSYS_AUDIT',
+	                                    'OWBSYS',
+	                                    'APEX_030200',
+	                                    'FLOWS_FILES',
+	                                    'APEX_PUBLIC_USER',
+	                                    'MGMT_VIEW',
+	                                    'SYSMAN',
+	                                    'SPATIAL_CSW_ADMIN_USR',
+	                                    'SPATIAL_WFS_ADMIN_USR',
+	                                    'MDDATA',
+	                                    'OLAPSYS',
+	                                    'ORDSYS',
+	                                    'ORDDATA',
+	                                    'ORDPLUGINS',
+	                                    'MDSYS',
+	                                    'SI_INFORMTN_SCHEMA',
+	                                    'XS$NULL',
+	                                    'ANONYMOUS',
+	                                    'XDB',
+	                                    'CTXSYS',
+	                                    'EXFSYS',
+	                                    'WMSYS',
+	                                    'APPQOSSYS',
+	                                    'DBSNMP',
+	                                    'ORACLE_OCM',
+	                                    'DIP',
+	                                    'OUTLN',
+	                                    'SYSTEM',
+	                                    'SYS',
+	                                    --'PM',
+	                                    'BI',
+	                                    'IX',
+	                                    'OE',
+	                                    'HR',
+	                                    'SH')
+	                                    ORDER BY ORDINAL_POSITION
+  			)A                      
 	</select>
 	<select id="getConstraintInform" parameterType="map" resultType="com.k4m.experdb.db2pg.common.LowerKeyMap" databaseId="ORA">
 		  SELECT  
@@ -147,6 +171,7 @@
 		  		  UC.R_CONSTRAINT_NAME AS CONSTRAINT_NAME,
 		  		  UC.TABLE_NAME AS TABLE_NAME,
 		  		  UIC.COLUMN_NAME AS COLUMN_NAME,
+		  		  UIC.COLUMN_POSITION AS ORDINAL_POSITION,
 		  		  UC.CONSTRAINT_TYPE AS CONSTRAINT_TYPE,
 				  UI.INDEX_TYPE AS INDEX_TYPE,
 				  UC.DELETE_RULE AS DELETE_RULE
@@ -163,6 +188,7 @@
 		          	UI.INDEX_NAME AS INDEX_NAME,                         
 		          	UI.TABLE_NAME AS TABLE_NAME,
 		          	UIC.COLUMN_NAME AS COLUMN_NAME,
+		          	UIC.COLUMN_POSITION AS ORDINAL_POSITION,
 		          	UI.INDEX_TYPE AS INDX_TYPE             
 		    FROM 	ALL_INDEXES UI, 
 		          	ALL_CONSTRAINTS UC, 
