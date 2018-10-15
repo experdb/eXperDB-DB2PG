@@ -10,6 +10,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import com.k4m.experdb.db2pg.config.ConfigInfo;
 
 public class FileWriter {
+	protected String outputDirectory = ConfigInfo.OUTPUT_DIRECTORY + "data/";
 	private  FileChannel fileChannels;
 	private  FileChannel badFileChannels ;
 	private static int successByteCount; // Writer가 처리한 총 Byte 수
@@ -19,7 +20,7 @@ public class FileWriter {
 	public FileWriter(){}
 	
 	public FileWriter(String table_nm) throws IOException{		
-			fileCreater(ConfigInfo.OUTPUT_DIRECTORY + table_nm+ ".out");			
+			fileCreater(outputDirectory + table_nm+ ".out");			
 	}
 	
 	public boolean dataWriteToFile(String lineStr, String table_nm) throws IOException {
@@ -32,7 +33,7 @@ public class FileWriter {
 			successByteCount += fileChannels.write(byteBuffer);
 		} catch (Exception e) {
 			// bad파일 생성
-			badFileCreater(ConfigInfo.OUTPUT_DIRECTORY + table_nm + ".bad");
+			badFileCreater(outputDirectory + table_nm + ".bad");
 			badFileWrite(lineStr);
 			e.printStackTrace();
 			return false;

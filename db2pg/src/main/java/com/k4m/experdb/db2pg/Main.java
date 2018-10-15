@@ -31,7 +31,8 @@ public class Main {
 		LogUtils.info("[DB2PG_START]",Main.class);
 		
 		//check output directory 
-		checkDirectory(ConfigInfo.OUTPUT_DIRECTORY);
+		//checkDirectory(ConfigInfo.OUTPUT_DIRECTORY);
+		makeDirectory();
 		
 		if(ConfigInfo.SRC_DDL_EXPORT) {
 			
@@ -90,6 +91,15 @@ public class Main {
 			}
 		}
 		
+		
+	}
+	
+	private static void makeDirectory() throws Exception {
+		
+		checkDirectory(ConfigInfo.OUTPUT_DIRECTORY);
+		checkDirectory(ConfigInfo.OUTPUT_DIRECTORY+"data/");
+		checkDirectory(ConfigInfo.OUTPUT_DIRECTORY+"ddl/");
+		checkDirectory(ConfigInfo.OUTPUT_DIRECTORY+"rebuild/");
 		
 	}
 	
