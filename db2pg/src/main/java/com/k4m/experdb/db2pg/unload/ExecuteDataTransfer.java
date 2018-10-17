@@ -42,7 +42,6 @@ import com.k4m.experdb.db2pg.writer.FileWriter;
 
 import oracle.jdbc.internal.OracleTypes;
 import oracle.spatial.geometry.JGeometry;
-import test.write.TestFileWriter;
 
 public class ExecuteDataTransfer implements Runnable{
 	private String srcPoolName, selectQuery, outputFileName, tableName;
@@ -53,8 +52,7 @@ public class ExecuteDataTransfer implements Runnable{
 
 	private DBConfigInfo dbConfigInfo;
 
-	private TestFileWriter writer;
-	//private ByteBuffer byteBuffer;
+
 	private StopWatch stopWatch = new StopWatch();
 	
 	public ExecuteDataTransfer(String srcPoolName, String selectQuery,String outputFileName,DBConfigInfo dbConfigInfo){
