@@ -6,6 +6,7 @@ import java.util.List;
 import com.k4m.experdb.db2pg.common.Constant;
 import com.k4m.experdb.db2pg.common.LogUtils;
 import com.k4m.experdb.db2pg.convert.table.Table;
+import com.k4m.experdb.db2pg.convert.table.View;
 import com.k4m.experdb.db2pg.db.datastructure.DBConfigInfo;
 
 public class ConvertDBUtils {
@@ -156,6 +157,26 @@ public class ConvertDBUtils {
 			LogUtils.error(e.getMessage(), ConvertDBUtils.class);
 		} 
 		return table;
+	}
+
+	
+	public static  List<View> setViewInform(String tableSchema, String srcPoolName, DBConfigInfo dbConfigInfo) {
+		List<View> views = new ArrayList<View>();
+		try {
+			String dbtype = dbConfigInfo.DB_TYPE;
+			if (dbtype.equals(Constant.DB_TYPE.ORA)) {
+				//table = OracleConvertDBUtils.setSeqInform(table, srcPoolName, dbConfigInfo);
+			} else if (dbtype.equals(Constant.DB_TYPE.MSS)) {
+				views = MsSQLConvertDBUtils.setViewInform(tableSchema, srcPoolName, dbConfigInfo);
+			} else if (dbtype.equals(Constant.DB_TYPE.MYSQL)) {
+				//table = MySQLConvertDBUtils.setSeqInform(table, srcPoolName, dbConfigInfo);
+			} else {
+
+			}
+		} catch (Exception e) {
+			LogUtils.error(e.getMessage(), ConvertDBUtils.class);
+		} 
+		return views;
 	}
 
 }

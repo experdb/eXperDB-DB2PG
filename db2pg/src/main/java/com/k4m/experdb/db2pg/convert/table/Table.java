@@ -12,34 +12,51 @@ public class Table {
 	private List<String> alertComments;
 	private List<Column> columns;
 	private List<Key<?>> keys;
-	
+	private List<View> views;
+
 	public Table() {
+		this.views = new LinkedList<View>();
 		this.columns = new LinkedList<Column>();
 		this.keys = new LinkedList<Key<?>>();
 		this.alertComments = new LinkedList<String>();
 	}
-	
+
+	public List<View> getViews() {
+		return views;
+	}
+
+	public void setViews(List<View> views) {
+		this.views = views;
+	}
+
 	public String getSchemaName() {
 		return schemaName;
 	}
+
 	public void setSchemaName(String schemaName) {
 		this.schemaName = schemaName;
 	}
+
 	public String getName() {
 		return tableName;
 	}
+
 	public void setName(String tableName) {
 		this.tableName = tableName;
 	}
+
 	public List<Column> getColumns() {
 		return columns;
 	}
+
 	public String getComment() {
 		return comment;
 	}
+
 	public void setComment(String comment) {
 		this.comment = comment;
 	}
+
 	public List<String> alertComments() {
 		return this.alertComments;
 	}
@@ -47,44 +64,49 @@ public class Table {
 	public List<Key<?>> getKeys() {
 		return keys;
 	}
-	
+
 	@Override
 	public boolean equals(Object obj) {
-		if(obj instanceof Table) {
-			Table another = (Table)obj;
-			if(this.schemaName.equals(another.schemaName)) {
-				if(this.tableName.equals(another.tableName)) {
-					
+		if (obj instanceof Table) {
+			Table another = (Table) obj;
+			if (this.schemaName.equals(another.schemaName)) {
+				if (this.tableName.equals(another.tableName)) {
+
 				}
 			}
 		}
 		return false;
 	}
+
 	@Override
 	public String toString() {
 		StringBuilder sb = new StringBuilder("Table [");
-		if(schemaName != null) {
+		if (schemaName != null) {
 			sb.append(" schemaName=");
 			sb.append(schemaName);
 		}
-		if(tableName != null) {
+		if (tableName != null) {
 			sb.append(" tableName=");
 			sb.append(tableName);
 		}
-		if(comment != null) {
+		if (comment != null) {
 			sb.append(" comment=");
 			sb.append(comment);
 		}
-		if(columns != null) {
+		if (columns != null) {
 			sb.append(" columns=");
 			sb.append(columns);
 		}
-		if(keys != null) {
+		if (keys != null) {
 			sb.append(" keys=");
 			sb.append(keys);
+		}
+		if (views != null) {
+			sb.append(" views=");
+			sb.append(views);
 		}
 		sb.append(" ]");
 		return sb.toString();
 	}
-	
+
 }

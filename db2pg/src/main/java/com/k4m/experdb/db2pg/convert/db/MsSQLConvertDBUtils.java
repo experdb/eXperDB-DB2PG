@@ -10,6 +10,7 @@ import com.k4m.experdb.db2pg.common.Constant;
 import com.k4m.experdb.db2pg.common.LogUtils;
 import com.k4m.experdb.db2pg.convert.table.Column;
 import com.k4m.experdb.db2pg.convert.table.Table;
+import com.k4m.experdb.db2pg.convert.table.View;
 import com.k4m.experdb.db2pg.convert.table.key.CLUSTER;
 import com.k4m.experdb.db2pg.convert.table.key.ForeignKey;
 import com.k4m.experdb.db2pg.convert.table.key.Key.IndexType;
@@ -544,6 +545,66 @@ public class MsSQLConvertDBUtils {
 			LogUtils.error(e.getMessage(),MsSQLConvertDBUtils.class);
 		}
 		return table;
+	}
+	
+
+
+	public static List<View> setViewInform(String Schema, String srcPoolName, DBConfigInfo dbConfigInfo) {
+		List<View> views = new ArrayList<View>();
+		try {
+			LogUtils.info("[START_SET_VIEW_INFORM]",MsSQLConvertDBUtils.class);
+			Map<String,Object> params = new HashMap<String,Object>();
+			
+			params.put("TABLE_SCHEMA", Schema);
+			
+			MetaExtractWorker mew = new MetaExtractWorker(srcPoolName, new MetaExtractWork(WORK_TYPE.GET_VIEW_INFORM, params));
+			mew.run();
+			List<Map<String,Object>> results = (List<Map<String,Object>>)mew.getListResult();
+			LogUtils.info("[GET_SET_VIEW_INFORM]"+results,MsSQLConvertDBUtils.class);
+			
+			Object obj = null;
+        	for (Map<String,Object> result : results) {
+        		obj = result.get("TABLE_CATALOG");
+    			String tableCatalLog = obj!=null?obj.toString():null;
+    			obj = result.get("TABLE_SCHEMA");
+    			String tableSchema = obj!=null?obj.toString():null;
+    			obj = result.get("TABLE_NAME");
+    			String tableName = obj!=null?obj.toString():null;
+    			obj = result.get("VIEW_DEFINITION");
+    			String viewDefinition = obj!=null?obj.toString():null;
+    			obj = result.get("CHECK_OPTION");
+    			String checkOption = obj!=null?obj.toString():null;
+    			obj = result.get("IS_UPDATABLE");
+    			String isUpdaTable = obj!=null?obj.toString():null;
+    			
+    			View view = new View();
+    			boolean isAdded = false;
+    			/*for(int i=0; i<table.getKeys().size();i++) {
+    				if(table.getKeys().get(i).getType().name().equals(Type.VIEW.name())) {
+    					if(table.getKeys().get(i).isSameKey(tableSchema, tableName, keySchema, keyName)) {
+    						table.getKeys().get(i).getColumns().add(columnName);
+    						table.getKeys().get(i).getOrdinalPositions().add(ordinalPosition);
+    						columnName = null;
+    						ordinalPosition = -1;
+    						isAdded = true;
+    						break;
+    					}
+    				}
+    			}*/
+    			view.setTableCatalLog(tableCatalLog);
+    			view.setTableSchema(tableSchema);
+    			view.setTableName(tableName);
+    			view.setViewDefinition(viewDefinition);
+    			view.setCheckOption(checkOption);
+    			view.setIsUpdaTable(isUpdaTable);
+    			
+    			views.add(view);
+        	}       	
+			LogUtils.info("[END_SET_VIEW_INFORM]",MsSQLConvertDBUtils.class);
+		} catch(Exception e){
+			LogUtils.error(e.getMessage(),MsSQLConvertDBUtils.class);
+		}
+		return views;
 	}
 	
 }

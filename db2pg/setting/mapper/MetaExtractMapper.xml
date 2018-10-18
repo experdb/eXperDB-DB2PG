@@ -465,6 +465,19 @@
 			ORDER BY t.name, i.name, c.index_column_id	
 	</select>
 	
+	<select id="getViewInform" parameterType="map" resultType="map" databaseId="MSS">
+			SELECT 
+					TABLE_CATALOG
+					,TABLE_SCHEMA
+					,TABLE_NAME
+					,VIEW_DEFINITION
+					,CHECK_OPTION
+					,IS_UPDATABLE
+			FROM INFORMATION_SCHEMA.VIEWS
+			WHERE TABLE_SCHEMA = #{TABLE_SCHEMA}	
+	</select>
+	
+	
 	<select id="getTableNames" parameterType="map" resultType="java.lang.String" databaseId="ASE" >
 		SELECT name AS table_name FROM sysobjects WHERE type='U' AND user_name(uid)=#{TABLE_SCHEMA}
 	</select>

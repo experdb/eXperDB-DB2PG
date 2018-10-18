@@ -10,6 +10,7 @@ import com.k4m.experdb.db2pg.convert.DDLString;
 import com.k4m.experdb.db2pg.convert.pattern.SqlPattern;
 import com.k4m.experdb.db2pg.convert.table.Column;
 import com.k4m.experdb.db2pg.convert.table.Table;
+import com.k4m.experdb.db2pg.convert.table.View;
 import com.k4m.experdb.db2pg.convert.table.key.CLUSTER;
 import com.k4m.experdb.db2pg.convert.table.key.ForeignKey;
 import com.k4m.experdb.db2pg.convert.table.key.Key;
@@ -188,20 +189,21 @@ public class PgDDLMaker<T> {
 					String columns = fkey.getColumns().toString();
 					tmpsb.append(columns.substring(columns.indexOf("[")+1,columns.indexOf("]")));
 					tmpsb.append(") REFERENCES \"");
-					tmpsb.append(fkey.getRefTable());
+					String[] values = fkey.getRefTable().split("_");
+					tmpsb.append(values[1]);
 					tmpsb.append("\" (");
 					columns = fkey.getRefColumns().toString();
 					tmpsb.append(columns.substring(columns.indexOf("[")+1,columns.indexOf("]")));
 					tmpsb.append(")");
 					if(fkey.getRefDef() != null) {
-						if(fkey.getRefDef().getDelete() != null) {
-							tmpsb.append(" ");
-							tmpsb.append(fkey.getRefDef().getDelete().getAction());
-						}
 						if(fkey.getRefDef().getMatch() != null) {
 							tmpsb.append(" ");
 							tmpsb.append(fkey.getRefDef().getMatch().getType());
 						}
+						if(fkey.getRefDef().getDelete() != null) {
+							tmpsb.append(" ");
+							tmpsb.append(fkey.getRefDef().getDelete().getAction());
+						}						
 						if(fkey.getRefDef().getUpdate() != null) {
 							tmpsb.append(" ");
 							tmpsb.append(fkey.getRefDef().getUpdate().getAction());
@@ -273,6 +275,7 @@ public class PgDDLMaker<T> {
 			}
 		}
 		
+
 		//comment
 		if(table.getComment() != null && !table.getComment().equals(""))  {
 			tmpsb.append("COMMENT ON TABLE \"");

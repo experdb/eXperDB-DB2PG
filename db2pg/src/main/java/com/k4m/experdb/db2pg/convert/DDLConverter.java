@@ -1,8 +1,10 @@
 package com.k4m.experdb.db2pg.convert;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 import java.text.MessageFormat;
@@ -23,6 +25,7 @@ import com.k4m.experdb.db2pg.convert.map.ConvertMapper;
 import com.k4m.experdb.db2pg.convert.map.SqlConvertMapper;
 import com.k4m.experdb.db2pg.convert.table.Column;
 import com.k4m.experdb.db2pg.convert.table.Table;
+import com.k4m.experdb.db2pg.convert.table.View;
 import com.k4m.experdb.db2pg.convert.type.DDL_TYPE;
 import com.k4m.experdb.db2pg.db.DBUtils;
 import com.k4m.experdb.db2pg.db.datastructure.DBConfigInfo;
@@ -31,11 +34,14 @@ import com.k4m.experdb.db2pg.db.datastructure.exception.DBTypeNotFoundException;
 public class DDLConverter {
 	protected ConvertMapper<?> convertMapper;
 	protected PriorityBlockingQueue<DDLString> tableQueue = new PriorityBlockingQueue<DDLString>(5, DDLString.getComparator()),
+			sequenceQueue = new PriorityBlockingQueue<DDLString>(5, DDLString.getComparator()),
 			indexQueue = new PriorityBlockingQueue<DDLString>(5, DDLString.getComparator()),
+			viewQueue = new PriorityBlockingQueue<DDLString>(5, DDLString.getComparator()),
 			constraintsQueue = new PriorityBlockingQueue<DDLString>(5, DDLString.getComparator());
 	protected DBConfigInfo dbConfigInfo;
 	protected String outputDirectory = ConfigInfo.OUTPUT_DIRECTORY + "ddl/";
 	protected List<String> tableNameList = null, excludes = null;
+	protected String tableSchema = ConfigInfo.SRC_DB_CONFIG.SCHEMA_NAME;
 
 	public static DDLConverter getInstance() throws Exception {
 		DDLConverter ddlConverter = new DDLConverter();
@@ -84,24 +90,31 @@ public class DDLConverter {
 		DDLString ddlStrVO = null;
 		List<Table> tables = ConvertDBUtils.getTableInform(tableNameList, true, Constant.POOLNAME.SOURCE.name(),dbConfigInfo);
 		
+		List<View> views = ConvertDBUtils.setViewInform(tableSchema, Constant.POOLNAME.SOURCE.name(),dbConfigInfo);
+		viewFileCreate(views);
+		
 		PgDDLMaker<Table> maker = new PgDDLMaker<Table>(DDL_TYPE.CREATE);
 		Queue<DDLString> ddlQueue = new LinkedBlockingQueue<DDLString>();
 		for (Table table : tables) {
 			ConvertDBUtils.setColumnInform(table, Constant.POOLNAME.SOURCE.name(), dbConfigInfo);
 			ConvertDBUtils.setConstraintInform(table, Constant.POOLNAME.SOURCE.name(), dbConfigInfo);
 			ConvertDBUtils.setKeyInform(table, Constant.POOLNAME.SOURCE.name(), dbConfigInfo);
-
+			
 			tableConvert(table);
 
 			maker.setting(table);
+			
 			ddlQueue.clear();
 			ddlQueue.addAll(maker.make());
 
 			while ((ddlStrVO = ddlQueue.poll()) != null) {
 				if (ddlStrVO.getDDLType() == DDL_TYPE.CREATE) {
 					switch (ddlStrVO.getCommandType()) {
-					case TYPE: case TABLE: case COMMENT: case SEQUENCE:
+					case TYPE: case TABLE: case COMMENT: 
 						tableQueue.add(ddlStrVO);
+						break;
+					case SEQUENCE:
+						sequenceQueue.add(ddlStrVO);
 						break;
 					case FOREIGN_KEY: case PRIMARY_KEY:
 						constraintsQueue.add(ddlStrVO); 
@@ -120,12 +133,34 @@ public class DDLConverter {
 		writeToFile();
 	}
 
+	private void viewFileCreate(List<View> views) throws IOException {
+		ByteBuffer fileBuffer = ByteBuffer.allocateDirect(ConfigInfo.BUFFER_SIZE);
+		FileChannel fch = null;
+			
+		File viewSqlFile = new File(outputDirectory + "/" + dbConfigInfo.DBNAME + "_view.sql");
+		FileOutputStream fos = new FileOutputStream(viewSqlFile);
+		fch = fos.getChannel();
+
+		for(int i=0; i<views.size(); i++){
+			fileBuffer.put(views.get(i).getViewDefinition().getBytes(ConfigInfo.TAR_DB_CONFIG.CHARSET));
+			fileBuffer.put("\n".getBytes(ConfigInfo.TAR_DB_CONFIG.CHARSET));
+			fileBuffer.flip();
+			fch.write(fileBuffer);
+			fileBuffer.clear();
+		}	
+		fch.close();
+		fos.close();		
+	}
+
+	
 	private void writeToFile() throws IOException {
 		List<String> alertComments = new LinkedList<String>();
 		DDLString ddlStrVO = null;
 		
 		ByteBuffer fileBuffer = ByteBuffer.allocateDirect(ConfigInfo.BUFFER_SIZE);
 		FileChannel fch = null;
+		
+		
 		File tableSqlFile = new File(outputDirectory + "/" + dbConfigInfo.DBNAME + "_table.sql");
 		FileOutputStream fos = new FileOutputStream(tableSqlFile);
 		fch = fos.getChannel();
@@ -146,6 +181,21 @@ public class DDLConverter {
 		}
 		fch.close();
 		fos.close();
+		
+		
+		File sequenceSqlFile = new File(outputDirectory + "/" + dbConfigInfo.DBNAME + "_sequence.sql");
+		fos = new FileOutputStream(sequenceSqlFile);
+		fch = fos.getChannel();
+		while ((ddlStrVO = sequenceQueue.poll()) != null) {
+			fileBuffer.put(ddlStrVO.toString().getBytes(ConfigInfo.TAR_DB_CONFIG.CHARSET));
+			fileBuffer.put("\n".getBytes(ConfigInfo.TAR_DB_CONFIG.CHARSET));
+			fileBuffer.flip();
+			fch.write(fileBuffer);
+			fileBuffer.clear();
+		}
+		fch.close();
+		fos.close();		
+		
 
 		File constraintsSqlFile = new File(outputDirectory + "/" + dbConfigInfo.DBNAME + "_constraints.sql");
 		fos = new FileOutputStream(constraintsSqlFile);
@@ -160,6 +210,7 @@ public class DDLConverter {
 		fch.close();
 		fos.close();
 
+		
 		File indexSqlFile = new File(outputDirectory + "/" + dbConfigInfo.DBNAME + "_index.sql");
 		fos = new FileOutputStream(indexSqlFile);
 		fch = fos.getChannel();
@@ -172,6 +223,8 @@ public class DDLConverter {
 		}
 		fch.close();
 		fos.close();
+		
+		
 		if (!alertComments.isEmpty()) {
 			File alertFile = new File(outputDirectory + "/" + dbConfigInfo.DBNAME + "_alert.log");
 			fos = new FileOutputStream(alertFile);
@@ -259,7 +312,7 @@ public class DDLConverter {
 					if (convertVO.getPattern().matcher(column.getDefaultValue()).find()) {
 						if (convertVO.getToValue().equals("(now())")) {
 							column.setDefaultValue(convertVO.getToValue());
-						}												
+						}
 					}
 				}
 					
@@ -289,10 +342,10 @@ public class DDLConverter {
 						column.setType(String.format("%s(%d)%s", "TIMESTAMP",
 								 column.getNumericScale(), " WITHOUT TIME ZONE"));
 					}else if (convertVO.getToValue().equals("BOOLEAN")) {
-						if (column.getDefaultValue() != null) {
-							if (column.getDefaultValue().equals("1")) {
+						if (column.getDefaultValue() != null) {							
+							if (column.getDefaultValue().equals("((1))")) {
 								column.setDefaultValue("TRUE");
-							} else if (column.getDefaultValue().equals("0")) {
+							} else if (column.getDefaultValue().equals("((0))")) {
 								column.setDefaultValue("FALSE");
 							}
 						}

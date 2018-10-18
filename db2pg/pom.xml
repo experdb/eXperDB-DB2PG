@@ -131,7 +131,7 @@
 			<groupId>sqljdbc41</groupId>
 			<artifactId>sqljdbc41</artifactId>
 			<version>1</version>
-		</dependency>
+		</dependency> 
 		<dependency>
 			<groupId>tibero5-jdbc</groupId>
 			<artifactId>tibero5-jdbc</artifactId>

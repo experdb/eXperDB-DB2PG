@@ -62,6 +62,9 @@ public final class MetaExtractWorker extends DBWorker {
 			case GET_TABLE_NAMES:
 				result = mapper.getTableNames(work.params);
 				break;
+			case GET_VIEW_INFORM:
+				result = mapper.getViewInform(work.params);
+				break;
 			case GET_PG_CURRENT_SCHEMA:
 				result = mapper.getPgCurrentSchema();
 				break;
@@ -104,7 +107,7 @@ public final class MetaExtractWorker extends DBWorker {
 	}
 
 	public enum WORK_TYPE {
-		GET_TABLE_NAMES, GET_SOURCE_TABLE_DATA, GET_TABLE_INFORM, GET_COLUMN_INFORM, GET_CONSTRAINT_INFORM, GET_KEY_INFORM, GET_AUTOINCREMENT_INFORM, GET_PG_CURRENT_SCHEMA, GET_PG_IDX_DDL, GET_PG_FK_DDL
+		GET_TABLE_NAMES, GET_SOURCE_TABLE_DATA, GET_TABLE_INFORM, GET_COLUMN_INFORM, GET_CONSTRAINT_INFORM, GET_KEY_INFORM, GET_AUTOINCREMENT_INFORM, GET_PG_CURRENT_SCHEMA, GET_PG_IDX_DDL, GET_PG_FK_DDL, GET_VIEW_INFORM
 	}
 
 }

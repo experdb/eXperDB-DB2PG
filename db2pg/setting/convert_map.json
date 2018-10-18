@@ -223,11 +223,17 @@
 	        "^(?i)MONEY$",
 	        "^(?i)SMALLMONEY$"
 	    ]
-	}
+	},
 	"function_case_1": {
 		"postgres": "(now())",
 	    "mss": [
 	        "^(?i)\\(?getdate\\s*\\(?\\)?\\)?$"
+	    ]
+	},
+	"function_case_2": {
+		"postgres": "a",
+	    "mss": [
+	        "^(?i)\\(?newid\\s*\\(?\\)?\\)?$"
 	    ]
 	}
 }
