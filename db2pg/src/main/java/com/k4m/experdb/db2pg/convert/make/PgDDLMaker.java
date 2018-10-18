@@ -72,7 +72,7 @@ public class PgDDLMaker<T> {
 		StringBuilder ctsb = new StringBuilder();
 		StringBuilder tmpsb = new StringBuilder();
 		ctsb.append("CREATE TABLE \"");
-		ctsb.append(table.getName());
+		ctsb.append(table.getName().toLowerCase());
 		ctsb.append("\" (");
 		boolean isFirst = true;
 		for (Column column : table.getColumns()) {
@@ -81,7 +81,7 @@ public class PgDDLMaker<T> {
 			} else {
 				isFirst = !isFirst;
 			}
-			ctsb.append(column.getName());
+			ctsb.append(column.getName().toLowerCase());
 			ctsb.append(' ');
 			if(ConfigInfo.SRC_DB_CONFIG.DB_TYPE.equals(Constant.DB_TYPE.MYSQL) && SqlPattern.check(column.getType(), SqlPattern.MYSQL.ENUM)) {
 				String typeName = String.format("%s_%s_enum", table.getName(), column.getName());
@@ -114,7 +114,7 @@ public class PgDDLMaker<T> {
 						+ "\n * So, eXperDB-DB2PG is automatically enum type create."
 						+ "\n * TypeName : {1}_{2}\n */", table.getSchemaName(),table.getName(),column.getName()));
 			}else {
-				ctsb.append(column.getType());
+				ctsb.append(column.getType().toLowerCase());
 			}
 
 			if (column.isNotNull()) {
@@ -145,11 +145,11 @@ public class PgDDLMaker<T> {
 				tmpsb.append("COMMENT ON COLUMN ");
 				if(table.getName() != null && !table.getName().equals("")) {
 					tmpsb.append('"');
-					tmpsb.append(table.getName());
+					tmpsb.append(table.getName().toLowerCase());
 					tmpsb.append("\".");
 				}
 				tmpsb.append('"');
-				tmpsb.append(column.getName());
+				tmpsb.append(column.getName().toLowerCase());
 				tmpsb.append('"');
 				tmpsb.append(" IS '");
 				tmpsb.append(column.getComment());
@@ -166,9 +166,9 @@ public class PgDDLMaker<T> {
 				try {
 					PrimaryKey pkey = key.unwrap(PrimaryKey.class);
 					tmpsb.append("ALTER TABLE \"");
-					tmpsb.append(pkey.getTableName());
+					tmpsb.append(pkey.getTableName().toLowerCase());
 					tmpsb.append("\" ADD PRIMARY KEY (");
-					String columns = pkey.getColumns().toString();
+					String columns = pkey.getColumns().toString().toLowerCase();
 					tmpsb.append(columns.substring(columns.indexOf("[")+1,columns.indexOf("]")));
 					tmpsb.append(")");
 					tmpStringVOs.add(new DDLString().setString(tmpsb.toString()).setDDLType(DDL_TYPE.CREATE)
@@ -182,17 +182,23 @@ public class PgDDLMaker<T> {
 				try {
 					ForeignKey fkey = key.unwrap(ForeignKey.class);
 					tmpsb.append("ALTER TABLE \"");
-					tmpsb.append(fkey.getTableName());
+					tmpsb.append(fkey.getTableName().toLowerCase());
 					tmpsb.append("\" ADD CONSTRAINT \"");
-					tmpsb.append(fkey.getName());
+					tmpsb.append(fkey.getName().toLowerCase());
 					tmpsb.append("\" FOREIGN KEY (");
-					String columns = fkey.getColumns().toString();
+					String columns = fkey.getColumns().toString().toLowerCase();
 					tmpsb.append(columns.substring(columns.indexOf("[")+1,columns.indexOf("]")));
 					tmpsb.append(") REFERENCES \"");
-					String[] values = fkey.getRefTable().split("_");
-					tmpsb.append(values[1]);
-					tmpsb.append("\" (");
-					columns = fkey.getRefColumns().toString();
+					if(ConfigInfo.SRC_DB_CONFIG.DB_TYPE.equals(Constant.DB_TYPE.MSS)){
+						String[] values = fkey.getRefTable().split("_");
+						tmpsb.append(values[1]);
+						tmpsb.append("\" (");
+						columns = fkey.getRefColumns().toString();
+					}else{
+						tmpsb.append(fkey.getRefTable().toLowerCase());
+						tmpsb.append("\" (");
+						columns = fkey.getRefColumns().toString().toLowerCase();
+					}
 					tmpsb.append(columns.substring(columns.indexOf("[")+1,columns.indexOf("]")));
 					tmpsb.append(")");
 					if(fkey.getRefDef() != null) {
@@ -209,6 +215,12 @@ public class PgDDLMaker<T> {
 							tmpsb.append(fkey.getRefDef().getUpdate().getAction());
 						}
 					}
+					
+					if(fkey.getDeferrable() !=null && fkey.getDeferred() !=null){
+						tmpsb.append(" "+fkey.getDeferrable());
+						tmpsb.append(" INITIALLY ");
+						tmpsb.append(fkey.getDeferred());
+					}
 					tmpStringVOs.add(new DDLString().setString(tmpsb.toString()).setDDLType(DDL_TYPE.CREATE)
 							.setCommandType(COMMAND_TYPE.FOREIGN_KEY).setPriority(2));
 					tmpsb.setLength(0);
@@ -220,13 +232,13 @@ public class PgDDLMaker<T> {
 				try {
 					UniqueKey ukey = key.unwrap(UniqueKey.class);
 					tmpsb.append("CREATE UNIQUE INDEX \"");
-					tmpsb.append(ukey.getTableName());
+					tmpsb.append(ukey.getTableName().toLowerCase());
 					tmpsb.append("_");
-					tmpsb.append(ukey.getName());
+					tmpsb.append(ukey.getName().toLowerCase());
 					tmpsb.append("\" ON \"");
-					tmpsb.append(ukey.getTableName());
+					tmpsb.append(ukey.getTableName().toLowerCase());
 					tmpsb.append("\" (");
-					String columns = ukey.getColumns().toString();
+					String columns = ukey.getColumns().toString().toLowerCase();
 					tmpsb.append(columns.substring(columns.indexOf("[")+1,columns.indexOf("]")));
 					tmpsb.append(")");
 					tmpStringVOs.add(new DDLString().setString(tmpsb.toString()).setDDLType(DDL_TYPE.CREATE)
@@ -240,13 +252,13 @@ public class PgDDLMaker<T> {
 				try {
 					NormalKey nkey = key.unwrap(NormalKey.class);
 					tmpsb.append("CREATE INDEX \"");
-					tmpsb.append(nkey.getTableName());
+					tmpsb.append(nkey.getTableName().toLowerCase());
 					tmpsb.append("_");
-					tmpsb.append(nkey.getName());
+					tmpsb.append(nkey.getName().toLowerCase());
 					tmpsb.append("\" ON \"");
-					tmpsb.append(nkey.getTableName());
+					tmpsb.append(nkey.getTableName().toLowerCase());
 					tmpsb.append("\" (");
-					String columns = nkey.getColumns().toString();
+					String columns = nkey.getColumns().toString().toLowerCase();
 					tmpsb.append(columns.substring(columns.indexOf("[")+1,columns.indexOf("]")));
 					tmpsb.append(")");
 					tmpStringVOs.add(new DDLString().setString(tmpsb.toString()).setDDLType(DDL_TYPE.CREATE)
@@ -279,9 +291,9 @@ public class PgDDLMaker<T> {
 		//comment
 		if(table.getComment() != null && !table.getComment().equals(""))  {
 			tmpsb.append("COMMENT ON TABLE \"");
-			tmpsb.append(table.getName());
+			tmpsb.append(table.getName().toLowerCase());
 			tmpsb.append("\" IS '");
-			tmpsb.append(table.getComment());
+			tmpsb.append(table.getComment().toLowerCase());
 			tmpsb.append('\'');
 			tmpStringVOs.add(new DDLString().setString(tmpsb.toString()).setDDLType(DDL_TYPE.CREATE)
 					.setCommandType(COMMAND_TYPE.COMMENT).setPriority(4));

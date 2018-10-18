@@ -249,6 +249,7 @@ public class DDLConverter {
 				mysqlTableConvert(table);
 				break;
 			case Constant.DB_TYPE.ORA:
+				oracleTableConvert(table);
 				break;
 			case Constant.DB_TYPE.MSS:
 				mssqlTableConvert(table);
@@ -346,6 +347,63 @@ public class DDLConverter {
 							if (column.getDefaultValue().equals("((1))")) {
 								column.setDefaultValue("TRUE");
 							} else if (column.getDefaultValue().equals("((0))")) {
+								column.setDefaultValue("FALSE");
+							}
+						}
+						column.setType(convertVO.getToValue());
+					}else{
+						column.setType(convertVO.getToValue());
+					}
+					break;
+				}
+			}
+			String onUptRedix = "^(?i)on update \\w*$";
+			Pattern onUptPattern = Pattern.compile(onUptRedix);
+		}
+	}
+	
+	
+	private void oracleTableConvert(Table table) throws NotSupportDatabaseTypeException {
+		for (Column column : table.getColumns()) {
+			for (ConvertObject convertVO : convertMapper.getPatternList()) {
+				if(column.getDefaultValue() != null){
+					if (convertVO.getPattern().matcher(column.getDefaultValue()).find()) {
+						if (convertVO.getToValue().equals("(now())")) {
+							column.setDefaultValue(convertVO.getToValue());
+						}												
+					}
+				}
+					
+				if (convertVO.getPattern().matcher(column.getType()).find()) {				
+					if (convertVO.getToValue().equals("VARCHAR")) {
+						if(column.getTypeLength() == -1){
+							column.setType(String.format("%s", "TEXT"));
+						}else{
+							column.setType(String.format("%s(%d)", convertVO.getToValue(),column.getTypeLength()));	
+						}
+					}else if (convertVO.getToValue().equals("CHAR")) {
+							column.setType(String.format("%s(%d)", convertVO.getToValue(),column.getTypeLength()));	
+					}else if (convertVO.getToValue().equals("TIMESTAMP")) {
+						column.setType(String.format("%s(%d)", convertVO.getToValue(),column.getNumericScale()));	
+					}else if (convertVO.getToValue().equals("TIME")) {
+						column.setType(String.format("%s(%d)", convertVO.getToValue(),column.getNumericScale()));	
+					}else if (convertVO.getToValue().equals("DECIMAL")) {
+						column.setType(String.format("%s(%d,%d)", convertVO.getToValue(),
+								column.getNumericPrecision(), column.getNumericScale()));
+					}else if (convertVO.getToValue().equals("NUMERIC")) {
+						column.setType(String.format("%s(%d,%d)", convertVO.getToValue(),
+								column.getNumericPrecision(), column.getNumericScale()));
+					}else if (convertVO.getToValue().equals("DEC")) {
+						column.setType(String.format("%s(%d,%d)", convertVO.getToValue(),
+								column.getNumericPrecision(), column.getNumericScale()));
+					}else if (convertVO.getToValue().equals("TIMESTAMP WITHOUT TIME ZONE")) {
+						column.setType(String.format("%s(%d)%s", "TIMESTAMP",
+								 column.getNumericScale(), " WITHOUT TIME ZONE"));
+					}else if (convertVO.getToValue().equals("BOOLEAN")) {
+						if (column.getDefaultValue() != null) {
+							if (column.getDefaultValue().equals("1")) {
+								column.setDefaultValue("TRUE");
+							} else if (column.getDefaultValue().equals("0")) {
 								column.setDefaultValue("FALSE");
 							}
 						}

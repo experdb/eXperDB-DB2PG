@@ -164,36 +164,36 @@ public class OracleConvertDBUtils {
 	 * Referenced Column's name : ref_column_name (string) <br>
 	 * Constraint's type : constraint_type (enum) <br>
 	 * &nbsp - P : primary key <br>
-	 * &nbsp - U : unique key <br>
+	 * &nbsp - U : unique key <br>---------
 	 * &nbsp - F : foreign key <br>
+	 * 
+	 * C - Check constraint on a table
+	 * 
 	 * Index's type : index_type (enum) <br>
-	 * &nbsp - HASH : hash index <br>
-	 * &nbsp - BTREE : btree index <br>
-	 * Match option of the foreign key constraint : match_option (enum) <br>
-	 * &nbsp - FULL : MATCH FULL <br>
-	 * &nbsp - PARTIAL : PostgreSQL is not yet implemented. ( 2018.07.30 ) <br>
-	 * &nbsp - SIMPLE : MATCH SIMPLE <br>
-	 * ON UPDATE clause specifies the action to perform when a referenced column
-	 * in the referenced table is being updated to a new value : update_rule
-	 * (enum) <br>
-	 * &nbsp - NO ACTION <br>
-	 * &nbsp - RESTRICT <br>
-	 * &nbsp - CASCADE <br>
-	 * &nbsp - SET NULL <br>
-	 * &nbsp - SET DEFAULT <br>
+	 * &nbsp - NORMAL :   <br>
+	 * &nbsp - BITMAP :   <br>
+	 * &nbsp - FUNCTION-BASED NORMAL :   <br>
+	 * &nbsp - FUNCTION-BASED BITMAP :   <br>
+	 * &nbsp - DOMAIN :   <br>
+	 * 
 	 * ON DELETE clause specifies the action to perform when a referenced row in
 	 * the referenced table is being deleted : delete_rule (enum) <br>
 	 * &nbsp - NO ACTION <br>
-	 * &nbsp - RESTRICT <br>
 	 * &nbsp - CASCADE <br>
-	 * &nbsp - SET NULL <br>
-	 * &nbsp - SET DEFAULT
+	 * 
+	 * EFERRABLE Indicates whether the constraint is deferrable (DEFERRABLE) or not (NOT DEFERRABLE) 
+	 * &nbsp - DEFERRABLE
+	 * &nbsp - NOT DEFERRABLE
+	 * 
+	 * DEFERRED Indicates whether the constraint was initially deferred (DEFERRED) or not (IMMEDIATE)
+	 * &nbsp - DEFERRED
+	 * &nbsp - IMMEDIATE
 	 */
 	public static Table setConstraintInform(Table table, String srcPoolName, DBConfigInfo dbConfigInfo) {
 		try {
 			LogUtils.info("[START_SET_CONSTRAINT_INFORM]", OracleConvertDBUtils.class);
 			Map<String, Object> params = new HashMap<String, Object>();
-			params.put("TABLE_SCHEMA", table.getSchemaName());
+			params.put("TABLE_SCHEMA", table.getSchemaName());	
 			params.put("TABLE_NAME", table.getName());
 
 			MetaExtractWorker mew = new MetaExtractWorker(srcPoolName, new MetaExtractWork(WORK_TYPE.GET_CONSTRAINT_INFORM, params));
@@ -214,7 +214,6 @@ public class OracleConvertDBUtils {
 					if (obj != null)
 						ordinalPosition = Integer.valueOf(obj.toString());
 					String indexType = (obj = result.get("index_type")) != null ? obj.toString() : null;
-
 					PrimaryKey pkey = new PrimaryKey();
 					boolean isAdded = false;
 					for (int i = 0; i < table.getKeys().size(); i++) {
@@ -246,13 +245,21 @@ public class OracleConvertDBUtils {
 					pkey.setTableName(tableName);
 					pkey.setKeySchema(keySchema);
 					pkey.setName(keyName);
+					
 					if (indexType == null) {
-						pkey.setIndexType(IndexType.BTREE);
-					} else if (indexType.equals("HASH")) {
-						pkey.setIndexType(IndexType.HASH);
-					} else if (indexType.equals("BTREE")) {
-						pkey.setIndexType(IndexType.BTREE);
+						pkey.setIndexType(IndexType.NORMAL);
+					} else if (indexType.equals("NORMAL")) {
+						pkey.setIndexType(IndexType.NORMAL);
+					} else if (indexType.equals("BITMAP")) {
+						pkey.setIndexType(IndexType.BITMAP);
+					} else if (indexType.equals("FUNCTION_BASED_NORMAL")) {
+						pkey.setIndexType(IndexType.FUNCTION_BASED_NORMAL);
+					} else if (indexType.equals("FUNCTION_BASED_BITMAP")) {
+						pkey.setIndexType(IndexType.FUNCTION_BASED_BITMAP);
+					} else if (indexType.equals("DOMAIN")) {
+						pkey.setIndexType(IndexType.DOMAIN);
 					}
+					
 					table.getKeys().add(pkey);
 				} else if (constraintType.equals("U")) {
 					String keySchema = (obj = result.get("constraint_schema")) != null ? obj.toString() : null;
@@ -298,11 +305,17 @@ public class OracleConvertDBUtils {
 					ukey.setKeySchema(keySchema);
 					ukey.setName(keyName);
 					if (indexType == null) {
-						ukey.setIndexType(IndexType.BTREE);
-					} else if (indexType.equals("HASH")) {
-						ukey.setIndexType(IndexType.HASH);
-					} else if (indexType.equals("BTREE")) {
-						ukey.setIndexType(IndexType.BTREE);
+						ukey.setIndexType(IndexType.NORMAL);
+					} else if (indexType.equals("NORMAL")) {
+						ukey.setIndexType(IndexType.NORMAL);
+					} else if (indexType.equals("BITMAP")) {
+						ukey.setIndexType(IndexType.BITMAP);
+					} else if (indexType.equals("FUNCTION_BASED_NORMAL")) {
+						ukey.setIndexType(IndexType.FUNCTION_BASED_NORMAL);
+					} else if (indexType.equals("FUNCTION_BASED_BITMAP")) {
+						ukey.setIndexType(IndexType.FUNCTION_BASED_BITMAP);
+					} else if (indexType.equals("DOMAIN")) {
+						ukey.setIndexType(IndexType.DOMAIN);
 					}
 					table.getKeys().add(ukey);
 				} else if (constraintType.equals("F")) {
@@ -310,7 +323,7 @@ public class OracleConvertDBUtils {
 					String keyName = (obj = result.get("constraint_name")) != null ? obj.toString() : null;
 					String tableSchema = (obj = result.get("table_schema")) != null ? obj.toString() : null;
 					String tableName = (obj = result.get("table_name")) != null ? obj.toString() : null;
-					String columnName = (obj = result.get("column_name")) != null ? obj.toString() : null;
+					String columnName = (obj = result.get("ref_column_name")) != null ? obj.toString() : null;
 					obj = result.get("ordinal_position");
 					int ordinalPosition = -1;
 					if (obj != null)
@@ -319,14 +332,14 @@ public class OracleConvertDBUtils {
 					String refTableSchema = (obj = result.get("ref_table_schema")) != null ? obj.toString() : null;
 					String refTable = (obj = result.get("ref_table_name")) != null ? obj.toString() : null;
 					String refColumnName = (obj = result.get("ref_column_name")) != null ? obj.toString() : null;
-					String matchOption = (obj = result.get("match_option")) != null ? obj.toString() : null;
-					String updateRule = (obj = result.get("update_rule")) != null ? obj.toString() : null;
+					String deferrable = (obj = result.get("deferrable")) != null ? obj.toString() : null;
+					String deferred = (obj = result.get("deferred")) != null ? obj.toString() : null;
 					String deleteRule = (obj = result.get("delete_rule")) != null ? obj.toString() : null;
 
 					ForeignKey fkey = new ForeignKey();
 
 					boolean isAdded = false;
-
+					
 					for (int i = 0; i < table.getKeys().size(); i++) {
 						if (table.getKeys().get(i).getType().name().equals(Type.FOREIGN.name())) {
 							ForeignKey key = (ForeignKey) table.getKeys().get(i);
@@ -370,61 +383,37 @@ public class OracleConvertDBUtils {
 						fkey.setRefDef(new ReferenceDefinition());
 					}
 
-					if (matchOption != null) {
-						if (matchOption.toUpperCase().contains("FULL")) {
-							fkey.getRefDef().setMatch(ForeignKeyMatch.FULL);
-						} else if (matchOption.toUpperCase().contains("PARTIAL")) {
-							fkey.getRefDef().setMatch(ForeignKeyMatch.PARTIAL);
-						} else if (matchOption.toUpperCase().contains("SIMPLE")) {
-							fkey.getRefDef().setMatch(ForeignKeyMatch.SIMPLE);
-						}
-					}
-					if (updateRule != null) {
-						if (updateRule.toUpperCase().contains("RESTRICT")) {
-							fkey.getRefDef().setUpdate(ForeignKeyUpdate.RESTRICT);
-						} else if (updateRule.toUpperCase().contains("CASCADE")) {
-							fkey.getRefDef().setUpdate(ForeignKeyUpdate.CASCADE);
-						} else if (updateRule.toUpperCase().contains("SET")
-								&& updateRule.toUpperCase().contains("NULL")) {
-							fkey.getRefDef().setUpdate(ForeignKeyUpdate.SET_NULL);
-						} else if (updateRule.toUpperCase().contains("NO")
-								&& updateRule.toUpperCase().contains("ACTION")) {
-							fkey.getRefDef().setUpdate(ForeignKeyUpdate.NO_ACTION);
-						} else if (updateRule.toUpperCase().contains("SET")
-								&& updateRule.toUpperCase().contains("DEFAULT")) {
-							fkey.getRefDef().setUpdate(ForeignKeyUpdate.SET_DEFAULT);
-						}
-					}
 					if (deleteRule != null) {
-						if (deleteRule.toUpperCase().contains("RESTRICT")) {
-							fkey.getRefDef().setDelete(ForeignKeyDelete.RESTRICT);
-						} else if (deleteRule.toUpperCase().contains("CASCADE")) {
+						if (deleteRule.toUpperCase().contains("CASCADE")) {
 							fkey.getRefDef().setDelete(ForeignKeyDelete.CASCADE);
-						} else if (deleteRule.toUpperCase().contains("SET")
-								&& updateRule.toUpperCase().contains("NULL")) {
-							fkey.getRefDef().setDelete(ForeignKeyDelete.SET_NULL);
 						} else if (deleteRule.toUpperCase().contains("NO")
-								&& updateRule.toUpperCase().contains("ACTION")) {
+								&& deleteRule.toUpperCase().contains("ACTION")) {
 							fkey.getRefDef().setDelete(ForeignKeyDelete.NO_ACTION);
-						} else if (deleteRule.toUpperCase().contains("SET")
-								&& updateRule.toUpperCase().contains("DEFAULT")) {
-							fkey.getRefDef().setDelete(ForeignKeyDelete.SET_DEFAULT);
-						}
+						} 
 					}
-
+					
 					fkey.setTableSchema(tableSchema);
 					fkey.setTableName(tableName);
 					fkey.setKeySchema(keySchema);
 					fkey.setName(keyName);
 					fkey.setRefTableSchema(refTableSchema);
 					fkey.setRefTable(refTable);
+					fkey.setDeferrable(deferrable);
+					fkey.setDeferred(deferred);
 					if (indexType == null) {
-						fkey.setIndexType(IndexType.BTREE);
-					} else if (indexType.equals("HASH")) {
-						fkey.setIndexType(IndexType.HASH);
-					} else if (indexType.equals("BTREE")) {
-						fkey.setIndexType(IndexType.BTREE);
+						fkey.setIndexType(IndexType.NORMAL);
+					} else if (indexType.equals("NORMAL")) {
+						fkey.setIndexType(IndexType.NORMAL);
+					} else if (indexType.equals("BITMAP")) {
+						fkey.setIndexType(IndexType.BITMAP);
+					} else if (indexType.equals("FUNCTION_BASED_NORMAL")) {
+						fkey.setIndexType(IndexType.FUNCTION_BASED_NORMAL);
+					} else if (indexType.equals("FUNCTION_BASED_BITMAP")) {
+						fkey.setIndexType(IndexType.FUNCTION_BASED_BITMAP);
+					} else if (indexType.equals("DOMAIN")) {
+						fkey.setIndexType(IndexType.DOMAIN);
 					}
+					
 					table.getKeys().add(fkey);
 				}
 
@@ -479,46 +468,104 @@ public class OracleConvertDBUtils {
 					ordinalPosition = Integer.valueOf(obj.toString());
 				obj = result.get("index_type");
 				String indexType = obj != null ? obj.toString() : null;
-
+				obj = result.get("uniqueness");
+				String uniqueness = obj != null ? obj.toString() : null;
+				
 				NormalKey nkey = new NormalKey();
-
+				UniqueKey ukey = new UniqueKey();
 				boolean isAdded = false;
-				for (int i = 0; i < table.getKeys().size(); i++) {
-					if (table.getKeys().get(i).getType().name().equals(Type.NORMAL.name())) {
-						if (table.getKeys().get(i).isSameKey(tableSchema, tableName, keySchema, keyName)) {
-							table.getKeys().get(i).getColumns().add(columnName);
-							table.getKeys().get(i).getOrdinalPositions().add(ordinalPosition);
-							columnName = null;
-							ordinalPosition = -1;
-							isAdded = true;
-							break;
+
+				if(uniqueness.equals("UNIQUE")){
+					for (int i = 0; i < table.getKeys().size(); i++) {
+						if (table.getKeys().get(i).getType().name().equals(Type.UNIQUE.name())) {
+							if (table.getKeys().get(i).isSameKey(tableSchema, tableName, keySchema, keyName)) {
+								table.getKeys().get(i).getColumns().add(columnName);
+								table.getKeys().get(i).getOrdinalPositions().add(ordinalPosition);
+								columnName = null;
+								ordinalPosition = -1;
+								isAdded = true;
+								break;
+							}
 						}
 					}
+					if (isAdded)
+						continue;
+
+					if (ukey.getColumns() == null)
+						ukey.setColumns(new ArrayList<String>());
+					if (columnName != null) {
+						ukey.getColumns().add(columnName);
+					}
+					if (ukey.getOrdinalPositions() == null)
+						ukey.setOrdinalPositions(new ArrayList<Integer>());
+					if (ordinalPosition != -1) {
+						ukey.getOrdinalPositions().add(ordinalPosition);
+					}
+					ukey.setTableSchema(tableSchema);
+					ukey.setTableName(tableName);
+					ukey.setKeySchema(keySchema);
+					ukey.setName(keyName);
+					if (indexType == null) {
+						ukey.setIndexType(IndexType.NORMAL);
+					} else if (indexType.equals("NORMAL")) {
+						ukey.setIndexType(IndexType.NORMAL);
+					} else if (indexType.equals("BITMAP")) {
+						ukey.setIndexType(IndexType.BITMAP);
+					} else if (indexType.equals("FUNCTION_BASED_NORMAL")) {
+						ukey.setIndexType(IndexType.FUNCTION_BASED_NORMAL);
+					} else if (indexType.equals("FUNCTION_BASED_BITMAP")) {
+						ukey.setIndexType(IndexType.FUNCTION_BASED_BITMAP);
+					} else if (indexType.equals("DOMAIN")) {
+						ukey.setIndexType(IndexType.DOMAIN);
+					}
+					table.getKeys().add(ukey);
+					
+				}else if(uniqueness.equals("NONUNIQUE")){
+					for (int i = 0; i < table.getKeys().size(); i++) {
+						if (table.getKeys().get(i).getType().name().equals(Type.NORMAL.name())) {
+							if (table.getKeys().get(i).isSameKey(tableSchema, tableName, keySchema, keyName)) {
+								table.getKeys().get(i).getColumns().add(columnName);
+								table.getKeys().get(i).getOrdinalPositions().add(ordinalPosition);
+								columnName = null;
+								ordinalPosition = -1;
+								isAdded = true;
+								break;
+							}
+						}
+					}
+					if (isAdded)
+						continue;
+					if (nkey.getColumns() == null)
+						nkey.setColumns(new ArrayList<String>());
+					if (columnName != null) {
+						nkey.getColumns().add(columnName);
+					}
+					if (nkey.getOrdinalPositions() == null)
+						nkey.setOrdinalPositions(new ArrayList<Integer>());
+					if (ordinalPosition != -1) {
+						nkey.getOrdinalPositions().add(ordinalPosition);
+					}
+					nkey.setTableSchema(tableSchema);
+					nkey.setTableName(tableName);
+					nkey.setKeySchema(keySchema);
+					nkey.setName(keyName);
+					if (indexType == null) {
+						nkey.setIndexType(IndexType.NORMAL);
+					} else if (indexType.equals("NORMAL")) {
+						nkey.setIndexType(IndexType.NORMAL);
+					} else if (indexType.equals("BITMAP")) {
+						nkey.setIndexType(IndexType.BITMAP);
+					} else if (indexType.equals("FUNCTION_BASED_NORMAL")) {
+						nkey.setIndexType(IndexType.FUNCTION_BASED_NORMAL);
+					} else if (indexType.equals("FUNCTION_BASED_BITMAP")) {
+						nkey.setIndexType(IndexType.FUNCTION_BASED_BITMAP);
+					} else if (indexType.equals("DOMAIN")) {
+						nkey.setIndexType(IndexType.DOMAIN);
+					}
+					
+					table.getKeys().add(nkey);
 				}
-				if (isAdded)
-					continue;
-				if (nkey.getColumns() == null)
-					nkey.setColumns(new ArrayList<String>());
-				if (columnName != null) {
-					nkey.getColumns().add(columnName);
-				}
-				if (nkey.getOrdinalPositions() == null)
-					nkey.setOrdinalPositions(new ArrayList<Integer>());
-				if (ordinalPosition != -1) {
-					nkey.getOrdinalPositions().add(ordinalPosition);
-				}
-				nkey.setTableSchema(tableSchema);
-				nkey.setTableName(tableName);
-				nkey.setKeySchema(keySchema);
-				nkey.setName(keyName);
-				if (indexType == null) {
-					nkey.setIndexType(IndexType.BTREE);
-				} else if (indexType.equals("HASH")) {
-					nkey.setIndexType(IndexType.HASH);
-				} else if (indexType.equals("BTREE")) {
-					nkey.setIndexType(IndexType.BTREE);
-				}
-				table.getKeys().add(nkey);
+				
 			}
 
 			Collections.sort(table.getColumns(), Column.getComparator());
