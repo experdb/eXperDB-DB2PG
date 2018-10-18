@@ -285,7 +285,10 @@
 			c.column_id AS ordinal_position ,
 			c.name AS column_name ,
 			type_name( c.user_type_id ) AS column_type ,
-			object_definition( c.default_object_id ) AS column_default ,
+			CASE
+				WHEN object_definition( c.default_object_id ) = '(newid())' THEN NULL
+				ELSE object_definition( c.default_object_id )
+			END AS column_default ,
 			CASE
 				WHEN c.is_nullable != 0 THEN 'true'
 				ELSE 'false'
