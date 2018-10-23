@@ -155,14 +155,16 @@ public class DBWriter {
 	private void errDataHandling(String lineStr, String table_nm, int intErrLine) throws Exception {
 		String strOrgString = lineStr;
 		String arrDelString[] = strOrgString.split(Constant.R);
-		String strDelString = arrDelString[intErrLine-1];
-		
-		String strTransString = strOrgString.replaceAll(strDelString + Constant.R , "");
-		
-		errDataFileWrite(strDelString, table_nm, intErrLine);
-		
-		if(!strTransString.equals("")) {
-			DBWrite(strTransString, table_nm);
+		if(intErrLine > 0) {
+			String strDelString = arrDelString[intErrLine-1];
+			
+			String strTransString = strOrgString.replaceAll(strDelString + Constant.R , "");
+			
+			errDataFileWrite(strDelString, table_nm, intErrLine);
+			
+			if(!strTransString.equals("")) {
+				DBWrite(strTransString, table_nm);
+			}
 		}
 	}
 	
