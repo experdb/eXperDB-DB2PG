@@ -164,7 +164,7 @@ public class ExecuteDataTransfer implements Runnable{
         	LogUtils.debug("[START_FETCH_DATA]" + outputFileName,ExecuteQuery.class);
         	}
         	
-        	if(tableName.equals("TEST_UNQ")) {
+        	if(tableName.equals("jobcandidate")) {
         		System.out.println("TEST_UNQ debug");
         	}
         	
@@ -191,6 +191,8 @@ public class ExecuteDataTransfer implements Runnable{
         		for (int i = 1; i <= rsmd.getColumnCount(); i++) {	
         			int type = rsmd.getColumnType(i);
         			
+        			///System.out.println(ConvertDataToString(SrcConn,type, rs, i));
+        			
         			bf.append(ConvertDataToString(SrcConn,type, rs, i));
         			
         			if (i != rsmd.getColumnCount()) {
@@ -198,6 +200,8 @@ public class ExecuteDataTransfer implements Runnable{
         			}
         		}
         		bf.append(Constant.R);
+        		
+        		//System.out.println("length : " + bf.length() + " " + bf.toString());
 
         		int intBUFFER_SIZE = ConfigInfo.BUFFER_SIZE;
         		//ByteBuffer byteBuffer = ByteBuffer.allocateDirect(ConfigInfo.BUFFER_SIZE);
