@@ -104,10 +104,10 @@ public class DBWriter {
 			try {	
 				errCount += 1;
 				processErrorLInes = errCount;
-				String strErrLine = StrUtil.strGetLine(e.toString());
+				//String strErrLine = StrUtil.strGetLine(e.toString());
 				int intErrLine = -1;
 				
-				intErrLine = getLogErrLine(strErrLine);
+				intErrLine = getLogErrLine(e.toString());
 
 				//if (copyIn != null) copyIn.cancelCopy();	
 				conn.rollback();
