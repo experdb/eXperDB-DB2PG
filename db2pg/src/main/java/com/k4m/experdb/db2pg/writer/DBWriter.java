@@ -107,17 +107,8 @@ public class DBWriter {
 				String strErrLine = StrUtil.strGetLine(e.toString());
 				int intErrLine = -1;
 				
-				Pattern p = Pattern.compile("(^[0-9]*$)");
-				 Matcher m = p.matcher(strErrLine);
+				intErrLine = getErrLine(strErrLine);
 
-				if(strErrLine != null && !strErrLine.equals("")) {
-					if(m.find()) {
-						intErrLine = Integer.parseInt(strErrLine);
-					}
-				}
-				System.out.println("intErrLine : " + intErrLine);
-				
-				
 				//if (copyIn != null) copyIn.cancelCopy();	
 				conn.rollback();
 				
@@ -177,15 +168,71 @@ public class DBWriter {
 		}
 	}
 	
+	private int getErrLine(String strErrorText) throws Exception {
+		int intErrLine = 0;
+		
+		String regEx = "line\\s[0-9]*";
+		Pattern p = Pattern.compile(regEx); 
+		
+		Matcher match = p.matcher(strErrorText);
+		String strSearch = "";
+	    while (match.find()) {
+	        strSearch = match.group(0);
+	    }
+	    
+	    if(!strSearch.equals("")) {
+	    	String strErrLine = strSearch.replaceAll("[^0-9]", "");
+	    	intErrLine = Integer.parseInt(strErrLine);
+	    }
+		return intErrLine;
+	}
+	
 	public static void main(String[] args) throws Exception {
 		
 		String str = "ERROR:  duplicate key value violates unique constraint \"test_pkey\" DETAIL:  Key (id)=(5) already exists. CONTEXT:  COPY test, line 61";
+		
+
+		str = " Hint: You need to rebuild PostgreSQL using --with-libxml.Where: COPY jobcandidate,";
+		str +=  " line 1, column resume: ";
+		str +=  "\"<ns:Resume xmlns:ns=\"http://schemas.microsoft.com";
+		str += "/sqlserver/2004/07/adventure-works/Resume\"><ns:Name...";
+		str += " ERROR: unsupported XML feature ";
+		str += "		   Detail: This functionality requires the server to be built with libxml support. ";
+		str += "		   Hint: You need to rebuild PostgreSQL using --with-libxml. ";
+		str += "		   Where: COPY jobcandidate, line 1, column resume: \"<ns:Resume xmlns:ns=\"http://schemas.microsoft.com/sqlserver/2004/07/adventure-works/Resume\"><ns:Name...";
+		str += "		 org.postgresql.util.PSQLException: ERROR: unsupported XML feature ";
+		str += "		   Detail: This functionality requires the server to be built with libxml support. ";
+		str += "		   Hint: You need to rebuild PostgreSQL using --with-libxml. ";
+		str += "		   Where: COPY jobcandidate, line 1, column resume: \"<ns:Resume xmlns:ns=\"http://schemas.microsoft.com/sqlserver/2004/07/adventure-works/Resume\"><ns:Name...";
+		str += "		 ERROR: unsupported XML feature ";
+		str += "		   Detail: This functionality requires the server to be built with libxml support. ";
+		str += "		   Hint: You need to rebuild PostgreSQL using --with-libxml. ";
+		str += "		   Where: COPY jobcandidate, line 1, column resume: \"<ns:Resume xmlns:ns=\"http://schemas.microsoft.com/sqlserver/2004/07/adventure-works/Resume\"><ns:Name...";
+		str += "		 null ";
 		
 		int idx = str.indexOf("line");
 		
 		String strLine = str.substring(idx+5);
 		
-		System.out.println(" line:" + strLine);
+		String regEx = "line\\s[0-9]*";
+		Pattern p = Pattern.compile(regEx); 
+		
+		Matcher match = p.matcher(str);
+		
+		String strSearch = "";
+		
+	    int matchCount = 0;
+	    while (match.find()) {
+	        //System.out.println(matchCount + " : " + match.group(0));
+	        matchCount++;
+	        strSearch = match.group(0);
+
+	    }
+		
+		System.out.println(" line:" + strSearch);
+		
+		String clean1 = strSearch.replaceAll("[^0-9]", "");
+		System.out.println(" line: " + clean1);
 	}
 
 }
