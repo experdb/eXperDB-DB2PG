@@ -107,7 +107,7 @@ public class DBWriter {
 				String strErrLine = StrUtil.strGetLine(e.toString());
 				int intErrLine = -1;
 				
-				intErrLine = getErrLine(strErrLine);
+				intErrLine = getLogErrLine(strErrLine);
 
 				//if (copyIn != null) copyIn.cancelCopy();	
 				conn.rollback();
@@ -168,7 +168,7 @@ public class DBWriter {
 		}
 	}
 	
-	private int getErrLine(String strErrorText) throws Exception {
+	private int getLogErrLine(String strErrorText) throws Exception {
 		int intErrLine = 0;
 		
 		String regEx = "line\\s[0-9]*";
