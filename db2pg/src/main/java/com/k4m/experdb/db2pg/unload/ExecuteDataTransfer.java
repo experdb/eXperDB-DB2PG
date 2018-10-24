@@ -245,6 +245,9 @@ public class ExecuteDataTransfer implements Runnable{
     			}
         	}
 			
+        	if(intErrCnt > 0) {
+        		this.success = false;
+        	}
         	
 
         	stopWatch.stop();
