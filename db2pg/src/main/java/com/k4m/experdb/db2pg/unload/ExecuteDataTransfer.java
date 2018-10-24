@@ -267,6 +267,9 @@ public class ExecuteDataTransfer implements Runnable{
 				
 				if(ConfigInfo.DB_WRITER_MODE) {
 					LogUtils.info("COMPLETE UNLOAD (TABLE_NAME : " +tableName + ", getProcessLines : " + dbWriter.getProcessLines() + ", getProcessBytes : " + dbWriter.getProcessBytes() + " , getProcessErrorLInes : " + dbWriter.getProcessErrorLInes() + ") !!!",ExecuteQuery.class);
+					if(dbWriter.getProcessErrorLInes() > 0) {
+						this.success = false;
+					}
 				}
 				if(rs != null) rs.close();
 			} catch (Exception e) {
