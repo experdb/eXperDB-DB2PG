@@ -15,6 +15,10 @@
 <result property="NUMERIC_PRECISION" column="NUMERIC_PRECISION" />
 <result property="NUMERIC_SCALE" column="NUMERIC_SCALE" /> </resultMap>
 
+<resultMap id="getViewInformResult" type="com.k4m.experdb.db2pg.common.LowerKeyMap"> 
+<result property="VIEW_NAME" column="VIEW_NAME" /> 
+<result property="TEXT" column="TEXT" jdbcType="VARCHAR" javaType="java.lang.String" />
+</resultMap>
 
 	<select id="getTableNames" parameterType="map" resultType="java.lang.String" databaseId="ORA">
 		SELECT OBJECT_NAME as TABLE_NAME FROM ALL_OBJECTS 
@@ -48,42 +52,6 @@
          	AND UT.OBJECT_NAME IN ( ${TABLE_LIST} )
          </if>
          AND UT.OBJECT_NAME NOT LIKE 'BIN$%'
-         AND UT.OWNER NOT IN ('SCOTT',
-                              'OWBSYS_AUDIT',
-                              'OWBSYS',
-                              'APEX_030200',
-                              'FLOWS_FILES',
-                              'APEX_PUBLIC_USER',
-                              'MGMT_VIEW',
-                              'SYSMAN',
-                              'SPATIAL_CSW_ADMIN_USR',
-                              'SPATIAL_WFS_ADMIN_USR',
-                              'MDDATA',
-                              'OLAPSYS',
-                              'ORDSYS',
-                              'ORDDATA',
-                              'ORDPLUGINS',
-                              'MDSYS',
-                              'SI_INFORMTN_SCHEMA',
-                              'XS$NULL',
-                              'ANONYMOUS',
-                              'XDB',
-                              'CTXSYS',
-                              'EXFSYS',
-                              'WMSYS',
-                              'APPQOSSYS',
-                              'DBSNMP',
-                              'ORACLE_OCM',
-                              'DIP',
-                              'OUTLN',
-                              'SYSTEM',
-                              'SYS',
-                              --EAXM 'PM',
-                              'BI',
-                              'IX',
-                              'OE',
-                              'HR',
-                              'SH')
 		ORDER BY SCHEMA_NAME, TABLE_NAME
 	</select>
 	<select id="getColumnInform" parameterType="map" resultType="com.k4m.experdb.db2pg.common.LowerKeyMap" resultMap="getColumnListResult" databaseId="ORA"> 
@@ -172,8 +140,8 @@
 				 UIC.COLUMN_NAME AS COLUMN_NAME,
 				UIC.COLUMN_POSITION AS ORDINAL_POSITION,
 				UC.R_OWNER AS REF_TABLE_SCHEMA,
-				(SELECT TABLE_NAME FROM USER_IND_COLUMNS WHERE INDEX_NAME = UC.R_CONSTRAINT_NAME) AS REF_TABLE_NAME,
-				(SELECT COLUMN_NAME FROM USER_IND_COLUMNS WHERE  INDEX_NAME = UC.R_CONSTRAINT_NAME) AS REF_COLUMN_NAME,
+				(SELECT TABLE_NAME FROM USER_IND_COLUMNS WHERE INDEX_NAME = UC.R_CONSTRAINT_NAME AND TABLE_NAME =  #{TABLE_NAME}) AS REF_TABLE_NAME,
+				(SELECT COLUMN_NAME FROM USER_IND_COLUMNS WHERE  INDEX_NAME = UC.R_CONSTRAINT_NAME AND TABLE_NAME =  #{TABLE_NAME}) AS REF_COLUMN_NAME,
 				CASE WHEN UC.CONSTRAINT_TYPE='P' THEN 'P'
 				WHEN UC.CONSTRAINT_TYPE='R' THEN 'F'
 				WHEN UC.CONSTRAINT_TYPE='U' THEN 'U'
@@ -222,6 +190,10 @@
 				          AND B.INDEX_NAME IS NULL
 			          )A, USER_IND_COLUMNS C
 			          WHERE A.INDEX_NAME= C.INDEX_NAME
+	</select>
+	<select id="getViewInform" parameterType="map" resultMap="getViewInformResult" resultType="com.k4m.experdb.db2pg.common.LowerKeyMap"  databaseId="ORA">
+			SELECT VIEW_NAME, TEXT
+			FROM USER_VIEWS
 	</select>
 	
 	<select id="getTableNames" parameterType="map" resultType="java.lang.String" databaseId="MSS">

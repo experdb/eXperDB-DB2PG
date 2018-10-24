@@ -181,6 +181,7 @@ public class PgDDLMaker<T> {
 			case FOREIGN:
 				try {
 					ForeignKey fkey = key.unwrap(ForeignKey.class);
+					if(fkey.getRefTable() != null){
 					tmpsb.append("ALTER TABLE \"");
 					tmpsb.append(fkey.getTableName().toLowerCase());
 					tmpsb.append("\" ADD CONSTRAINT \"");
@@ -224,6 +225,7 @@ public class PgDDLMaker<T> {
 					tmpStringVOs.add(new DDLString().setString(tmpsb.toString()).setDDLType(DDL_TYPE.CREATE)
 							.setCommandType(COMMAND_TYPE.FOREIGN_KEY).setPriority(2));
 					tmpsb.setLength(0);
+					}
 				} catch (TableKeyException e) {
 					e.printStackTrace();
 				}

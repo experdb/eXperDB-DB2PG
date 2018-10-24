@@ -165,7 +165,7 @@ public class ConvertDBUtils {
 		try {
 			String dbtype = dbConfigInfo.DB_TYPE;
 			if (dbtype.equals(Constant.DB_TYPE.ORA)) {
-				//table = OracleConvertDBUtils.setSeqInform(table, srcPoolName, dbConfigInfo);
+				views = OracleConvertDBUtils.setViewInform(tableSchema, srcPoolName, dbConfigInfo);
 			} else if (dbtype.equals(Constant.DB_TYPE.MSS)) {
 				views = MsSQLConvertDBUtils.setViewInform(tableSchema, srcPoolName, dbConfigInfo);
 			} else if (dbtype.equals(Constant.DB_TYPE.MYSQL)) {

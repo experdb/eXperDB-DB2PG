@@ -67,6 +67,9 @@
 		"mysql": [
 			"^(?i)FLOAT$",
 			"^(?i)FLOAT UNSIGNED$"
+		],
+		"ora" :[
+			"^(?i)BINARY_FLOAT$"
 		]
 	},
 	"real_case_2": {
@@ -77,6 +80,12 @@
 		"mss": [
 			"^(?i)DOUBLE PRECISION$",
 			"^(?i)FLOAT$"
+		],
+		"ora" :[
+			"^(?i)BINARY_DOUBLE$",
+			"^(?i)REAL$",
+			"^(?i)FLOAT$",
+			"^(?i)NUMBER$"
 		]
 	},
 	"bool_case": {
@@ -100,6 +109,11 @@
 		],
 		"mss": [
 			"^(?i)NTEXT$"
+		],
+		"ora" :[
+			"^(?i)CLOB$",
+			"^(?i)LONG$",
+			"^(?i)NCLOB$"
 		]
 	},
 	"char_case_1": {
@@ -110,6 +124,9 @@
 		"mss": [
 			"^(?i)CHAR$",
 			"^(?i)NCHAR$"
+		],
+		"ora" :[
+			"^(?i)NCHAR$"
 		]
 	},
 	"char_case_2": {
@@ -117,6 +134,12 @@
 		"mss": [
 			"^(?i)NVARCHAR$",
 			"^(?i)VARCHAR$"
+		],
+		"ora" :[
+			"^(?i)NCHAR VARYING$",
+			"^(?i)UROWID$",
+			"^(?i)VARCHAR2$",
+			"^(?i)NVARCHAR2$"
 		]
 	},	
 	"char_case_3": {
@@ -125,6 +148,18 @@
 			"^(?i)UNIQUEIDENTIFIER$"
 		]
 	},	
+	"char_case_4": {
+		"postgres": "CHAR(10)",
+		"ora": [
+			"^(?i)ROWID$"
+		]
+	},	
+	"char_case_5": {
+		"postgres": "VARCHAR(255)",
+		"ora": [
+			"^(?i)BFILE$"
+		]
+	},		
 	"bytea_case": {
 		"postgres": "BYTEA",
 		"mysql": [
@@ -141,6 +176,11 @@
 			"^(?i)IMAGE$",
 			"^(?i)ROWVERSION$",
 			"^(?i)TIMESTAMP$"
+		],
+		"ora" :[
+			"^(?i)BLOB$",
+			"^(?i)LONG RAW$",
+			"^(?i)RAW$"
 		]
 	},
 	"date_case_1": {
@@ -156,12 +196,18 @@
 		],
 		"mss": [
 			"^(?i)DATETIMEOFFSET$"
+		],
+		"ora" :[
+			"^(?i)TIMESTAMP$"
 		]
 	},
     "date_case_3": {
 		"postgres": "SMALLINT",
 		"mysql": [
             "^(?i)SMALLINT\\s*\\(?[0-9]*\\)?$"
+		],
+		"ora": [
+            "^(?i)NUMBER\\s*\\(?[1-4]*\\)?$"
 		]
 	},
     "date_case_4": {
@@ -180,6 +226,9 @@
 		"postgres": "TIMESTAMP(0)",
 		"mss": [
             "^(?i)SMALLDATETIME$"
+		],
+		"ora": [
+            "^(?i)DATE$"
 		]
 	},		
 	"date_case_7": {
@@ -194,6 +243,12 @@
             "^(?i)TIME$"
 		]
 	},
+	"date_case_9": {
+		"postgres": "LOCALTIMESTAMP",
+		"ora": [
+            "^(?i)SYSDATE$"
+		]
+	},	
 	"decimal_case_1": {
 	    "postgres": "DECIMAL",
 	    "mysql": [
@@ -203,7 +258,10 @@
 	    ],
 	    "mss": [
 	       "^(?i)DECIMAL$"
-	    ]
+	    ],
+		"ora" :[
+			"^(?i)NUMBER\\s*\\(?[0-9]*,[0-9]*\\)?$"
+		]
 	},
 	"decimal_case_2": {
 	    "postgres": "DEC",
@@ -235,5 +293,11 @@
 	    "mss": [
 	        "^(?i)\\(?newid\\s*\\(?\\)?\\)?$"
 	    ]
-	}
+	},
+	"xml_case": {
+		"postgres": "XML",
+	    "ora": [
+	        "^(?i)XMLTYPE$"
+	    ]
+	}	
 }

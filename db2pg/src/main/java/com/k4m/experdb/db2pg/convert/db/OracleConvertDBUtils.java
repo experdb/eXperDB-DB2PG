@@ -9,6 +9,7 @@ import java.util.Map;
 import com.k4m.experdb.db2pg.common.LogUtils;
 import com.k4m.experdb.db2pg.convert.table.Column;
 import com.k4m.experdb.db2pg.convert.table.Table;
+import com.k4m.experdb.db2pg.convert.table.View;
 import com.k4m.experdb.db2pg.convert.table.key.ForeignKey;
 import com.k4m.experdb.db2pg.convert.table.key.Key.IndexType;
 import com.k4m.experdb.db2pg.convert.table.key.Key.Type;
@@ -16,8 +17,6 @@ import com.k4m.experdb.db2pg.convert.table.key.NormalKey;
 import com.k4m.experdb.db2pg.convert.table.key.PrimaryKey;
 import com.k4m.experdb.db2pg.convert.table.key.UniqueKey;
 import com.k4m.experdb.db2pg.convert.table.key.option.ForeignKeyDelete;
-import com.k4m.experdb.db2pg.convert.table.key.option.ForeignKeyMatch;
-import com.k4m.experdb.db2pg.convert.table.key.option.ForeignKeyUpdate;
 import com.k4m.experdb.db2pg.convert.table.key.option.ReferenceDefinition;
 import com.k4m.experdb.db2pg.db.datastructure.DBConfigInfo;
 import com.k4m.experdb.db2pg.work.db.impl.MetaExtractWork;
@@ -195,7 +194,7 @@ public class OracleConvertDBUtils {
 			Map<String, Object> params = new HashMap<String, Object>();
 			params.put("TABLE_SCHEMA", table.getSchemaName());	
 			params.put("TABLE_NAME", table.getName());
-
+			
 			MetaExtractWorker mew = new MetaExtractWorker(srcPoolName, new MetaExtractWork(WORK_TYPE.GET_CONSTRAINT_INFORM, params));
 			mew.run();
 			List<Map<String, Object>> results = (List<Map<String, Object>>) mew.getListResult();
@@ -575,5 +574,56 @@ public class OracleConvertDBUtils {
 		}
 		return table;
 	}
-
+	
+	public static List<View> setViewInform(String Schema, String srcPoolName, DBConfigInfo dbConfigInfo) {
+		List<View> views = new ArrayList<View>();
+		try {
+			LogUtils.info("[START_SET_VIEW_INFORM]",OracleConvertDBUtils.class);
+			Map<String,Object> params = new HashMap<String,Object>();
+			
+//			params.put("TABLE_SCHEMA", Schema);
+			
+			MetaExtractWorker mew = new MetaExtractWorker(srcPoolName, new MetaExtractWork(WORK_TYPE.GET_VIEW_INFORM, params));
+			mew.run();
+			List<Map<String,Object>> results = (List<Map<String,Object>>)mew.getListResult();
+//			LogUtils.info("[GET_SET_VIEW_INFORM]"+results,OracleConvertDBUtils.class);
+			
+			Object obj = null;
+        	for (Map<String,Object> result : results) {
+        		obj = result.get("view_name");
+    			String viewName = obj!=null?obj.toString():null;
+    			obj = result.get("text");
+    			String text = obj!=null?obj.toString():null;
+    			obj = result.get("view_definition");
+    			String viewDefinition="create view "+viewName.toLowerCase()+" as "+ text.toLowerCase()+";";
+    			View view = new View();
+    			boolean isAdded = false;
+    			/*for(int i=0; i<table.getKeys().size();i++) {
+    				if(table.getKeys().get(i).getType().name().equals(Type.VIEW.name())) {
+    					if(table.getKeys().get(i).isSameKey(tableSchema, tableName, keySchema, keyName)) {
+    						table.getKeys().get(i).getColumns().add(columnName);
+    						table.getKeys().get(i).getOrdinalPositions().add(ordinalPosition);
+    						columnName = null;
+    						ordinalPosition = -1;
+    						isAdded = true;
+    						break;
+    					}
+    				}
+    			}*/
+//    			view.setTableCatalLog(tableCatalLog);
+//    			view.setTableSchema(tableSchema);
+//    			view.setTableName(tableName);
+    			view.setViewDefinition(viewDefinition);
+//    			view.setCheckOption(checkOption);
+//    			view.setIsUpdaTable(isUpdaTable);
+    			
+    			views.add(view);
+        	}       	
+			LogUtils.info("[END_SET_VIEW_INFORM]",OracleConvertDBUtils.class);
+		} catch(Exception e){
+			LogUtils.error(e.getMessage(),OracleConvertDBUtils.class);
+		}
+		return views;
+	}
+	
 }
