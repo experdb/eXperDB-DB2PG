@@ -393,7 +393,7 @@ public class ExecuteDataTransfer implements Runnable{
 
 						}
 						reader.close();
-						return "";
+						return bf.toString();
 					}
 				}
 				return "\\N";
@@ -433,7 +433,7 @@ public class ExecuteDataTransfer implements Runnable{
 					}
 					in.close();
 				
-					return "";	
+					return bf.toString();	
 				}
 			case Types.VARBINARY:
 				bytes = rs.getBytes(index);
@@ -513,7 +513,7 @@ public class ExecuteDataTransfer implements Runnable{
 
 						}
 						reader.close();
-						return "";
+						return bf.toString();
 					}
 				}
 				return "\\N";
