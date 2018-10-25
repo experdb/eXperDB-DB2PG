@@ -366,21 +366,24 @@ public class ExecuteDataTransfer implements Runnable{
 				
 				if (clob != null) {
 					
-					BufferedReader reader = null;
+					
 					str = null;
-					char[] buffer = null;
+
 					int n = 0;
 					
 					if(clob.length() < 32766 && !ConfigInfo.SRC_IS_ASCII) { 
 						str = rs.getString(index);
 						return str == null ? "\\N" : DevUtils.replaceEach(str, DevUtils.BackSlashSequence, DevUtils.BackSlashSequenceReplace);
 					} else {
+						BufferedReader reader = null;
+						
 						if ( ConfigInfo.SRC_IS_ASCII ) {
 							reader = new BufferedReader(new InputStreamReader(clob.getAsciiStream(),ConfigInfo.SRC_DB_CONFIG.CHARSET));
 						} else {
 							reader = new BufferedReader(clob.getCharacterStream());
 						}
-						buffer = new char[ 4 * 1024 ];
+						
+						char[] buffer = new char[ 4 * 1024 ];
 						 
 						if(bf.length()>0) {
 							//divideProcessing();
@@ -403,9 +406,12 @@ public class ExecuteDataTransfer implements Runnable{
 				if (blob == null){
 					return "\\N";
 				} else {
-					byte[] buffer = new byte[ConfigInfo.BUFFER_SIZE];
+					
 					int len = 0;
 					in = blob.getBinaryStream();
+					
+					byte[] buffer = new byte[in.available()];
+					
 					if (blob != null){
 						ByteArrayOutputStream buffeOutr = new ByteArrayOutputStream();
 						if (blob.length() < ConfigInfo.BUFFER_SIZE) {		
