@@ -369,8 +369,6 @@ public class ExecuteDataTransfer implements Runnable{
 					
 					str = null;
 
-					int n = 0;
-					
 					if(clob.length() < 32766 && !ConfigInfo.SRC_IS_ASCII) { 
 						str = rs.getString(index);
 						return str == null ? "\\N" : DevUtils.replaceEach(str, DevUtils.BackSlashSequence, DevUtils.BackSlashSequenceReplace);
@@ -383,18 +381,22 @@ public class ExecuteDataTransfer implements Runnable{
 							reader = new BufferedReader(clob.getCharacterStream());
 						}
 						
-						char[] buffer = new char[ 4 * 1024 ];
-						 
-						if(bf.length()>0) {
-							//divideProcessing();
+						char[] buffer = new char[ ConfigInfo.SRC_LOB_FETCH_SIZE ];
+						
+						int n = 0;
+						StringBuffer sb = new StringBuffer();
+						while((n = reader.read(buffer)) != -1){
+							sb.append(buffer, 0, n);				
 						}
 						
-						
-						while((n = reader.read(buffer)) != -1) {
+/*						while((n = reader.read(buffer)) != -1) {
 							String s = DevUtils.replaceEach(new String(Arrays.copyOfRange(buffer, 0, n)), DevUtils.BackSlashSequence, DevUtils.BackSlashSequenceReplace);
 							bf.append(s);
 
-						}
+						}*/
+						String s = DevUtils.replaceEach(sb.toString(), DevUtils.BackSlashSequence, DevUtils.BackSlashSequenceReplace);
+						bf.append(s);
+						
 						reader.close();
 						return "";
 					}
@@ -412,32 +414,26 @@ public class ExecuteDataTransfer implements Runnable{
 					
 					//System.out.println("@@@@@@@@@@ ===> " + in.available());
 					
-					byte[] buffer = new byte[ConfigInfo.BUFFER_SIZE];
+					byte[] buffer = new byte[ConfigInfo.SRC_LOB_FETCH_SIZE];
 					
 					if (blob != null){
 						ByteArrayOutputStream buffeOutr = new ByteArrayOutputStream();
-						if (blob.length() < ConfigInfo.BUFFER_SIZE) {		
+						bf.append("\\\\x");
+						if (blob.length() < ConfigInfo.SRC_LOB_FETCH_SIZE){								
 							len = in.read(buffer);
-							if(len > -1)
-								buffeOutr.write(buffer, 0, len);
+							buffeOutr.write(buffer, 0, len);
 							buffeOutr.flush();
-							bf.append("\\\\x");
-							bf.append(DatatypeConverter.printHexBinary(buffeOutr.toByteArray()));
-						} else {
-							if(bf.length()>0) {
-								//divideProcessing();
-							}
-    	        			
-							bf.append("\\\\x");
-							while((len = in.read(buffer))!= -1) {
-								buffeOutr.write(buffer, 0, len);
-								buffeOutr.flush();
-								bf.append(DatatypeConverter.printHexBinary(buffeOutr.toByteArray()));
-			        			buffeOutr.reset();
-
-							}
+							bf.append(DatatypeConverter.printHexBinary(buffeOutr.toByteArray()));								
+						}else{							
+							while((len = in.read(buffer))!= -1){																		
+									buffeOutr.write(buffer, 0, len);
+									buffeOutr.flush();
+									bf.append(DatatypeConverter.printHexBinary(buffeOutr.toByteArray()));
+				        			buffeOutr.reset();					        			
+							}							
 						}
-						buffeOutr.close();	
+						
+						buffeOutr.close();		
 					}
 					in.close();
 				
