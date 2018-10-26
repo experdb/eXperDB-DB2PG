@@ -9,8 +9,8 @@ import com.k4m.experdb.db2pg.config.ConfigInfo;
 import com.k4m.experdb.db2pg.convert.DDLString;
 import com.k4m.experdb.db2pg.convert.pattern.SqlPattern;
 import com.k4m.experdb.db2pg.convert.table.Column;
+import com.k4m.experdb.db2pg.convert.table.Sequence;
 import com.k4m.experdb.db2pg.convert.table.Table;
-import com.k4m.experdb.db2pg.convert.table.View;
 import com.k4m.experdb.db2pg.convert.table.key.CLUSTER;
 import com.k4m.experdb.db2pg.convert.table.key.ForeignKey;
 import com.k4m.experdb.db2pg.convert.table.key.Key;
@@ -140,7 +140,7 @@ public class PgDDLMaker<T> {
 						.setCommandType(COMMAND_TYPE.SEQUENCE).setPriority(2));
 				tmpsb.setLength(0);
 			}
-			
+					
 			if (column.getComment() != null && !column.getComment().equals("")) {
 				tmpsb.append("COMMENT ON COLUMN ");
 				if(table.getName() != null && !table.getName().equals("")) {
@@ -159,6 +159,19 @@ public class PgDDLMaker<T> {
 				tmpsb.setLength(0);
 			}
 		}//end column
+		
+		//ORA -> Sequence
+		if(ConfigInfo.SRC_DB_CONFIG.DB_TYPE.equals(Constant.DB_TYPE.ORA) && table.getSequence() !=null){
+			for(Sequence sequence : table.getSequence()) {
+				tmpsb.append("CREATE SEQUENCE \"");
+				tmpsb.append(sequence.getSeqName());
+				tmpsb.append('"');
+				tmpsb.append(String.format(" INCREMENT %d MINVALUE %d START %d", sequence.getSeqIncValue(), sequence.getSeqMinValue(), sequence.getSeqStart()));
+				tmpStringVOs.add(new DDLString().setString(tmpsb.toString()).setDDLType(DDL_TYPE.CREATE)
+						.setCommandType(COMMAND_TYPE.SEQUENCE).setPriority(2));
+				tmpsb.setLength(0);
+			}	
+		}
 		
 		for(Key<?> key : table.getKeys()) {
 			switch(key.getType()) {
