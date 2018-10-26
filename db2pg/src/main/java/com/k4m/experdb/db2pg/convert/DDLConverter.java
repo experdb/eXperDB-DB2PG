@@ -155,7 +155,7 @@ public class DDLConverter {
 				fch.write(fileBuffer);
 				fileBuffer.clear();
 			}	
-		}else if(ConfigInfo.SRC_DB_CONFIG.DB_TYPE.equals(Constant.DB_TYPE.MSS)){
+		}else if(ConfigInfo.SRC_DB_CONFIG.DB_TYPE.equals(Constant.DB_TYPE.MSS) || ConfigInfo.SRC_DB_CONFIG.DB_TYPE.equals(Constant.DB_TYPE.ORA)){
 			for(int i=0; i<views.size(); i++){
 				fileBuffer.put(views.get(i).getViewDefinition().getBytes(ConfigInfo.TAR_DB_CONFIG.CHARSET));
 				fileBuffer.put("\n".getBytes(ConfigInfo.TAR_DB_CONFIG.CHARSET));

@@ -164,7 +164,7 @@ public class PgDDLMaker<T> {
 		if(ConfigInfo.SRC_DB_CONFIG.DB_TYPE.equals(Constant.DB_TYPE.ORA) && table.getSequence() !=null){
 			for(Sequence sequence : table.getSequence()) {
 				tmpsb.append("CREATE SEQUENCE \"");
-				tmpsb.append(sequence.getSeqName());
+				tmpsb.append(sequence.getSeqName().toLowerCase());
 				tmpsb.append('"');
 				tmpsb.append(String.format(" INCREMENT %d MINVALUE %d START %d", sequence.getSeqIncValue(), sequence.getSeqMinValue(), sequence.getSeqStart()));
 				tmpStringVOs.add(new DDLString().setString(tmpsb.toString()).setDDLType(DDL_TYPE.CREATE)
