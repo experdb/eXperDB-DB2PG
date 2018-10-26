@@ -169,7 +169,7 @@ public class ConvertDBUtils {
 			} else if (dbtype.equals(Constant.DB_TYPE.MSS)) {
 				views = MsSQLConvertDBUtils.setViewInform(tableSchema, srcPoolName, dbConfigInfo);
 			} else if (dbtype.equals(Constant.DB_TYPE.MYSQL)) {
-				//table = MySQLConvertDBUtils.setSeqInform(table, srcPoolName, dbConfigInfo);
+				views = MySQLConvertDBUtils.setViewInform(tableSchema, srcPoolName, dbConfigInfo);
 			} else {
 
 			}
@@ -177,6 +177,24 @@ public class ConvertDBUtils {
 			LogUtils.error(e.getMessage(), ConvertDBUtils.class);
 		} 
 		return views;
+	}
+	
+	public static Table setsetSequencesInform(Table table, String srcPoolName, DBConfigInfo dbConfigInfo) {
+		try {
+			String dbtype = dbConfigInfo.DB_TYPE;
+			if (dbtype.equals(Constant.DB_TYPE.ORA)) {
+				table = OracleConvertDBUtils.setsetSequencesInform(table, srcPoolName, dbConfigInfo);
+			} else if (dbtype.equals(Constant.DB_TYPE.MSS)) {
+//				table = MsSQLConvertDBUtils.setColumnInform(table, srcPoolName, dbConfigInfo);
+			} else if (dbtype.equals(Constant.DB_TYPE.MYSQL)) {
+				table = MySQLConvertDBUtils.setColumnInform(table, srcPoolName, dbConfigInfo);
+			} else {
+
+			}
+		} catch (Exception e) {
+			LogUtils.error(e.getMessage(), ConvertDBUtils.class);
+		} 
+		return table;
 	}
 
 }

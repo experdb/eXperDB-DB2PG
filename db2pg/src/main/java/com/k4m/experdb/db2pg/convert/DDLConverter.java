@@ -1,10 +1,8 @@
 package com.k4m.experdb.db2pg.convert;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 import java.text.MessageFormat;
@@ -95,7 +93,12 @@ public class DDLConverter {
 		
 		PgDDLMaker<Table> maker = new PgDDLMaker<Table>(DDL_TYPE.CREATE);
 		Queue<DDLString> ddlQueue = new LinkedBlockingQueue<DDLString>();
+		int sequenceCheck=0;
 		for (Table table : tables) {
+			if(ConfigInfo.SRC_DB_CONFIG.DB_TYPE.equals(Constant.DB_TYPE.ORA) && sequenceCheck==0){
+				ConvertDBUtils.setsetSequencesInform(table, Constant.POOLNAME.SOURCE.name(), dbConfigInfo);
+				sequenceCheck++;
+			}
 			ConvertDBUtils.setColumnInform(table, Constant.POOLNAME.SOURCE.name(), dbConfigInfo);
 			ConvertDBUtils.setConstraintInform(table, Constant.POOLNAME.SOURCE.name(), dbConfigInfo);
 			ConvertDBUtils.setKeyInform(table, Constant.POOLNAME.SOURCE.name(), dbConfigInfo);
@@ -141,13 +144,27 @@ public class DDLConverter {
 		FileOutputStream fos = new FileOutputStream(viewSqlFile);
 		fch = fos.getChannel();
 
-		for(int i=0; i<views.size(); i++){
-			fileBuffer.put(views.get(i).getViewDefinition().getBytes(ConfigInfo.TAR_DB_CONFIG.CHARSET));
-			fileBuffer.put("\n".getBytes(ConfigInfo.TAR_DB_CONFIG.CHARSET));
-			fileBuffer.flip();
-			fch.write(fileBuffer);
-			fileBuffer.clear();
-		}	
+		if(ConfigInfo.SRC_DB_CONFIG.DB_TYPE.equals(Constant.DB_TYPE.MYSQL)){
+			for(int i=0; i<views.size(); i++){
+				fileBuffer.put("CREATE VIEW ".getBytes(ConfigInfo.TAR_DB_CONFIG.CHARSET));
+				fileBuffer.put(views.get(i).getTableName().getBytes(ConfigInfo.TAR_DB_CONFIG.CHARSET));
+				fileBuffer.put(" AS ".getBytes(ConfigInfo.TAR_DB_CONFIG.CHARSET));
+				fileBuffer.put(views.get(i).getViewDefinition().getBytes(ConfigInfo.TAR_DB_CONFIG.CHARSET));
+				fileBuffer.put("\n".getBytes(ConfigInfo.TAR_DB_CONFIG.CHARSET));
+				fileBuffer.flip();
+				fch.write(fileBuffer);
+				fileBuffer.clear();
+			}	
+		}else if(ConfigInfo.SRC_DB_CONFIG.DB_TYPE.equals(Constant.DB_TYPE.MSS) || ConfigInfo.SRC_DB_CONFIG.DB_TYPE.equals(Constant.DB_TYPE.ORA)){
+			for(int i=0; i<views.size(); i++){
+				fileBuffer.put(views.get(i).getViewDefinition().getBytes(ConfigInfo.TAR_DB_CONFIG.CHARSET));
+				fileBuffer.put("\n".getBytes(ConfigInfo.TAR_DB_CONFIG.CHARSET));
+				fileBuffer.flip();
+				fch.write(fileBuffer);
+				fileBuffer.clear();
+			}	
+		}
+	
 		fch.close();
 		fos.close();		
 	}
@@ -366,49 +383,13 @@ public class DDLConverter {
 	private void oracleTableConvert(Table table) throws NotSupportDatabaseTypeException {
 		for (Column column : table.getColumns()) {
 			for (ConvertObject convertVO : convertMapper.getPatternList()) {
-				if(column.getDefaultValue() != null){
-					if (convertVO.getPattern().matcher(column.getDefaultValue()).find()) {
-						if (convertVO.getToValue().equals("(now())")) {
-							column.setDefaultValue(convertVO.getToValue());
-						}												
-					}
-				}
-					
-				if (convertVO.getPattern().matcher(column.getType()).find()) {				
-					if (convertVO.getToValue().equals("VARCHAR")) {
-						if(column.getTypeLength() == -1){
-							column.setType(String.format("%s", "TEXT"));
-						}else{
-							column.setType(String.format("%s(%d)", convertVO.getToValue(),column.getTypeLength()));	
-						}
-					}else if (convertVO.getToValue().equals("CHAR")) {
-							column.setType(String.format("%s(%d)", convertVO.getToValue(),column.getTypeLength()));	
-					}else if (convertVO.getToValue().equals("TIMESTAMP")) {
-						column.setType(String.format("%s(%d)", convertVO.getToValue(),column.getNumericScale()));	
-					}else if (convertVO.getToValue().equals("TIME")) {
-						column.setType(String.format("%s(%d)", convertVO.getToValue(),column.getNumericScale()));	
-					}else if (convertVO.getToValue().equals("DECIMAL")) {
-						column.setType(String.format("%s(%d,%d)", convertVO.getToValue(),
-								column.getNumericPrecision(), column.getNumericScale()));
-					}else if (convertVO.getToValue().equals("NUMERIC")) {
-						column.setType(String.format("%s(%d,%d)", convertVO.getToValue(),
-								column.getNumericPrecision(), column.getNumericScale()));
-					}else if (convertVO.getToValue().equals("DEC")) {
-						column.setType(String.format("%s(%d,%d)", convertVO.getToValue(),
-								column.getNumericPrecision(), column.getNumericScale()));
-					}else if (convertVO.getToValue().equals("TIMESTAMP WITHOUT TIME ZONE")) {
-						column.setType(String.format("%s(%d)%s", "TIMESTAMP",
-								 column.getNumericScale(), " WITHOUT TIME ZONE"));
-					}else if (convertVO.getToValue().equals("BOOLEAN")) {
-						if (column.getDefaultValue() != null) {
-							if (column.getDefaultValue().equals("1")) {
-								column.setDefaultValue("TRUE");
-							} else if (column.getDefaultValue().equals("0")) {
-								column.setDefaultValue("FALSE");
-							}
-						}
+						
+				System.out.println(convertVO.getToValue());
+				System.out.println(column.getType());
+				if (convertVO.getPattern().matcher(column.getType()).find()) {
+					if (convertVO.getToValue().contains("VARCHAR2")) {
 						column.setType(convertVO.getToValue());
-					}else{
+					} else {
 						column.setType(convertVO.getToValue());
 					}
 					break;

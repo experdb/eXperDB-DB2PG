@@ -8,6 +8,7 @@ import java.util.Map;
 
 import com.k4m.experdb.db2pg.common.LogUtils;
 import com.k4m.experdb.db2pg.convert.table.Column;
+import com.k4m.experdb.db2pg.convert.table.Sequence;
 import com.k4m.experdb.db2pg.convert.table.Table;
 import com.k4m.experdb.db2pg.convert.table.View;
 import com.k4m.experdb.db2pg.convert.table.key.ForeignKey;
@@ -626,4 +627,35 @@ public class OracleConvertDBUtils {
 		return views;
 	}
 	
+	public static Table setsetSequencesInform(Table table, String srcPoolName, DBConfigInfo dbConfigInfo) {
+		try {
+			LogUtils.info("[START_SET_SEQUENCES_INFORM]", OracleConvertDBUtils.class);
+			Map<String, Object> params = new HashMap<String, Object>();
+			MetaExtractWorker mew = new MetaExtractWorker(srcPoolName, new MetaExtractWork(WORK_TYPE.GET_SEQUENCE_INFORM, params));
+			mew.run();
+			List<Map<String, Object>> results = (List<Map<String, Object>>) mew.getListResult();
+			LogUtils.info("[GET_SET_SEQUENCES_INFORM]" + results, OracleConvertDBUtils.class);
+			Object obj = null;
+			for (Map<String, Object> result : results) {
+				Sequence sequence = new Sequence();
+				obj = result.get("seq_start");
+				if (obj != null)
+					sequence.setSeqStart(Long.valueOf(obj.toString()));
+				obj = result.get("seq_min_value");
+				if (obj != null)
+					sequence.setSeqMinValue(Long.valueOf(obj.toString()));
+				obj = result.get("seq_inc_value");
+				if (obj != null)
+					sequence.setSeqIncValue(Long.valueOf(obj.toString()));
+				obj = result.get("extra");
+				sequence.setSeqName(obj != null ? obj.toString() : null);
+				table.getSequence().add(sequence);
+			}
+			Collections.sort(table.getColumns(), Column.getComparator());
+			LogUtils.info("[END_SET_SEQUENCES_INFORM]", OracleConvertDBUtils.class);
+		} catch (Exception e) {
+			LogUtils.error(e.getMessage(), OracleConvertDBUtils.class);
+		}
+		return table;
+	}
 }

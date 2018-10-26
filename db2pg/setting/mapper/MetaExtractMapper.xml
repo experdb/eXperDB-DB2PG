@@ -92,43 +92,7 @@
 	               AND UTC.OWNER = UCT.OWNER
 	               AND UTC.OWNER = #{TABLE_SCHEMA}
 	               AND UTC.TABLE_NAME = #{TABLE_NAME}
-	               AND UTC.OWNER NOT IN ('SCOTT',
-	                                    'OWBSYS_AUDIT',
-	                                    'OWBSYS',
-	                                    'APEX_030200',
-	                                    'FLOWS_FILES',
-	                                    'APEX_PUBLIC_USER',
-	                                    'MGMT_VIEW',
-	                                    'SYSMAN',
-	                                    'SPATIAL_CSW_ADMIN_USR',
-	                                    'SPATIAL_WFS_ADMIN_USR',
-	                                    'MDDATA',
-	                                    'OLAPSYS',
-	                                    'ORDSYS',
-	                                    'ORDDATA',
-	                                    'ORDPLUGINS',
-	                                    'MDSYS',
-	                                    'SI_INFORMTN_SCHEMA',
-	                                    'XS$NULL',
-	                                    'ANONYMOUS',
-	                                    'XDB',
-	                                    'CTXSYS',
-	                                    'EXFSYS',
-	                                    'WMSYS',
-	                                    'APPQOSSYS',
-	                                    'DBSNMP',
-	                                    'ORACLE_OCM',
-	                                    'DIP',
-	                                    'OUTLN',
-	                                    'SYSTEM',
-	                                    'SYS',
-	                                    --'PM',
-	                                    'BI',
-	                                    'IX',
-	                                    'OE',
-	                                    'HR',
-	                                    'SH')
-	                                    ORDER BY ORDINAL_POSITION
+	             ORDER BY ORDINAL_POSITION
   			)A                      
 	</select>
 	<select id="getConstraintInform" parameterType="map" resultType="com.k4m.experdb.db2pg.common.LowerKeyMap" databaseId="ORA">
@@ -140,8 +104,8 @@
 				 UIC.COLUMN_NAME AS COLUMN_NAME,
 				UIC.COLUMN_POSITION AS ORDINAL_POSITION,
 				UC.R_OWNER AS REF_TABLE_SCHEMA,
-				(SELECT TABLE_NAME FROM USER_IND_COLUMNS WHERE INDEX_NAME = UC.R_CONSTRAINT_NAME AND TABLE_NAME =  #{TABLE_NAME}) AS REF_TABLE_NAME,
-				(SELECT COLUMN_NAME FROM USER_IND_COLUMNS WHERE  INDEX_NAME = UC.R_CONSTRAINT_NAME AND TABLE_NAME =  #{TABLE_NAME}) AS REF_COLUMN_NAME,
+				(SELECT TABLE_NAME FROM USER_IND_COLUMNS WHERE INDEX_NAME = UC.R_CONSTRAINT_NAME) AS REF_TABLE_NAME,
+				(SELECT COLUMN_NAME FROM USER_IND_COLUMNS WHERE  INDEX_NAME = UC.R_CONSTRAINT_NAME) AS REF_COLUMN_NAME,
 				CASE WHEN UC.CONSTRAINT_TYPE='P' THEN 'P'
 				WHEN UC.CONSTRAINT_TYPE='R' THEN 'F'
 				WHEN UC.CONSTRAINT_TYPE='U' THEN 'U'
@@ -195,6 +159,10 @@
 			SELECT VIEW_NAME, TEXT
 			FROM USER_VIEWS
 	</select>
+	<select id="getSequencesInform" parameterType="map" resultType="com.k4m.experdb.db2pg.common.LowerKeyMap"  databaseId="ORA">
+	 SELECT SEQUENCE_NAME as EXTRA, MIN_VALUE AS SEQ_MIN_VALUE, MAX_VALUE, INCREMENT_BY AS SEQ_INC_VALUE, LAST_NUMBER AS SEQ_START FROM USER_SEQUENCES
+	</select>
+	
 	
 	<select id="getTableNames" parameterType="map" resultType="java.lang.String" databaseId="MSS">
 		SELECT 
@@ -659,6 +627,18 @@
 			  t.constraint_name IS NULL
 		      AND s.table_schema=#{TABLE_SCHEMA}
 		      AND s.table_name=#{TABLE_NAME}
+	</select>
+	
+	<select id="getViewInform" parameterType="map" resultType="map" databaseId="MYSQL">
+			SELECT 
+					TABLE_CATALOG
+					,TABLE_SCHEMA
+					,TABLE_NAME
+					,VIEW_DEFINITION
+					,CHECK_OPTION
+					,IS_UPDATABLE
+			FROM INFORMATION_SCHEMA.VIEWS
+			WHERE TABLE_SCHEMA = #{TABLE_SCHEMA}	
 	</select>
 	
 	<select id="getTableNames" parameterType="map" resultType="java.lang.String" databaseId="CUB">

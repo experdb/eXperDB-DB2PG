@@ -11,12 +11,14 @@ public class Table {
 	private String comment;
 	private List<String> alertComments;
 	private List<Column> columns;
+	private List<Sequence> sequence;
 	private List<Key<?>> keys;
 	private List<View> views;
 
 	public Table() {
 		this.views = new LinkedList<View>();
 		this.columns = new LinkedList<Column>();
+		this.sequence = new LinkedList<Sequence>();
 		this.keys = new LinkedList<Key<?>>();
 		this.alertComments = new LinkedList<String>();
 	}
@@ -45,6 +47,10 @@ public class Table {
 		this.tableName = tableName;
 	}
 
+	public List<Sequence> getSequence() {
+		return sequence;
+	}
+	
 	public List<Column> getColumns() {
 		return columns;
 	}
@@ -104,6 +110,11 @@ public class Table {
 		if (views != null) {
 			sb.append(" views=");
 			sb.append(views);
+		}
+		
+		if (sequence != null) {
+			sb.append(" sequence=");
+			sb.append(sequence);
 		}
 		sb.append(" ]");
 		return sb.toString();
