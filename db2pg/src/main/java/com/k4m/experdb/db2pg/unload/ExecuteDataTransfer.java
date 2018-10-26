@@ -164,8 +164,8 @@ public class ExecuteDataTransfer implements Runnable{
         	LogUtils.debug("[START_FETCH_DATA]" + outputFileName,ExecuteQuery.class);
         	}
         	
-        	if(tableName.equals("jobcandidate")) {
-        		System.out.println("TEST_UNQ debug");
+        	if(tableName.equals("wwv_flow_random_images")) {
+        		System.out.println("wwv_flow_random_images");
         	}
         	
         	if (ConfigInfo.TRUNCATE) {
@@ -201,7 +201,7 @@ public class ExecuteDataTransfer implements Runnable{
         		}
         		bf.append(Constant.R);
         		
-        		//System.out.println("length : " + bf.length() + " " + bf.toString());
+        		System.out.println("length : " + bf.length() + " " + bf.toString());
 
         		int intBUFFER_SIZE = ConfigInfo.BUFFER_SIZE;
         		//ByteBuffer byteBuffer = ByteBuffer.allocateDirect(ConfigInfo.BUFFER_SIZE);
@@ -396,7 +396,7 @@ public class ExecuteDataTransfer implements Runnable{
 
 						}
 						reader.close();
-						return bf.toString();
+						return "";
 					}
 				}
 				return "\\N";
@@ -410,7 +410,9 @@ public class ExecuteDataTransfer implements Runnable{
 					int len = 0;
 					in = blob.getBinaryStream();
 					
-					byte[] buffer = new byte[in.available()];
+					//System.out.println("@@@@@@@@@@ ===> " + in.available());
+					
+					byte[] buffer = new byte[ConfigInfo.BUFFER_SIZE];
 					
 					if (blob != null){
 						ByteArrayOutputStream buffeOutr = new ByteArrayOutputStream();
@@ -439,7 +441,7 @@ public class ExecuteDataTransfer implements Runnable{
 					}
 					in.close();
 				
-					return bf.toString();	
+					return "";	
 				}
 			case Types.VARBINARY:
 				bytes = rs.getBytes(index);
@@ -519,7 +521,7 @@ public class ExecuteDataTransfer implements Runnable{
 
 						}
 						reader.close();
-						return bf.toString();
+						return "";
 					}
 				}
 				return "\\N";
