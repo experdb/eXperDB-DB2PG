@@ -1,7 +1,12 @@
 package com.k4m.experdb.db2pg.unload;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.FileReader;
+import java.nio.ByteBuffer;
+import java.nio.channels.FileChannel;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -159,8 +164,6 @@ public class Unloader {
 			}
         	long estimatedTime = System.currentTimeMillis() - startTime;
         	
-        		   	
-
         	LogUtils.debug("\n",Unloader.class);
         	LogUtils.info("[SUMMARY_INFO]",Unloader.class);
         	
@@ -182,14 +185,94 @@ public class Unloader {
 //    			sb.append('\n');
     			LogUtils.info(sb.toString(),Unloader.class);
     		}
+    		
     		LogUtils.info(String.format("[TOTAL_INFO] SUCCESS : %d / FAILURE : %d / TOTAL: %d",jobList.size()-failCnt,failCnt,jobList.size()),Unloader.class);
     		LogUtils.info("[ELAPSED_TIME] " + makeElapsedTimeString(estimatedTime/1000),Unloader.class);
+    		
+    		//SUMMARY 파일 생성	   	
+        	makeSummaryFile(jobList, estimatedTime);
+    		//(new UnloadSummary("out/result", "summary")).run();
 		}catch(Exception e){
 			LogUtils.error("EXCEPTION!!!!",Unloader.class,e);
 			System.exit(Constant.ERR_CD.UNKNOWN_ERR);
 		} finally {
 			if(executorService != null) executorService.shutdown();
 		}
+	}
+	
+	
+	
+	
+	
+	
+	private void makeSummaryFile(List<ExecuteDataTransfer> jobList, long estimatedTime) {
+		LogUtils.debug("\n",Unloader.class);
+		LogUtils.debug("[MAKE_SUMMARY_FILE_START]",UnloadSummary.class);
+		
+		Calendar calendar = Calendar.getInstance();
+        java.util.Date date = calendar.getTime();
+        String today = (new SimpleDateFormat("yyyyMMddHHmmss").format(date));
+
+		try {
+			ByteBuffer fileBuffer = ByteBuffer.allocateDirect(ConfigInfo.BUFFER_SIZE);
+			FileChannel fch = null;
+				
+			File file = new File(ConfigInfo.OUTPUT_DIRECTORY+"result/summary_"+today+".out");
+			
+			FileOutputStream fos = new FileOutputStream( file);
+			fch = fos.getChannel();
+			int failCnt = 0;
+			
+			for(int i=0;i<jobList.size();i++) {
+				fileBuffer.put(" TABLE_NAME : ".getBytes(ConfigInfo.TAR_DB_CONFIG.CHARSET));
+				fileBuffer.put(jobList.get(i).getTableName().getBytes(ConfigInfo.TAR_DB_CONFIG.CHARSET));
+				fileBuffer.put("\n".getBytes(ConfigInfo.TAR_DB_CONFIG.CHARSET));
+				fileBuffer.put(" ROWNUM : ".getBytes(ConfigInfo.TAR_DB_CONFIG.CHARSET));
+				fileBuffer.put(String.valueOf(jobList.get(i).getRowCnt()).getBytes(ConfigInfo.TAR_DB_CONFIG.CHARSET));
+				fileBuffer.put("\n".getBytes(ConfigInfo.TAR_DB_CONFIG.CHARSET));
+				fileBuffer.put(" STATE : ".getBytes(ConfigInfo.TAR_DB_CONFIG.CHARSET));
+				if(jobList.get(i).isSuccess()){
+					fileBuffer.put("SUCCESS".getBytes(ConfigInfo.TAR_DB_CONFIG.CHARSET));
+    			} else {
+    				fileBuffer.put("FAILURE".getBytes(ConfigInfo.TAR_DB_CONFIG.CHARSET));
+    				failCnt++;
+    			}
+				fileBuffer.put("\n".getBytes(ConfigInfo.TAR_DB_CONFIG.CHARSET));			
+				fileBuffer.put("\n".getBytes(ConfigInfo.TAR_DB_CONFIG.CHARSET));		
+				fileBuffer.put("\n".getBytes(ConfigInfo.TAR_DB_CONFIG.CHARSET));	
+    		}
+			
+			fileBuffer.put(" [TOTAL_INFO] ".getBytes(ConfigInfo.TAR_DB_CONFIG.CHARSET));
+			fileBuffer.put("\n".getBytes(ConfigInfo.TAR_DB_CONFIG.CHARSET));
+			fileBuffer.put(" SUCCESS : ".getBytes(ConfigInfo.TAR_DB_CONFIG.CHARSET));
+			fileBuffer.put(String.valueOf(jobList.size()-failCnt).getBytes(ConfigInfo.TAR_DB_CONFIG.CHARSET));
+			fileBuffer.put("\n".getBytes(ConfigInfo.TAR_DB_CONFIG.CHARSET));
+			
+			fileBuffer.put(" FAILURE : ".getBytes(ConfigInfo.TAR_DB_CONFIG.CHARSET));
+			fileBuffer.put(String.valueOf(failCnt).getBytes(ConfigInfo.TAR_DB_CONFIG.CHARSET));
+			fileBuffer.put("\n".getBytes(ConfigInfo.TAR_DB_CONFIG.CHARSET));
+			
+			fileBuffer.put(" TOTAL : ".getBytes(ConfigInfo.TAR_DB_CONFIG.CHARSET));
+			fileBuffer.put(String.valueOf(jobList.size()).getBytes(ConfigInfo.TAR_DB_CONFIG.CHARSET));
+			fileBuffer.put("\n".getBytes(ConfigInfo.TAR_DB_CONFIG.CHARSET));
+			
+			fileBuffer.put("ELAPSED_TIME : ".getBytes(ConfigInfo.TAR_DB_CONFIG.CHARSET));
+			fileBuffer.put(String.valueOf(makeElapsedTimeString(estimatedTime/1000)).getBytes(ConfigInfo.TAR_DB_CONFIG.CHARSET));
+			
+			
+			fileBuffer.flip();
+			fch.write(fileBuffer);
+			fileBuffer.clear();
+			
+			fch.close();
+			fos.close();			
+		} catch ( Exception e ) {
+			LogUtils.error("[MAKE_SUMMARY_FILE_FAIL]",Unloader.class,e);
+		} finally {
+			LogUtils.debug("[MAKE_SUMMARY_FILE_END]",Unloader.class);
+		}
+			
+		
 	}
 	
 	private String makeElapsedTimeString(long elapsedTime) {

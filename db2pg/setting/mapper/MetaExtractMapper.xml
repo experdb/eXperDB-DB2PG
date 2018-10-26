@@ -661,6 +661,18 @@
 		      AND s.table_name=#{TABLE_NAME}
 	</select>
 	
+	<select id="getViewInform" parameterType="map" resultType="map" databaseId="MYSQL">
+			SELECT 
+					TABLE_CATALOG
+					,TABLE_SCHEMA
+					,TABLE_NAME
+					,VIEW_DEFINITION
+					,CHECK_OPTION
+					,IS_UPDATABLE
+			FROM INFORMATION_SCHEMA.VIEWS
+			WHERE TABLE_SCHEMA = #{TABLE_SCHEMA}	
+	</select>
+	
 	<select id="getTableNames" parameterType="map" resultType="java.lang.String" databaseId="CUB">
 		SELECT class_name AS table_name FROM db_class WHERE owner_name = #{TABLE_SCHEMA} AND is_system_class='NO' AND class_type='CLASS' ORDER BY class_name ASC;
 	</select>

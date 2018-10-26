@@ -100,7 +100,7 @@ public class Main {
 		checkDirectory(ConfigInfo.OUTPUT_DIRECTORY+"data/");
 		checkDirectory(ConfigInfo.OUTPUT_DIRECTORY+"ddl/");
 		checkDirectory(ConfigInfo.OUTPUT_DIRECTORY+"rebuild/");
-		
+		checkDirectory(ConfigInfo.OUTPUT_DIRECTORY+"result/");		
 	}
 	
 	private static File checkDirectory(String strDirectory) throws Exception {

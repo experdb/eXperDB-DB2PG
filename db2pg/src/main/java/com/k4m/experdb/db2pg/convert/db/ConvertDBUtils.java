@@ -169,7 +169,7 @@ public class ConvertDBUtils {
 			} else if (dbtype.equals(Constant.DB_TYPE.MSS)) {
 				views = MsSQLConvertDBUtils.setViewInform(tableSchema, srcPoolName, dbConfigInfo);
 			} else if (dbtype.equals(Constant.DB_TYPE.MYSQL)) {
-				//table = MySQLConvertDBUtils.setSeqInform(table, srcPoolName, dbConfigInfo);
+				views = MySQLConvertDBUtils.setViewInform(tableSchema, srcPoolName, dbConfigInfo);
 			} else {
 
 			}

@@ -288,12 +288,6 @@
 	        "^(?i)\\(?getdate\\s*\\(?\\)?\\)?$"
 	    ]
 	},
-	"function_case_2": {
-		"postgres": "a",
-	    "mss": [
-	        "^(?i)\\(?newid\\s*\\(?\\)?\\)?$"
-	    ]
-	},
 	"xml_case": {
 		"postgres": "XML",
 	    "ora": [
