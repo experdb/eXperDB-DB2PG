@@ -137,7 +137,7 @@
 		],
 		"ora" :[
 			"^(?i)UROWID$",
-			"^(?i)VARCHAR2$",
+			"^(?i)VARCHAR2\\s*\\(?[0-9]*\\)?$",
 			"^(?i)NVARCHAR2$"
 		]
 	},	

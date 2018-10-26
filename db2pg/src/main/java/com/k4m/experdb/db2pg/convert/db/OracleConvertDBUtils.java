@@ -117,6 +117,8 @@ public class OracleConvertDBUtils {
 				column.setName(obj != null ? obj.toString() : null);
 				obj = result.get("column_default");
 				column.setDefaultValue(obj != null ? obj.toString() : null);
+				obj = result.get("type_length");
+        		if(obj != null) column.setTypeLength(Integer.valueOf(obj.toString()));
 				obj = result.get("is_null");
 				if (obj != null)
 					column.setNotNull(!Boolean.valueOf(obj.toString()));
