@@ -23,7 +23,7 @@ public class ByteAImgCheck {
 	    String user = "ibizspt";
 	    String password = "ibizspt";
 
-	    String query = "SELECT image_name, blob_content FROM ibizspt.wwv_flow_random_images LIMIT 1";
+	    String query = "SELECT image_name, blob_content FROM ibizspt.wwv_flow_random_images";
 	    
 	    Connection con = DriverManager.getConnection(url, user, password);
 	    PreparedStatement pst = con.prepareStatement(query);
@@ -35,7 +35,11 @@ public class ByteAImgCheck {
 		    	String strImgName = rs.getString(1);
 		    	byte[] byteImg = rs.getBytes(2);
 		    	
-		    	byteArrayConvertToImageFile(byteImg, strImgName, "C:\\k4m\\01-1. DX 제폼개발\\06. DX-Tcontrol\\07. 시험\\", "gif");
+		    	int pos = strImgName.lastIndexOf( "." );
+		    	String ext = strImgName.substring( pos + 1 );
+
+		    	
+		    	byteArrayConvertToImageFile(byteImg, strImgName, "C:\\k4m\\01-1. DX 제폼개발\\06. DX-Tcontrol\\07. 시험\\byteaImages\\", ext);
 	        }
 	    } catch(Exception e) {
 	    	
