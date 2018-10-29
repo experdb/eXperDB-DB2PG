@@ -387,8 +387,8 @@ public class DDLConverter {
 				System.out.println(convertVO.getToValue());
 				System.out.println(column.getType());
 				if (convertVO.getPattern().matcher(column.getType()).find()) {
-					if (convertVO.getToValue().contains("VARCHAR2")) {
-						column.setType(convertVO.getToValue());
+					 if (convertVO.getToValue().equals("VARCHAR")) {
+							column.setType(String.format("%s(%d)", convertVO.getToValue(),column.getTypeLength()));	
 					} else {
 						column.setType(convertVO.getToValue());
 					}
