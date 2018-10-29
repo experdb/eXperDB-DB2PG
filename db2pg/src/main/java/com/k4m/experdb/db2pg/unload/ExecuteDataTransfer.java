@@ -201,7 +201,7 @@ public class ExecuteDataTransfer implements Runnable{
         		}
         		bf.append(Constant.R);
         		
-        		System.out.println("length : " + bf.length() + " " + bf.toString());
+        		//System.out.println("length : " + bf.length() + " " + bf.toString());
 
         		int intBUFFER_SIZE = ConfigInfo.BUFFER_SIZE;
         		//ByteBuffer byteBuffer = ByteBuffer.allocateDirect(ConfigInfo.BUFFER_SIZE);
@@ -384,18 +384,18 @@ public class ExecuteDataTransfer implements Runnable{
 						char[] buffer = new char[ ConfigInfo.SRC_LOB_FETCH_SIZE ];
 						
 						int n = 0;
-						StringBuffer sb = new StringBuffer();
+/*						StringBuffer sb = new StringBuffer();
 						while((n = reader.read(buffer)) != -1){
 							sb.append(buffer, 0, n);				
-						}
+						}*/
 						
-/*						while((n = reader.read(buffer)) != -1) {
+						while((n = reader.read(buffer)) != -1) {
 							String s = DevUtils.replaceEach(new String(Arrays.copyOfRange(buffer, 0, n)), DevUtils.BackSlashSequence, DevUtils.BackSlashSequenceReplace);
 							bf.append(s);
 
-						}*/
-						String s = DevUtils.replaceEach(sb.toString(), DevUtils.BackSlashSequence, DevUtils.BackSlashSequenceReplace);
-						bf.append(s);
+						}
+						//String s = DevUtils.replaceEach(sb.toString(), DevUtils.BackSlashSequence, DevUtils.BackSlashSequenceReplace);
+						//bf.append(s);
 						
 						reader.close();
 						return "";

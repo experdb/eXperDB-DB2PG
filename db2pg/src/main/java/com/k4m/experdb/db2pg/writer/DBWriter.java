@@ -87,7 +87,7 @@ public class DBWriter {
 	public void DBWrite(String lineStr, String table_nm) throws Exception {
 		try {
 			
-			System.out.println("@@@@ lineStr : " + lineStr);
+			//System.out.println("@@@@ lineStr : " + lineStr);
 			
 			if(conn == null)
 			conn = DBCPPoolManager.getConnection(poolName);
