@@ -62,6 +62,13 @@
 			"^(?i)NUMERIC$"
 		]
 	},
+	"number_case_1": {
+		"postgres": "NUMBER"
+		"ora": [
+			"^(?i)NUMBER\\s*\\(?[0-9]*\\)?$",
+			"^(?i)NUMBER\\s*\\(?[0-9]*,[0]*\\)?$"
+		]
+	},
 	"real_case_1": {
 		"postgres": "REAL",
 		"mysql": [
@@ -138,7 +145,8 @@
 		"ora" :[
 			"^(?i)UROWID$",
 			"^(?i)VARCHAR2\\s*\\(?[0-9]*\\)?$",
-			"^(?i)NVARCHAR2$"
+			"^(?i)NVARCHAR2\\s*\\(?[0-9]*\\)?$",
+			"^(?i)NCHAR VARYING$"
 		]
 	},	
 	"char_case_3": {
@@ -197,16 +205,13 @@
 			"^(?i)DATETIMEOFFSET$"
 		],
 		"ora" :[
-			"^(?i)TIMESTAMP$"
+			"^(?i)TIMESTAMP\\s*\\(?[0-9]*\\)?$"
 		]
 	},
     "date_case_3": {
 		"postgres": "SMALLINT",
 		"mysql": [
             "^(?i)SMALLINT\\s*\\(?[0-9]*\\)?$"
-		],
-		"ora": [
-            "^(?i)NUMBER\\s*\\(?[1-4]*\\)?$"
 		]
 	},
     "date_case_4": {
@@ -245,7 +250,8 @@
 	"date_case_9": {
 		"postgres": "CURRENT_TIMESTAMP",
 		"ora": [
-            "^(?i)SYSDATE$"
+            "^(?i)SYSDATE$",
+            "^(?i)\\(?SYSDATE\\s*\\(?\\)?\\)?$"
 		]
 	},	
 	"decimal_case_1": {
@@ -298,7 +304,7 @@
 	"xml_case": {
 		"postgres": "XML",
 	    "ora": [
-	        "^(?i)XMLTYPE$"
+	        "^(?i)XMLTYPE\\s*\\(?[0-9]*\\)?$"
 	    ]
 	}	
 }

@@ -383,13 +383,38 @@ public class DDLConverter {
 	private void oracleTableConvert(Table table) throws NotSupportDatabaseTypeException {
 		for (Column column : table.getColumns()) {
 			for (ConvertObject convertVO : convertMapper.getPatternList()) {
-						
-				System.out.println(convertVO.getToValue());
-				System.out.println(column.getType());
+				
+				if(column.getDefaultValue() != null){
+					if(column.getDefaultValue().toUpperCase().contains("SYSDATE")){
+						column.setDefaultValue(column.getDefaultValue().toUpperCase().replaceAll("SYSDATE", "CURRENT_TIMESTAMP"));
+					}
+				}
+				
 				if (convertVO.getPattern().matcher(column.getType()).find()) {
 					 if (convertVO.getToValue().equals("VARCHAR")) {
 							column.setType(String.format("%s(%d)", convertVO.getToValue(),column.getTypeLength()));	
-					} else {
+					} else if(convertVO.getToValue().equals("NVARCHAR")){
+						column.setType(String.format("%s(%d)", convertVO.getToValue(),column.getTypeLength()));	
+					}else if(convertVO.getToValue().equals("XML")){
+						column.setType(String.format("%s", convertVO.getToValue()));	
+					}else if(convertVO.getToValue().equals("NUMBER")){
+						if(column.getTypeLength()!=null){
+							if(column.getTypeLength()<5){
+								column.setType(String.format("SMALLINT"));	
+							}else if(column.getTypeLength()>=5 && column.getTypeLength()<9){
+								column.setType(String.format("INT"));	
+							}else if(column.getTypeLength()>=9 && column.getTypeLength()<19){
+								column.setType(String.format("BIGINT"));	
+							}else if(column.getTypeLength()>=19 && column.getTypeLength()<=38){
+								column.setType(String.format("DECIMAL(%d)",column.getTypeLength()));	
+							}
+						}else{
+							column.setType(String.format("DECIMAL(38)"));	
+						}
+					}else if (convertVO.getToValue().equals("TIMESTAMP WITHOUT TIME ZONE")) {
+						column.setType(String.format("%s(%d)%s", "TIMESTAMP",
+								 column.getNumericScale(), " WITHOUT TIME ZONE"));
+					}else {
 						column.setType(convertVO.getToValue());
 					}
 					break;
