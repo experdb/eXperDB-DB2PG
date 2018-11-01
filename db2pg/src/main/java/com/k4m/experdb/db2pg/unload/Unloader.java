@@ -2,10 +2,12 @@ package com.k4m.experdb.db2pg.unload;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.FileReader;
+import java.nio.ByteBuffer;
+import java.nio.channels.FileChannel;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.Calendar;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -21,113 +23,135 @@ import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
 
 import com.k4m.experdb.db2pg.common.Constant;
-import com.k4m.experdb.db2pg.db.DBUtils;
-import com.k4m.experdb.db2pg.common.DevUtils;
 import com.k4m.experdb.db2pg.common.LogUtils;
 import com.k4m.experdb.db2pg.config.ConfigInfo;
-import com.k4m.experdb.db2pg.db.DBCPPoolManager;
-import com.k4m.experdb.db2pg.db.QueryMaker;
-import com.k4m.experdb.db2pg.db.datastructure.DBConfigInfo;
+import com.k4m.experdb.db2pg.db.DBUtils;
 
 public class Unloader {
 	
-//	public int  lobPreFetchSize = -1,rownum = -1, tableParallel = 1, FetchSize = 3000, LoadParallel = 1;
-//	String OUTPUT_FILE_NAME = null,configFile = null, outputDirectory = "./",charset = "MS949"
-//			,targetSchema = null, where = null;
-//	boolean truncate = false, tableOnly = true;
-	DBConfigInfo dbConfigInfo = null;
-	List<String> tableNameList = null, excludes = null;
+
+	
 	List<SelectQuery> selectQuerys = new ArrayList<SelectQuery>();
-//	StringType strType = StringType.original;
+
 	long startTime;
 	
 	public Unloader () {
-		dbConfigInfo = new DBConfigInfo();
 	}
 	
+	/**
+	 * 태이블 조회
+	 * @throws Exception
+	 */
+	private List<String> makeTableList() throws Exception {
+		List<String> excludes = ConfigInfo.SRC_EXCLUDE_TABLES;
+		
+		List<String>  tableNameList = ConfigInfo.SRC_ALLOW_TABLES;
+		
+		if(tableNameList == null){
+			tableNameList = DBUtils.getTableNames(ConfigInfo.TABLE_ONLY,Constant.POOLNAME.SOURCE.name(), ConfigInfo.SRC_DB_CONFIG);
+		}
+		
+		if(excludes!= null)
+		for(int eidx=0;eidx < excludes.size(); eidx++) {
+			String exclude = excludes.get(eidx);
+			for(String tableName : tableNameList) {
+				if(exclude.equals(tableName)){
+					tableNameList.remove(exclude);
+					break;
+				}
+			}
+		}
+		
+		return tableNameList;
+	}
+	
+	private String getConvertReplaceTableName(String strTableName) throws Exception {
+		String strReplaceTableName = "";
+		
+		if(ConfigInfo.SRC_DB_CONFIG.DB_TYPE.equals(Constant.DB_TYPE.MYSQL)) {
+			strReplaceTableName = "`" + strTableName + "`";
+		} else {
+			strReplaceTableName =  "\"" + strTableName + "\"";
+		}
+		
+		return strReplaceTableName;
+	}
+	
+	private String getWhere() throws Exception {
+		String strWhere ="";
+		
+		if(ConfigInfo.SRC_WHERE!=null && !ConfigInfo.SRC_WHERE.equals("")) {
+			strWhere = "WHERE "+ConfigInfo.SRC_WHERE;
+		}
+		return strWhere;
+	}
+	
+	private void setSchemaNameCheck() throws Exception {
+		if (ConfigInfo.SRC_DB_CONFIG.SCHEMA_NAME == null && ConfigInfo.SRC_DB_CONFIG.SCHEMA_NAME.trim().equals("")) {
+			ConfigInfo.SRC_DB_CONFIG.SCHEMA_NAME = ConfigInfo.SRC_DB_CONFIG.USERID;
+		}
+	}
 	
 	public void start() {
+		
+		ExecutorService executorService = Executors.newFixedThreadPool(ConfigInfo.SRC_TABLE_SELECT_PARALLEL);
+		
 		try {
-			QueryMaker qMaker = new QueryMaker("/src_mapper.xml");
 			if(!ConfigInfo.SELECT_QUERIES_FILE.equals("")) {
 				loadSelectQuery(ConfigInfo.SELECT_QUERIES_FILE);
 			}
 			
-			if(ConfigInfo.SRC_EXCLUDE_TABLES != null)
-				excludes = ConfigInfo.SRC_EXCLUDE_TABLES;
+			if (ConfigInfo.SRC_DB_CONFIG.SCHEMA_NAME==null && ConfigInfo.SRC_DB_CONFIG.SCHEMA_NAME.equals("")) {
+				LogUtils.error("SCHEMA_NAME NOT FOUND", Unloader.class);
+				System.exit(0);
+			}
+			String schema = ConfigInfo.SRC_DB_CONFIG.SCHEMA_NAME+".";
+			
 			startTime = System.currentTimeMillis();
-			dbConfigInfo.SERVERIP = ConfigInfo.SRC_HOST;
-			dbConfigInfo.PORT = String.valueOf(ConfigInfo.SRC_PORT);
-			dbConfigInfo.USERID = ConfigInfo.SRC_USER;
-			dbConfigInfo.DB_PW = ConfigInfo.SRC_PASSWORD;
-			dbConfigInfo.DBNAME = ConfigInfo.SRC_DATABASE;
-			dbConfigInfo.DB_TYPE= ConfigInfo.SRC_DB_TYPE;
-			dbConfigInfo.CHARSET = ConfigInfo.SRC_DB_CHARSET;
-			dbConfigInfo.SCHEMA_NAME = ConfigInfo.SRC_SCHEMA;
-			LogUtils.debug("START UNLOADER !!!",Unloader.class);
+			
+			LogUtils.debug("START UNLOADER !!!", Unloader.class);
+
+			setSchemaNameCheck();
 			
 			
-			if (dbConfigInfo.SCHEMA_NAME == null && dbConfigInfo.SCHEMA_NAME.trim().equals("")) dbConfigInfo.SCHEMA_NAME = dbConfigInfo.USERID;
-			ExecutorService executorService = Executors.newFixedThreadPool(ConfigInfo.SRC_TABLE_SELECT_PARALLEL);
 			
-			DBCPPoolManager.setupDriver(dbConfigInfo, Constant.POOLNAME.SOURCE.name(), ConfigInfo.SRC_TABLE_SELECT_PARALLEL);
+			//DBCPPoolManager.setupDriver(ConfigInfo.SRC_DB_CONFIG, Constant.POOLNAME.SOURCE.name(), ConfigInfo.SRC_TABLE_SELECT_PARALLEL);
 
 			List<String> selSqlList = new ArrayList<String>();
-			tableNameList = ConfigInfo.SRC_ALLOW_TABLES;
-			if(tableNameList == null){
-				tableNameList = DBUtils.getTableNames(ConfigInfo.TABLE_ONLY,Constant.POOLNAME.SOURCE.name(), dbConfigInfo);
-			}
-			
-			if(excludes!= null)
-			for(int eidx=0;eidx < excludes.size(); eidx++) {
-				String exclude = excludes.get(eidx);
-				for(String tableName : tableNameList) {
-					if(exclude.equals(tableName)){
-						tableNameList.remove(exclude);
-						break;
-					}
-				}
-			}
-			
-			Map<String,Object> params = new HashMap<String,Object>();
+
+			//태이블조회
+			List<String> tableNameList = makeTableList();
+
 			for (String tableName : tableNameList) {
-				params.put("SCHEMA", dbConfigInfo.SCHEMA_NAME!=null && !dbConfigInfo.SCHEMA_NAME.equals("")
-										? dbConfigInfo.SCHEMA_NAME+"." : "");
-				if(dbConfigInfo.DB_TYPE.equals(Constant.DB_TYPE.MYSQL)) {
-					params.put("TABLE", "`"+tableName+"`");
-				} else {
-					params.put("TABLE", "\""+tableName+"\"");
-				}
-				
-				
-				if(ConfigInfo.SRC_WHERE!=null && !ConfigInfo.SRC_WHERE.equals("")) {
-					params.put("WHERE", "WHERE "+ConfigInfo.SRC_WHERE);
-				} else {
-					params.put("WHERE", "");
-				}
-				selSqlList.add(qMaker.getQuery("GET_SOURCE_TABLE_DATA",dbConfigInfo.DB_TYPE, params, Double.parseDouble(dbConfigInfo.DB_VER)));
+
+				String replaceTableName = getConvertReplaceTableName(tableName);
+				String where = getWhere();
+
+				selSqlList.add(String.format("SELECT * FROM %s%s %s", schema, replaceTableName, where));
 			}
-			params.clear();
+
 			int jobSize = 0;
-			if(selSqlList!=null) {
+			if(selSqlList != null) {
 				jobSize += selSqlList.size();
 			}
-			if(selectQuerys!=null) {
+			
+			if(selectQuerys != null) {
 				jobSize += selectQuerys.size();
 			}
-			List<ExecuteQuery> jobList = new ArrayList<ExecuteQuery>(jobSize);
+			List<ExecuteDataTransfer> jobList = new ArrayList<ExecuteDataTransfer>(jobSize);
 			
 			
 			if(selSqlList != null) {
 				for(int i=0; i<selSqlList.size(); i++){
-	        		ExecuteQuery eq = new ExecuteQuery(Constant.POOLNAME.SOURCE.name(), selSqlList.get(i), tableNameList.get(i), dbConfigInfo);
+	        		ExecuteDataTransfer eq = new ExecuteDataTransfer(Constant.POOLNAME.SOURCE.name(), selSqlList.get(i), tableNameList.get(i), ConfigInfo.SRC_DB_CONFIG);
 	        		jobList.add(eq);
 	        		executorService.execute(eq);
 				}
 			}
+			
 			if(selectQuerys != null) {
 				for(int i=0; i<selectQuerys.size(); i++) {
-					ExecuteQuery eq = new ExecuteQuery(Constant.POOLNAME.SOURCE.name(), selectQuerys.get(i).query, selectQuerys.get(i).name, dbConfigInfo);
+					ExecuteDataTransfer eq = new ExecuteDataTransfer(Constant.POOLNAME.SOURCE.name(), selectQuerys.get(i).query, selectQuerys.get(i).name, ConfigInfo.SRC_DB_CONFIG);
 	        		jobList.add(eq);
 	        		executorService.execute(eq);
 				}
@@ -140,39 +164,6 @@ public class Unloader {
 			}
         	long estimatedTime = System.currentTimeMillis() - startTime;
         	
-        		   	
-//        	for(int i=0;i<jobList.size();i++) {
-//        		LogUtils.info("COMPLETE UNLOAD (TABLE_NAME : " + jobList.get(i).getTableName() + ", ROWNUM : " + jobList.get(i).getRowCnt() + ") !!!",Unloader.class);
-//        	}
-        	try {
-	        	File sqlFile = new File(ConfigInfo.OUTPUT_DIRECTORY+"import.sql");
-	        	
-	        	FileOutputStream fos = new FileOutputStream(sqlFile);
-	        	fos.write(String.format("SET client_encoding TO '%s';\n\n",ConfigInfo.TAR_DB_CHARSET).getBytes(ConfigInfo.FILE_CHARACTERSET));
-	        	fos.write("\\set ON_ERROR_STOP OFF\n\n".getBytes(ConfigInfo.FILE_CHARACTERSET));
-	        	fos.write("\\set ON_ERROR_ROLLBACK OFF\n\n".getBytes(ConfigInfo.FILE_CHARACTERSET));
-	        	fos.write("\\timing\n\n".getBytes(ConfigInfo.FILE_CHARACTERSET));
-	        	for(ExecuteQuery executeQuery : jobList){
-//	        		fos.write("BEGIN;\n".getBytes(charset));
-//	        		fos.write("\\echo [COPY_START] `date +%Y-%m-%d_%k:%M:%S`\n".getBytes(ConfigInfo.FILE_CHARACTERSET));
-	        		fos.write(String.format("\\echo TABLE_NAME(ROW_COUNT) >>> %s.%s(%d)\n"
-	        				,DevUtils.classifyString(ConfigInfo.TAR_SCHEMA,ConfigInfo.CLASSIFY_STRING)
-	        				,DevUtils.classifyString(executeQuery.getTableName()
-	        				,ConfigInfo.CLASSIFY_STRING),executeQuery.getRowCnt()).getBytes(ConfigInfo.FILE_CHARACTERSET));
-//	        		fos.write(String.format("ALTER TABLE %s DISABLE TRIGGER USER;\n\n",executeQuery.tableName).getBytes(charset));
-	        		fos.write(String.format("\\i ./%s",executeQuery.getTableName().replace("$", "-")+".sql\n\n").getBytes(ConfigInfo.FILE_CHARACTERSET));
-//	        		fos.write(String.format("ALTER TABLE %s ENABLE TRIGGER USER;\n",executeQuery.tableName).getBytes(charset));
-//	        		fos.write("\\echo [COPY_END] `date +%Y-%m-%d_%k:%M:%S`\n\n".getBytes(ConfigInfo.FILE_CHARACTERSET));
-//	        		fos.write("\\echo  \n".getBytes(ConfigInfo.FILE_CHARACTERSET));
-//	        		fos.write("\\echo  \n".getBytes(ConfigInfo.FILE_CHARACTERSET));
-//	        		fos.write("COMMIT;\n\\echo \n\n".getBytes(charset));
-	        	}
-	        	fos.flush();
-	        	fos.close();
-	        	LogUtils.debug("[MAKE_ALL_IMPORT_SCRIPT_SUCCESS]",Unloader.class);
-        	} catch (Exception e) {
-        		LogUtils.error("[MAKE_ALL_IMPORT_SCRIPT_FAIL]",Unloader.class,e);
-        	}
         	LogUtils.debug("\n",Unloader.class);
         	LogUtils.info("[SUMMARY_INFO]",Unloader.class);
         	
@@ -194,13 +185,94 @@ public class Unloader {
 //    			sb.append('\n');
     			LogUtils.info(sb.toString(),Unloader.class);
     		}
+    		
     		LogUtils.info(String.format("[TOTAL_INFO] SUCCESS : %d / FAILURE : %d / TOTAL: %d",jobList.size()-failCnt,failCnt,jobList.size()),Unloader.class);
     		LogUtils.info("[ELAPSED_TIME] " + makeElapsedTimeString(estimatedTime/1000),Unloader.class);
+    		
+    		//SUMMARY 파일 생성	   	
+        	makeSummaryFile(jobList, estimatedTime);
+    		//(new UnloadSummary("out/result", "summary")).run();
 		}catch(Exception e){
-//			e.printStackTrace();
 			LogUtils.error("EXCEPTION!!!!",Unloader.class,e);
-			System.exit(1);
+			System.exit(Constant.ERR_CD.UNKNOWN_ERR);
+		} finally {
+			if(executorService != null) executorService.shutdown();
 		}
+	}
+	
+	
+	
+	
+	
+	
+	private void makeSummaryFile(List<ExecuteDataTransfer> jobList, long estimatedTime) {
+		LogUtils.debug("\n",Unloader.class);
+		LogUtils.debug("[MAKE_SUMMARY_FILE_START]",UnloadSummary.class);
+		
+		Calendar calendar = Calendar.getInstance();
+        java.util.Date date = calendar.getTime();
+        String today = (new SimpleDateFormat("yyyyMMddHHmmss").format(date));
+
+		try {
+			ByteBuffer fileBuffer = ByteBuffer.allocateDirect(ConfigInfo.BUFFER_SIZE);
+			FileChannel fch = null;
+				
+			File file = new File(ConfigInfo.OUTPUT_DIRECTORY+"result/summary_"+today+".out");
+			
+			FileOutputStream fos = new FileOutputStream( file);
+			fch = fos.getChannel();
+			int failCnt = 0;
+			
+			for(int i=0;i<jobList.size();i++) {
+				fileBuffer.put(" TABLE_NAME : ".getBytes(ConfigInfo.TAR_DB_CONFIG.CHARSET));
+				fileBuffer.put(jobList.get(i).getTableName().getBytes(ConfigInfo.TAR_DB_CONFIG.CHARSET));
+				fileBuffer.put("\n".getBytes(ConfigInfo.TAR_DB_CONFIG.CHARSET));
+				fileBuffer.put(" ROWNUM : ".getBytes(ConfigInfo.TAR_DB_CONFIG.CHARSET));
+				fileBuffer.put(String.valueOf(jobList.get(i).getRowCnt()).getBytes(ConfigInfo.TAR_DB_CONFIG.CHARSET));
+				fileBuffer.put("\n".getBytes(ConfigInfo.TAR_DB_CONFIG.CHARSET));
+				fileBuffer.put(" STATE : ".getBytes(ConfigInfo.TAR_DB_CONFIG.CHARSET));
+				if(jobList.get(i).isSuccess()){
+					fileBuffer.put("SUCCESS".getBytes(ConfigInfo.TAR_DB_CONFIG.CHARSET));
+    			} else {
+    				fileBuffer.put("FAILURE".getBytes(ConfigInfo.TAR_DB_CONFIG.CHARSET));
+    				failCnt++;
+    			}
+				fileBuffer.put("\n".getBytes(ConfigInfo.TAR_DB_CONFIG.CHARSET));			
+				fileBuffer.put("\n".getBytes(ConfigInfo.TAR_DB_CONFIG.CHARSET));		
+				fileBuffer.put("\n".getBytes(ConfigInfo.TAR_DB_CONFIG.CHARSET));	
+    		}
+			
+			fileBuffer.put(" [TOTAL_INFO] ".getBytes(ConfigInfo.TAR_DB_CONFIG.CHARSET));
+			fileBuffer.put("\n".getBytes(ConfigInfo.TAR_DB_CONFIG.CHARSET));
+			fileBuffer.put(" SUCCESS : ".getBytes(ConfigInfo.TAR_DB_CONFIG.CHARSET));
+			fileBuffer.put(String.valueOf(jobList.size()-failCnt).getBytes(ConfigInfo.TAR_DB_CONFIG.CHARSET));
+			fileBuffer.put("\n".getBytes(ConfigInfo.TAR_DB_CONFIG.CHARSET));
+			
+			fileBuffer.put(" FAILURE : ".getBytes(ConfigInfo.TAR_DB_CONFIG.CHARSET));
+			fileBuffer.put(String.valueOf(failCnt).getBytes(ConfigInfo.TAR_DB_CONFIG.CHARSET));
+			fileBuffer.put("\n".getBytes(ConfigInfo.TAR_DB_CONFIG.CHARSET));
+			
+			fileBuffer.put(" TOTAL : ".getBytes(ConfigInfo.TAR_DB_CONFIG.CHARSET));
+			fileBuffer.put(String.valueOf(jobList.size()).getBytes(ConfigInfo.TAR_DB_CONFIG.CHARSET));
+			fileBuffer.put("\n".getBytes(ConfigInfo.TAR_DB_CONFIG.CHARSET));
+			
+			fileBuffer.put("ELAPSED_TIME : ".getBytes(ConfigInfo.TAR_DB_CONFIG.CHARSET));
+			fileBuffer.put(String.valueOf(makeElapsedTimeString(estimatedTime/1000)).getBytes(ConfigInfo.TAR_DB_CONFIG.CHARSET));
+			
+			
+			fileBuffer.flip();
+			fch.write(fileBuffer);
+			fileBuffer.clear();
+			
+			fch.close();
+			fos.close();			
+		} catch ( Exception e ) {
+			LogUtils.error("[MAKE_SUMMARY_FILE_FAIL]",Unloader.class,e);
+		} finally {
+			LogUtils.debug("[MAKE_SUMMARY_FILE_END]",Unloader.class);
+		}
+			
+		
 	}
 	
 	private String makeElapsedTimeString(long elapsedTime) {

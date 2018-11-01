@@ -193,7 +193,7 @@ public class IOUtil {
 	 * CREATE FILE
 	 ************************************************************/
 	public static void createFile( String sDir, String sFileName, String sContent ){
-		if( !IOUtil.createDir( sDir ) ) System.exit(0);
+		if( !IOUtil.createDir( sDir ) ) System.exit(Constant.ERR_CD.FAILED_CREATE_DIR_ERR);
 		PrintWriter pw = IOUtil.createFile( sDir, sFileName );
 		try{
 			if( pw != null ){

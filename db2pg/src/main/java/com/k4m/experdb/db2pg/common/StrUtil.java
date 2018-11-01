@@ -213,4 +213,15 @@ public class StrUtil {
 		
 		return false;
 	}
+	
+	public static String strGetLine(String strErrMsg) throws Exception {
+		String strLine = "0";
+		
+		int idx = strErrMsg.indexOf("line");
+		if(idx > -1) {
+			strLine = strErrMsg.substring(idx+5);
+		}
+		
+		return strLine;
+	}
 }

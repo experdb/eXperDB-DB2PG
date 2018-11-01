@@ -12,7 +12,17 @@ public class Column {
 	private Integer numericPrecision;
 	private Integer numericScale;
 	private boolean isNotNull;
-	private boolean isAutoIncreament;
+	private long seqStart;
+	private long seqMinValue;
+	private long seqIncValue;
+	private Integer typeLength;
+	
+	public Integer getTypeLength() {
+		return typeLength;
+	}
+	public void setTypeLength(Integer typeLength) {
+		this.typeLength = typeLength;
+	}
 	public Integer getOrdinalPosition() {
 		return ordinalPosition;
 	}
@@ -49,12 +59,6 @@ public class Column {
 	public void setNotNull(boolean isNotNull) {
 		this.isNotNull = isNotNull;
 	}
-	public boolean isAutoIncreament() {
-		return isAutoIncreament;
-	}
-	public void setAutoIncreament(boolean isAutoIncreament) {
-		this.isAutoIncreament = isAutoIncreament;
-	}
 	public String getExtra() {
 		return extra;
 	}
@@ -72,6 +76,25 @@ public class Column {
 	}
 	public void setNumericScale(Integer numeric_scale) {
 		this.numericScale = numeric_scale;
+	}
+	
+	public long getSeqStart() {
+		return seqStart;
+	}
+	public void setSeqStart(long seqStart) {
+		this.seqStart = seqStart;
+	}
+	public long getSeqMinValue() {
+		return seqMinValue;
+	}
+	public void setSeqMinValue(long seqMinValue) {
+		this.seqMinValue = seqMinValue;
+	}
+	public long getSeqIncValue() {
+		return seqIncValue;
+	}
+	public void setSeqIncValue(long seqIncValue) {
+		this.seqIncValue = seqIncValue;
 	}
 	@Override
 	public String toString() {
@@ -95,8 +118,12 @@ public class Column {
 		}
 		sb.append(" isNotNull=");
 		sb.append(isNotNull);
-		sb.append(" isAutoIncreament=");
-		sb.append(isAutoIncreament);
+		sb.append(" seqStart=");
+		sb.append(seqStart);
+		sb.append(" seqMinValue=");
+		sb.append(seqMinValue);
+		sb.append(" seqIncValue=");
+		sb.append(seqIncValue);
 		sb.append(" ]");
 		return sb.toString();
 	}

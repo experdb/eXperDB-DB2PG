@@ -1,0 +1,708 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+     PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+     "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+     
+<mapper namespace="com.k4m.experdb.db2pg.mapper.MetaExtractMapper">
+
+<resultMap id="getColumnListResult" type="com.k4m.experdb.db2pg.common.LowerKeyMap"> 
+<result property="ORDINAL_POSITION" column="ORDINAL_POSITION" /> 
+<result property="COLUMN_NAME" column="COLUMN_NAME" /> 
+<result property="COLUMN_TYPE" column="COLUMN_TYPE" /> 
+<result property="COLUMN_DEFAULT" column="COLUMN_DEFAULT" jdbcType="VARCHAR" javaType="java.lang.String" />
+<result property="IS_NULL" column="IS_NULL" />
+<result property="COLUMN_COMMENT" column="COLUMN_COMMENT" /> 
+<result property="NUMERIC_PRECISION" column="NUMERIC_PRECISION" />
+<result property="NUMERIC_SCALE" column="NUMERIC_SCALE" /> </resultMap>
+
+<resultMap id="getViewInformResult" type="com.k4m.experdb.db2pg.common.LowerKeyMap"> 
+<result property="VIEW_NAME" column="VIEW_NAME" /> 
+<result property="TEXT" column="TEXT" jdbcType="VARCHAR" javaType="java.lang.String" />
+</resultMap>
+
+	<select id="getTableNames" parameterType="map" resultType="java.lang.String" databaseId="ORA">
+		SELECT OBJECT_NAME as TABLE_NAME FROM ALL_OBJECTS 
+		WHERE OWNER=#{TABLE_SCHEMA} 
+			AND OBJECT_NAME NOT IN ('TOAD_PLAN_TABLE','PLAN_TABLE') 
+			AND OBJECT_NAME NOT LIKE 'MDRT%'
+			AND OBJECT_NAME NOT LIKE 'MDXT%'
+		<choose>
+			<when test="TABLE_ONLY == true">
+				AND OBJECT_TYPE IN ('TABLE')
+			</when>
+			<otherwise>
+				AND OBJECT_TYPE IN ('TABLE','VIEW')
+			</otherwise>
+		</choose>
+	</select>
+	<select id="getSourceTableData" parameterType="map" resultType="map" databaseId="ORA">
+		SELECT * FROM ${SCHEMA}${TABLE} ${WHERE}
+	</select>
+	<select id="getTableInform" parameterType="map" resultType="com.k4m.experdb.db2pg.common.LowerKeyMap" databaseId="ORA">
+		SELECT UT.OBJECT_NAME AS TABLE_NAME,
+               NVL(SUBSTRB(UTC.COMMENTS,1,500),'') AS TABLE_COMMENT,
+               UT.OWNER AS SCHEMA_NAME
+        FROM   ALL_OBJECTS UT, 
+               ALL_TAB_COMMENTS UTC
+         WHERE UT.OBJECT_NAME = UTC.TABLE_NAME
+         AND UT.OWNER = UTC.OWNER
+         AND UT.OBJECT_TYPE IN ('TABLE')
+         AND UT.OWNER =#{TABLE_SCHEMA}
+         <if test="TABLE_LIST != '' and TABLE_LIST != null">
+         	AND UT.OBJECT_NAME IN ( ${TABLE_LIST} )
+         </if>
+         AND UT.OBJECT_NAME NOT LIKE 'BIN$%'
+		ORDER BY SCHEMA_NAME, TABLE_NAME
+	</select>
+	<select id="getColumnInform" parameterType="map" resultType="com.k4m.experdb.db2pg.common.LowerKeyMap" resultMap="getColumnListResult" databaseId="ORA"> 
+  			SELECT
+  			A.ORDINAL_POSITION AS ORDINAL_POSITION,
+  			A.COLUMN_NAME AS COLUMN_NAME,
+  			CASE WHEN A.EXTRA IS NULL  THEN A.COLUMN_TYPE ELSE A.COLUMN_TYPE || '('|| EXTRA || ')' END AS COLUMN_TYPE,
+  			A.EXTRA AS TYPE_LENGTH,
+  			A.COLUMN_DEFAULT AS COLUMN_DEFAULT,
+  			A.IS_NULL AS IS_NULL, 			
+  			A.COLUMN_COMMENT AS COLUMN_COMMENT,
+  			A.NUMERIC_PRECISION AS NUMERIC_PRECISION,
+	        A.NUMERIC_SCALE AS NUMERIC_SCALE
+  			FROM( 
+  				SELECT 
+	                   UTC.COLUMN_ID AS ORDINAL_POSITION,
+	                   NVL(UTC.COLUMN_NAME,'') AS COLUMN_NAME,
+	                   UTC.DATA_TYPE AS COLUMN_TYPE,  
+	                   UTC.DATA_LENGTH AS DATA_LENGTH,
+	                   UTC.DATA_DEFAULT AS COLUMN_DEFAULT,
+	                   CASE WHEN UTC.NULLABLE ='Y' THEN 'TRUE' ELSE 'FALSE'END AS IS_NULL,
+	                   NVL(SUBSTRB(UCT.COMMENTS,1,500),'') AS COLUMN_COMMENT,     
+	                   CASE WHEN UTC.DATA_TYPE='VARCHAR2' OR UTC.DATA_TYPE='VARCHAR' OR UTC.DATA_TYPE='CHAR'
+	                           THEN UTC.DATA_LENGTH
+	                        WHEN UTC.DATA_TYPE = 'NUMBER' AND UTC.DATA_PRECISION > 0 AND UTC.DATA_SCALE >= 0
+	                           THEN UTC.DATA_PRECISION
+	                        WHEN UTC.DATA_TYPE = 'NUMBER'
+	                           THEN NULL
+	                        WHEN UTC.DATA_TYPE='CLOB' OR UTC.DATA_TYPE='BLOB' OR UTC.DATA_TYPE='LONG' OR UTC.DATA_TYPE LIKE '%ROW%'
+	                           THEN NULL
+	                        ELSE DATA_LENGTH
+	                    END AS EXTRA,	                   
+	                   UTC.DATA_PRECISION AS NUMERIC_PRECISION,
+	                   UTC.DATA_SCALE AS NUMERIC_SCALE              
+	              FROM ALL_TAB_COLUMNS UTC, 
+	                   ALL_COL_COMMENTS UCT
+	             WHERE UTC.TABLE_NAME = UCT.TABLE_NAME
+	               AND UTC.TABLE_NAME NOT LIKE 'BIN$%'
+	               AND UTC.COLUMN_NAME = UCT.COLUMN_NAME(+)
+	               AND UTC.OWNER = UCT.OWNER
+	               AND UTC.OWNER = #{TABLE_SCHEMA}
+	               AND UTC.TABLE_NAME = #{TABLE_NAME}
+	             ORDER BY ORDINAL_POSITION
+  			)A                      
+	</select>
+	<select id="getConstraintInform" parameterType="map" resultType="com.k4m.experdb.db2pg.common.LowerKeyMap" databaseId="ORA">				       
+				SELECT  
+					UC.OWNER AS CONSTRAINT_SCHEMA,
+					UC.CONSTRAINT_NAME AS CONSTRAINT_NAME,
+					UC.OWNER AS TABLE_SCHEMA,
+					UC.TABLE_NAME AS TABLE_NAME,
+	       			UC.R_CONSTRAINT_NAME AS R_CONSTRAINT_NAME, 
+	        		UIC.COLUMN_NAME AS COLUMN_NAME,
+					UIC.COLUMN_POSITION AS ORDINAL_POSITION,
+					UC.R_OWNER AS REF_TABLE_SCHEMA,
+          			C.TABLE_NAME AS REF_TABLE_NAME,
+					C.COLUMN_NAME AS REF_COLUMN_NAME,
+					CASE WHEN UC.CONSTRAINT_TYPE='P' THEN 'P'
+					WHEN UC.CONSTRAINT_TYPE='R' THEN 'F'
+					WHEN UC.CONSTRAINT_TYPE='U' THEN 'U'
+					WHEN UC.CONSTRAINT_TYPE='C' THEN 'C'
+					ELSE NULL	END AS CONSTRAINT_TYPE,
+					CASE WHEN (SELECT INDEX_TYPE FROM ALL_INDEXES WHERE  INDEX_NAME = UC.INDEX_NAME)='NORMAL' THEN 'NORMAL'
+					WHEN (SELECT INDEX_TYPE FROM ALL_INDEXES WHERE  INDEX_NAME = UC.INDEX_NAME)='BITMAP' THEN 'BITMAP'
+					WHEN (SELECT INDEX_TYPE FROM ALL_INDEXES WHERE  INDEX_NAME = UC.INDEX_NAME)='FUNCTION-BASED NORMAL' THEN 'FUNCTION_BASED_NORMAL'
+					WHEN (SELECT INDEX_TYPE FROM ALL_INDEXES WHERE  INDEX_NAME = UC.INDEX_NAME)='FUNCTION-BASED BITMAP' THEN 'FUNCTION_BASED_BITMAP'
+					WHEN (SELECT INDEX_TYPE FROM ALL_INDEXES WHERE  INDEX_NAME = UC.INDEX_NAME)='DOMAIN' THEN 'NORMAL'
+					ELSE NULL END AS INDEX_TYPE,
+					UC.DELETE_RULE AS DELETE_RULE,
+					(SELECT DEFERRABLE FROM USER_CONSTRAINTS WHERE UC.CONSTRAINT_NAME = CONSTRAINT_NAME) AS DEFERRABLE,
+					(SELECT DEFERRED FROM USER_CONSTRAINTS WHERE UC.CONSTRAINT_NAME = CONSTRAINT_NAME) AS DEFERRED
+					FROM ALL_CONSTRAINTS UC, USER_IND_COLUMNS UIC ,USER_IND_COLUMNS C
+					WHERE UC.TABLE_NAME =  #{TABLE_NAME}
+					AND UC.OWNER = #{TABLE_SCHEMA}
+					AND UC.INDEX_NAME = UIC.INDEX_NAME(+)
+          			AND UC.R_CONSTRAINT_NAME=C.INDEX_NAME(+)
+					AND UC.CONSTRAINT_TYPE IN ('P', 'R', 'U')
+	</select>
+	<select id="getKeyInform" parameterType="map" resultType="com.k4m.experdb.db2pg.common.LowerKeyMap" databaseId="ORA"> 	
+		        SELECT        
+			        A.INDEX_SCHEMA,
+			        A.INDEX_NAME,
+			        A.TABLE_SCHEMA,
+			        A.TABLE_NAME,
+			        A.INDEX_TYPE,
+			        A.UNIQUENESS,
+			        C.COLUMN_NAME  AS COLUMN_NAME,
+					C.COLUMN_POSITION AS ORDINAL_POSITION
+			        FROM(
+				        SELECT 					
+				          A.OWNER AS INDEX_SCHEMA,  
+									A.INDEX_NAME AS INDEX_NAME,   
+									A.TABLE_OWNER AS TABLE_SCHEMA,
+									A.TABLE_NAME AS TABLE_NAME,
+				          CASE WHEN A.INDEX_TYPE='NORMAL' THEN 'NORMAL'
+									WHEN A.INDEX_TYPE='BITMAP' THEN 'BITMAP'
+									WHEN A.INDEX_TYPE='FUNCTION-BASED NORMAL' THEN 'FUNCTION_BASED_NORMAL'
+									WHEN A.INDEX_TYPE='FUNCTION-BASED BITMAP' THEN 'FUNCTION_BASED_BITMAP'
+									WHEN A.INDEX_TYPE='DOMAIN' THEN 'NORMAL'
+									ELSE NULL END AS INDEX_TYPE,
+									A.UNIQUENESS AS UNIQUENESS   
+				          FROM ALL_INDEXES A LEFT  OUTER JOIN ALL_CONSTRAINTS B ON A.INDEX_NAME=B.INDEX_NAME
+				          WHERE A.TABLE_NAME = #{TABLE_NAME} AND A.TABLE_OWNER = #{TABLE_SCHEMA}
+				          AND B.INDEX_NAME IS NULL
+			          )A, USER_IND_COLUMNS C
+			          WHERE A.INDEX_NAME= C.INDEX_NAME
+	</select>
+	<select id="getViewInform" parameterType="map" resultMap="getViewInformResult" resultType="com.k4m.experdb.db2pg.common.LowerKeyMap"  databaseId="ORA">
+			SELECT VIEW_NAME, TEXT
+			FROM USER_VIEWS
+	</select>
+	<select id="getSequencesInform" parameterType="map" resultType="com.k4m.experdb.db2pg.common.LowerKeyMap"  databaseId="ORA">
+	 SELECT SEQUENCE_NAME as EXTRA, MIN_VALUE AS SEQ_MIN_VALUE, MAX_VALUE, INCREMENT_BY AS SEQ_INC_VALUE, LAST_NUMBER AS SEQ_START FROM USER_SEQUENCES
+	</select>
+	
+	
+	<select id="getTableNames" parameterType="map" resultType="java.lang.String" databaseId="MSS">
+		SELECT 
+				LOWER(name) as table_name
+		FROM sys.objects 
+		WHERE schema_id=(SELECT schema_id FROM sys.schemas WHERE name=#{TABLE_SCHEMA})
+		<choose>
+			<when test="TABLE_ONLY == true">
+				AND type in ('U')
+			</when>
+			<otherwise>
+				AND type in ('U', 'V')
+			</otherwise>
+		</choose>
+		ORDER BY 1
+	</select>
+	<select id="getSourceTableData" parameterType="map" resultType="map" databaseId="MSS">
+		SELECT * FROM ${SCHEMA}${TABLE} ${WHERE}
+	</select>
+	<select id="getTableInform"  parameterType="map" resultType="map" databaseId="MSS">
+		SELECT
+			LOWER(s.name) AS schema_name ,
+			LOWER(o.name) AS table_name ,
+			(
+			SELECT	
+				CONVERT(varchar(500), VALUE) as VALUE
+			FROM
+				SYS.EXTENDED_PROPERTIES
+			WHERE
+				MAJOR_ID = o.object_id
+				AND MINOR_ID = 0 ) AS table_comment
+		FROM
+			sys.objects o
+		INNER JOIN sys.schemas s ON
+			o.schema_id=s.schema_id
+		WHERE
+			s.name=#{TABLE_SCHEMA}
+			AND TYPE IN ( 'U' ) 
+			<if test="TABLE_LIST != '' and TABLE_LIST != null">
+				AND o.name IN ( ${TABLE_LIST} )
+			</if>
+	</select>
+	<select id="getColumnInform" parameterType="map" resultType="map" databaseId="MSS">
+			SELECT
+				LOWER(A.ordinal_position) AS ordinal_position,
+				LOWER(A.column_name) AS column_name,
+				LOWER(B.DATA_TYPE) AS column_type,
+				LOWER(ISNULL(B.CHARACTER_MAXIMUM_LENGTH,'0')) AS type_length,
+				LOWER(A.column_default) AS column_default,
+				LOWER(A.is_null) AS is_null,
+				LOWER(A.column_comment) AS column_comment,
+				LOWER(A.numeric_precision) AS numeric_precision,
+				LOWER(A.numeric_scale) AS numeric_scale,
+				LOWER(A.seq_start) AS seq_start,
+				LOWER(A.seq_min_value) AS seq_min_value,
+				LOWER(A.seq_inc_value) AS seq_inc_value,
+				LOWER(A.extra) AS extra
+		FROM
+		(SELECT
+			c.column_id AS ordinal_position ,
+			c.name AS column_name ,
+			type_name( c.user_type_id ) AS column_type ,
+			CASE
+				WHEN object_definition( c.default_object_id ) = '(newid())' THEN NULL
+				ELSE object_definition( c.default_object_id )
+			END AS column_default ,
+			CASE
+				WHEN c.is_nullable != 0 THEN 'true'
+				ELSE 'false'
+			END AS is_null ,
+			(
+			SELECT
+				CONVERT(varchar(500), value) AS value
+			FROM
+				fn_listextendedproperty ( 'MS_DESCRIPTION',
+				'schema',
+				object_schema_name( o.object_id ),
+				'table',
+				o.name,
+				'column',
+				c.name )) AS column_comment ,
+			CONVERT(varchar(500),c.precision) AS numeric_precision ,
+			CONVERT(varchar(500),c.scale) AS numeric_scale ,
+			CONVERT( BIGINT,
+			i.last_value ) + CONVERT( BIGINT,
+			i.increment_value ) AS seq_start ,
+			CONVERT(varchar(500),i.seed_value) AS seq_min_value ,
+			CONVERT(varchar(500),i.increment_value) AS seq_inc_value ,
+			NULL AS extra
+		FROM
+			sys.columns c
+		JOIN sys.objects o ON
+			c.object_id = o.object_id
+		LEFT OUTER JOIN sys.identity_columns i ON
+			c.object_id = i.object_id
+			AND c.column_id = i.column_id
+		WHERE
+			object_schema_name( o.object_id )=#{TABLE_SCHEMA}
+			AND o.name=#{TABLE_NAME}
+		) A,
+		(select 
+				d.*
+		from  INFORMATION_SCHEMA.COLUMNS d
+		where TABLE_NAME =#{TABLE_NAME}
+		AND TABLE_SCHEMA=#{TABLE_SCHEMA}) B
+		WHERE A.column_name = B.COLUMN_NAME
+			
+	</select>
+	
+	<select id="getConstraintInform" parameterType="map" resultType="map" databaseId="MSS">
+					SELECT 
+							 LOWER(CON.CONSTRAINT_SCHEMA) AS constraint_schema
+							,  LOWER(CON.CONSTRAINT_NAME) AS constraint_name
+							,  LOWER(CON.TABLE_SCHEMA) AS table_schema
+							,  LOWER(CON.TABLE_NAME) AS	table_name
+							,CASE WHEN con.constraint_type='PRIMARY KEY' THEN 'P'
+								WHEN con.constraint_type='FOREIGN KEY' THEN 'F'
+								WHEN con.constraint_type='UNIQUE' THEN 'U'
+								ELSE NULL						END AS constraint_type
+							, LOWER(CU.COLUMN_NAME) AS column_name
+							, LOWER(CU.ORDINAL_POSITION) AS ordinal_position
+							,NULL AS ref_table_schema
+							,NULL AS ref_table_name
+							,NULL AS ref_column_name
+							,NULL AS match_option
+							,NULL AS update_rule
+							,NULL AS delete_rule
+						FROM information_schema.table_constraints CON
+						INNER JOIN information_schema.key_column_usage AS CU 
+							ON CON.constraint_name = CU.constraint_name 
+						WHERE CON.TABLE_SCHEMA = #{TABLE_SCHEMA}
+						AND CON.TABLE_NAME = #{TABLE_NAME}
+						AND CON.CONSTRAINT_TYPE IN ('PRIMARY KEY', 'UNIQUE')
+	
+				 UNION ALL
+				
+					SELECT 
+						 LOWER(TC.CONSTRAINT_SCHEMA) AS constraint_schema
+						,  LOWER(TC.CONSTRAINT_NAME) AS constraint_name		
+						,  LOWER(TC.TABLE_SCHEMA) AS table_schema
+						,  LOWER(TC.TABLE_NAME) AS	table_name
+						,CASE WHEN TC.constraint_type='PRIMARY KEY' THEN 'P'
+							WHEN TC.constraint_type='FOREIGN KEY' THEN 'F'
+							WHEN TC.constraint_type='UNIQUE' THEN 'U'
+							ELSE NULL						END AS constraint_type
+						,  LOWER(CU.COLUMN_NAME) AS column_name
+						,  LOWER(CU.ORDINAL_POSITION) AS ordinal_position	
+						,  LOWER(RC.UNIQUE_CONSTRAINT_SCHEMA) AS ref_table_schema
+						,  LOWER(RC.UNIQUE_CONSTRAINT_NAME) AS ref_table_name
+						,  LOWER(CU.COLUMN_NAME) AS ref_column_name
+						,  LOWER(RC.MATCH_OPTION) AS match_option
+						,  LOWER(RC.UPDATE_RULE) AS update_rule
+						,  LOWER(RC.DELETE_RULE) AS delete_rule										
+					FROM information_schema.referential_constraints AS RC
+					INNER JOIN information_schema.key_column_usage AS CU 
+			            ON RC.constraint_name = CU.constraint_name 
+					INNER JOIN information_schema.table_constraints AS TC 
+			            ON RC.constraint_name = TC.constraint_name 
+					WHERE TC.TABLE_SCHEMA = #{TABLE_SCHEMA}
+					AND TC.TABLE_NAME = #{TABLE_NAME}
+	
+
+			<!-- SELECT 
+			     LOWER(c.table_schema) AS table_schema
+			    ,LOWER(c.table_name) AS table_name
+			    ,LOWER(c.column_name) AS column_name
+				,CASE WHEN KeyConstraints.constraint_type='PRIMARY KEY' THEN 'P'
+							 WHEN KeyConstraints.constraint_type='FOREIGN KEY' THEN 'F'
+							 WHEN KeyConstraints.constraint_type='UNIQUE' THEN 'U'
+							 ELSE NULL
+						END AS constraint_type
+			    ,LOWER(KeyConstraints.constraint_schema) AS constraint_schema
+			    ,LOWER(KeyConstraints.constraint_name) AS constraint_name
+			    ,LOWER(KeyConstraints.referenced_table_schema) AS ref_table_schema
+			    ,LOWER(KeyConstraints.referenced_table_name) AS ref_table_name
+			    ,LOWER(KeyConstraints.referenced_column_name) AS ref_column_name
+			    ,LOWER(KeyConstraints.update_rule) AS update_rule
+			    ,LOWER(KeyConstraints.delete_rule) AS delete_rule
+				,LOWER(KeyConstraints.INDEX_TYPE) AS index_type
+				,LOWER(KeyConstraints.ORDINAL_POSITION) AS ordinal_position
+			FROM information_schema.columns AS c 
+			iNNER JOIN 
+			    (
+			        SELECT 
+			             FK.table_schema AS TABLE_SCHEMA
+			            ,FK.table_name
+			            ,CU.column_name
+			            ,FK.constraint_type
+			            ,c.constraint_schema
+			            ,C.constraint_name 
+			            ,PK.table_schema AS REFERENCED_TABLE_SCHEMA
+			            ,PK.table_name AS REFERENCED_TABLE_NAME
+			            ,CCU.column_name AS REFERENCED_COLUMN_NAME
+			            ,C.update_rule AS UPDATE_RULE
+			            ,C.delete_rule AS DELETE_RULE
+						,SI.type AS INDEX_TYPE
+						,CU.ORDINAL_POSITION as ORDINAL_POSITION
+			        FROM information_schema.referential_constraints AS C 			
+			        INNER JOIN information_schema.table_constraints AS FK 
+			            ON C.constraint_name = FK.constraint_name 			
+			        INNER JOIN information_schema.table_constraints AS PK 
+			            ON C.unique_constraint_name = PK.constraint_name 			
+			        INNER JOIN information_schema.key_column_usage AS CU 
+			            ON C.constraint_name = CU.constraint_name 			
+			        INNER JOIN information_schema.constraint_column_usage AS CCU 
+			            ON PK.constraint_name = CCU.constraint_name 
+					INNER JOIN sys.indexes AS SI
+			            ON PK.constraint_name = SI.name 			
+			        WHERE PK.TABLE_SCHEMA = #{TABLE_SCHEMA}
+			
+			        UNION 
+			
+			        SELECT 
+			             LOWER(ccu.table_schema) AS table_schema
+			            ,LOWER(ccu.table_name) AS table_name
+			            ,LOWER(ccu.column_name) AS column_name
+			            ,tc.constraint_type AS constraint_type
+			            ,LOWER(ccu.constraint_schema) AS constraint_schema
+			            ,LOWER(ccu.constraint_name) AS constraint_name
+			            ,NULL
+			            ,NULL
+			            ,NULL
+			            ,NULL
+			            ,NULL
+						,NULL
+						,NULL
+			        FROM information_schema.constraint_column_usage ccu 			
+			        INNER JOIN information_schema.table_constraints tc 
+			            ON ccu.table_schema = tc.table_schema 
+			            AND ccu.table_name = tc.table_name 			
+			        WHERE tc.TABLE_SCHEMA = #{TABLE_SCHEMA}				
+			    ) AS KeyConstraints 
+			    ON c.table_schema = KeyConstraints.table_schema 
+			    AND c.table_name = KeyConstraints.table_name 
+			    AND c.column_name = KeyConstraints.column_name 
+			WHERE c.TABLE_NAME = #{TABLE_NAME}
+			ORDER BY  c.table_schema 
+			         ,c.table_name 
+			         ,c.column_name 	 -->	
+	</select>
+	
+	<select id="getKeyInform" parameterType="map" resultType="map" databaseId="MSS">
+			SELECT 
+					LOWER(SCHEMA_NAME(t.schema_id))  AS table_schema,
+					LOWER(object_schema_name(t.object_id)) AS index_schema,
+			        LOWER(t.name) AS table_name,
+					LOWER(i.name) AS index_name,
+					LOWER(i.type) AS index_type, 
+					LOWER(COL_NAME(t.object_id, c.column_id)) AS column_name,
+					LOWER(c.key_ordinal) AS ordinal_position	 
+			FROM sys.tables t,
+					sys.index_columns AS c, 
+			        sys.indexes i,
+					sys.stats s
+			WHERE t.object_id = i.object_id
+				AND t.object_id = s.object_id
+				AND i.index_id = s.stats_id
+				AND i.index_id = c.index_id
+				AND i.object_id = c.object_id
+				AND c.is_included_column = 0
+				AND SCHEMA_NAME(t.schema_id) = #{TABLE_SCHEMA}	
+				AND t.name = #{TABLE_NAME}
+			ORDER BY t.name, i.name, c.index_column_id	
+	</select>
+	
+	<select id="getViewInform" parameterType="map" resultType="map" databaseId="MSS">
+			SELECT 
+					TABLE_CATALOG
+					,TABLE_SCHEMA
+					,TABLE_NAME
+					,VIEW_DEFINITION
+					,CHECK_OPTION
+					,IS_UPDATABLE
+			FROM INFORMATION_SCHEMA.VIEWS
+			WHERE TABLE_SCHEMA = #{TABLE_SCHEMA}	
+	</select>
+	
+	
+	<select id="getTableNames" parameterType="map" resultType="java.lang.String" databaseId="ASE" >
+		SELECT name AS table_name FROM sysobjects WHERE type='U' AND user_name(uid)=#{TABLE_SCHEMA}
+	</select>
+	<select id="getSourceTableData" parameterType="map" resultType="map" databaseId="ASE">
+		SELECT * FROM ${SCHEMA}${TABLE} ${WHERE}
+	</select>
+	
+	<select id="getTableNames" parameterType="map" resultType="java.lang.String" databaseId="MYSQL">
+		SELECT table_name
+		 FROM information_schema.tables
+		WHERE table_schema=#{TABLE_SCHEMA} 
+		<choose>
+			<when test="TABLE_ONLY == true">
+				AND table_type IN ('BASE TABLE')
+			</when>
+			<otherwise>
+				AND table_type IN ('BASE TABLE','VIEW')
+			</otherwise>
+		</choose>
+	</select>
+	<select id="getSourceTableData" parameterType="map" resultType="map" databaseId="MYSQL">
+		SELECT * FROM ${SCHEMA}${TABLE} ${WHERE}
+	</select> 
+	<select id="getTableInform" parameterType="map" resultType="map" databaseId="MYSQL">
+		SELECT table_schema AS schema_name, table_name AS table_name, table_comment AS table_comment
+		 FROM information_schema.tables
+		WHERE table_schema=#{TABLE_SCHEMA} AND table_type IN ('BASE TABLE') 
+			<if test="TABLE_LIST != '' and TABLE_LIST != null">
+				AND table_name IN ( ${TABLE_LIST} )
+			</if>
+	</select>
+	<select id="getColumnInform" parameterType="map" resultType="map" databaseId="MYSQL">
+		SELECT
+			c.column_name AS column_name,
+			c.ordinal_position AS ordinal_position,
+			c.column_default AS column_default,
+			c.is_nullable AS is_null ,
+			c.numeric_precision AS numeric_precision ,
+			c.numeric_scale AS numeric_scale,
+			c.column_type AS column_type ,
+			c.column_comment AS column_comment,
+			CASE
+				WHEN extra LIKE '%auto_increment%' THEN t.auto_increment
+				ELSE NULL
+			END AS seq_start,
+			CASE
+				WHEN t.auto_increment IS NOT NULL
+				AND extra LIKE '%auto_increment%' THEN 1
+				ELSE NULL
+			END AS seq_min_value,
+			CASE
+				WHEN t.auto_increment IS NOT NULL
+				AND extra LIKE '%auto_increment%' THEN 1
+				ELSE NULL
+			END AS seq_inc_value,
+			c.extra AS extra
+		FROM
+			information_schema.COLUMNS AS c
+		INNER JOIN information_schema.TABLES AS t ON
+			c.TABLE_SCHEMA = t.TABLE_SCHEMA
+			AND c.TABLE_NAME = t.TABLE_NAME
+		WHERE c.table_schema=#{TABLE_SCHEMA}
+		    AND c.table_name=#{TABLE_NAME}
+	</select>
+	<select id="getConstraintInform" parameterType="map" resultType="map" databaseId="MYSQL">
+		SELECT
+			con.constraint_schema AS constraint_schema,
+			con.constraint_name AS constraint_name,
+			con.table_schema AS table_schema,
+			con.table_name AS table_name,
+			con.column_name AS column_name,
+			con.ordinal_position AS ordinal_position,
+			con.referenced_table_schema AS ref_table_schema,
+			con.referenced_table_name AS ref_table_name,
+			con.referenced_column_name AS ref_column_name,
+			CASE WHEN con.constraint_type='PRIMARY KEY' THEN 'P'
+				 WHEN con.constraint_type='FOREIGN KEY' THEN 'F'
+				 WHEN con.constraint_type='UNIQUE' THEN 'U'
+				 ELSE NULL
+			END AS constraint_type,
+			con.index_type AS index_type,
+			refcon.match_option AS match_option,
+			refcon.update_rule AS update_rule,
+			refcon.delete_rule AS delete_rule
+		FROM
+			(
+			SELECT
+				con.*,
+				idx.index_type
+			FROM
+				(
+				SELECT
+					kcu.*,
+					con.constraint_type
+				FROM
+					(
+					SELECT
+						constraint_schema,
+						constraint_name,
+						table_schema,
+						table_name,
+						column_name,
+						ordinal_position,
+						position_in_unique_constraint,
+						referenced_table_schema,
+						referenced_table_name,
+						referenced_column_name
+					FROM
+						information_schema.key_column_usage
+					WHERE
+						table_schema = #{TABLE_SCHEMA} ) kcu
+				INNER JOIN (
+					SELECT
+						constraint_schema,
+						constraint_name,
+						table_schema,
+						table_name,
+						constraint_type
+					FROM
+						information_schema.table_constraints
+					WHERE
+						table_schema = #{TABLE_SCHEMA} ) con ON
+					kcu.constraint_schema = con.constraint_schema
+					AND kcu.constraint_name = con.constraint_name
+					AND kcu.table_schema = con.table_schema
+					AND kcu.table_name = con.table_name ) con
+			LEFT OUTER JOIN (
+				SELECT
+					table_schema,
+					table_name,
+					non_unique,
+					index_schema,
+					index_name,
+					seq_in_index,
+					column_name,
+					nullable,
+					index_type,
+					comment,
+					index_comment
+				FROM
+					information_schema.statistics
+				WHERE
+					table_schema=#{TABLE_SCHEMA} ) idx ON
+				con.table_schema = idx.table_schema
+				AND con.table_name = idx.table_name
+				AND con.constraint_schema = idx.index_schema
+				AND con.constraint_name = idx.index_name
+				AND con.column_name = idx.column_name ) con
+		LEFT OUTER JOIN (
+			SELECT
+				constraint_schema,
+				constraint_name,
+				match_option,
+				update_rule,
+				delete_rule,
+				table_name,
+				referenced_table_name
+			FROM
+				information_schema.referential_constraints ) refcon ON
+			con.constraint_schema = refcon.constraint_schema
+			AND con.constraint_name = refcon.constraint_name
+			AND con.table_name = refcon.table_name
+			AND con.referenced_table_name = refcon.referenced_table_name
+		WHERE
+			con.table_name=#{TABLE_NAME}
+			;
+	</select>
+	<select id="getKeyInform" parameterType="map" resultType="map" databaseId="MYSQL">
+		SELECT	
+			  index_schema,
+			  index_name,
+			  s.table_schema,
+			  s.table_name,
+			  column_name,
+			  seq_in_index AS ordinal_position,
+			  index_type
+		FROM
+		  	  information_schema.statistics s
+		LEFT OUTER JOIN information_schema.table_constraints t ON
+			  t.table_schema = s.table_schema
+			  AND t.table_name = s.table_name
+			  AND s.index_name = t.constraint_name
+		WHERE
+			  t.constraint_name IS NULL
+		      AND s.table_schema=#{TABLE_SCHEMA}
+		      AND s.table_name=#{TABLE_NAME}
+	</select>
+	
+	<select id="getViewInform" parameterType="map" resultType="map" databaseId="MYSQL">
+			SELECT 
+					TABLE_CATALOG
+					,TABLE_SCHEMA
+					,TABLE_NAME
+					,VIEW_DEFINITION
+					,CHECK_OPTION
+					,IS_UPDATABLE
+			FROM INFORMATION_SCHEMA.VIEWS
+			WHERE TABLE_SCHEMA = #{TABLE_SCHEMA}	
+	</select>
+	
+	<select id="getTableNames" parameterType="map" resultType="java.lang.String" databaseId="CUB">
+		SELECT class_name AS table_name FROM db_class WHERE owner_name = #{TABLE_SCHEMA} AND is_system_class='NO' AND class_type='CLASS' ORDER BY class_name ASC;
+	</select>
+	<select id="getConstraintInform" parameterType="map" resultType="map" databaseId="CUB">
+		SELECT i.index_name, i.is_unique, i.is_reverse, i.is_primary_key, i.is_foreign_key, i.key_count
+		           , ik.key_attr_name, ik.asc_desc, ik.key_order
+		FROM (SELECT class_name,  index_name, is_unique, is_reverse, is_primary_key, is_foreign_key, key_count
+		            FROM db_index WHERE class_name=#{TABLE_NAME} ORDER BY index_name) i 
+		      INNER JOIN 
+		           (SELECT key_attr_name, asc_desc, key_order, key_prefix_length,class_name,index_name
+		             FROM db_index_key ORDER BY key_order) ik
+		      ON i.class_name=ik.class_name AND i.index_name=ik.index_name
+	</select>
+	<select id="getColumnInform" parameterType="map" resultType="map" databaseId="CUB">
+		SELECT a.attr_name, a.attr_type, a.from_class_name,
+					a.data_type, a.prec, a.scale, a.is_nullable, 
+					a.domain_class_name, a.default_value, a.def_order
+		 FROM db_attribute a
+		WHERE a.class_name=#{TABLE_NAME}
+		ORDER BY a.def_order
+	</select>
+	<select id="getAutoincrementInform" parameterType="map" resultType="map" databaseId="CUB">
+		SELECT owner.name, db_serial.* FROM db_serial WHERE class_name=#{TABLE_NAME}
+	</select>
+	
+	<select id="getPgFkDdl" resultType="map" databaseId="POG">
+		SELECT psat1.schemaname AS "SCHEMA_NM",
+			pc.conname AS "CONSTRAINT_NAME",
+			'R' AS "CONSTRAINT_TYPE",
+			psat1.relname AS "TABLE_NAME",
+			psat2.relname AS "R_TABLE_NAME",
+            'ALTER TABLE "' || psat1.schemaname || '"."' || psat1.relname || '" DROP CONSTRAINT "' || pc.conname || '";' AS DROP_DDL_SCRIPT,
+            'ALTER TABLE "' || psat1.schemaname || '"."' || psat1.relname || '" ADD CONSTRAINT "' || pc.conname || '" ' || pg_get_constraintdef(pc.oid) || ';' AS CREATE_DDL_SCRIPT
+		FROM pg_constraint pc
+			JOIN pg_stat_all_tables psat1 ON psat1.relid = pc.conrelid
+			JOIN pg_stat_all_tables psat2 ON psat2.relid = pc.confrelid
+	</select>
+	<select id="getPgIdxDdl" resultType="map" databaseId="POG">
+		SELECT	CASE WHEN EXISTS (SELECT oid FROM pg_constraint pc WHERE pc.conindid = pi.indexrelid)
+					THEN 'ALTER TABLE "' || psat.schemaname || '"."'|| psat.relname || '" ADD CONSTRAINT "' || i.relname || '" ' 
+						|| pg_get_constraintdef((SELECT oid FROM pg_constraint pc WHERE pc.conrelid = pi.indrelid AND pc.conindid = pi.indexrelid)) 
+						|| CASE WHEN i.reltablespace != 0::oid THEN ' USING INDEX TABLESPACE "' || t.spcname || '"' ELSE '' END
+					ELSE CASE WHEN strpos(pg_get_indexdef(pi.indexrelid), 'WHERE') > 0 THEN regexp_replace(pg_get_indexdef(pi.indexrelid), 'WHERE', 'TABLESPACE "' || t.spcname || '" WHERE' ) 
+						ELSE pg_get_indexdef(pi.indexrelid) || ' TABLESPACE "' || t.spcname || '"' END 
+				END || ';' AS "CREATE_DDL_SCRIPT",
+				CASE WHEN EXISTS (SELECT oid FROM pg_constraint pc WHERE pc.conindid = pi.indexrelid) 
+				THEN 'ALTER TABLE "' || psat.schemaname || '"."'|| psat.relname || '" DROP CONSTRAINT "' || i.relname else 'DROP INDEX "' || i.relname END || '";' as "DROP_DDL_SCRIPT"
+		FROM	pg_stat_all_tables psat
+				JOIN pg_index pi ON pi.indrelid = psat.relid
+				JOIN pg_class c ON c.oid = pi.indrelid
+				JOIN pg_class i ON i.oid = pi.indexrelid
+				JOIN information_schema.role_table_grants rtg ON psat.schemaname = rtg.table_schema AND psat.relname = rtg.table_name				     
+				LEFT JOIN pg_namespace n ON n.oid = c.relnamespace
+				LEFT JOIN pg_tablespace t ON t.oid = CASE WHEN i.reltablespace = 0::oid THEN (SELECT dattablespace FROM pg_database WHERE datname=current_database()) ELSE i.reltablespace END
+		WHERE	rtg.privilege_type = 'SELECT' AND rtg.table_schema = current_schema()
+		ORDER BY psat.relname, i.relname;
+	</select>
+	<select id="getPgCurrentSchema" resultType="java.lang.String" databaseId="POG">
+		select current_schema() as schema;
+	</select>
+</mapper>

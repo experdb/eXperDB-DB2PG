@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+     PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+     "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.k4m.experdb.db2pg.mapper.TestMapper">
+	<select id="test" parameterType="map" resultType="map" >
+		SELECT 1 as t1,'2' as t2,3 as t3,4 as t4,5 as t5,6 as t6, #{TEST} as t7;
+	</select>
+	<select id="provider_test" parameterType="map" resultType="map" databaseId="POG" >
+		SELECT inet_server_addr();
+	</select>
+	<select id="provider_test" parameterType="map" resultType="map" >
+		SELECT inet_server_addr() as foo;
+	</select>
+</mapper>

@@ -1,13 +1,13 @@
-package com.k4m.experdb.db2pg.convert.vo;
+package com.k4m.experdb.db2pg.convert;
 
 import java.util.regex.Pattern;
 
-public class ConvertVO {
+public class ConvertObject {
 	private String asValue;
 	private String toValue;
 	private Pattern pattern;
 	
-	public ConvertVO(String asValue, String toValue) {
+	public ConvertObject(String asValue, String toValue) {
 		this.asValue = asValue;
 		this.toValue = toValue;
 		pattern = null;

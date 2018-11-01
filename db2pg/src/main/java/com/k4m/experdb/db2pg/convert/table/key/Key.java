@@ -15,6 +15,8 @@ public abstract class Key<T> {
 	protected List<String> columns;
 	protected IndexType indexType;
 	protected Type type;
+	protected String deferrable;
+	protected String deferred;
 	
 	protected Key() {
 	}
@@ -79,7 +81,36 @@ public abstract class Key<T> {
 	public Type getType() {
 		return type;
 	}
+	public String getKeyName() {
+		return keyName;
+	}
+
+	public void setKeyName(String keyName) {
+		this.keyName = keyName;
+	}
+
+	public String getDeferrable() {
+		return deferrable;
+	}
+
+	public void setDeferrable(String deferrable) {
+		this.deferrable = deferrable;
+	}
+
+	public String getDeferred() {
+		return deferred;
+	}
+
+	public void setDeferred(String deferred) {
+		this.deferred = deferred;
+	}
+
+	public void setType(Type type) {
+		this.type = type;
+	}
+
 	
+	@SuppressWarnings("hiding")
 	public <T> T unwrap(Class<T> iface) throws TableKeyException {
 		if (iface.isAssignableFrom(getClass())) {
 			return iface.cast(this);
@@ -128,11 +159,11 @@ public abstract class Key<T> {
 	}
 
 	public enum Type {
-		NORMAL, PRIMARY, UNIQUE, FOREIGN
+		NORMAL, PRIMARY, UNIQUE, FOREIGN, CLUSTER, VIEW
 	}
 
 	public enum IndexType {
-		HASH, BTREE
+		HASH, BTREE, NORMAL, BITMAP, FUNCTION_BASED_NORMAL, FUNCTION_BASED_BITMAP, DOMAIN
 	}
 	
 	public boolean isSameKey(String tableSchema, String tableName, String keySchema, String keyName) {

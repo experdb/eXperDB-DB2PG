@@ -1,5 +1,6 @@
 package com.k4m.experdb.db2pg.db;
 
+import java.io.FileReader;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.util.Properties;
@@ -12,19 +13,41 @@ import org.apache.commons.dbcp2.PoolableConnectionFactory;
 import org.apache.commons.dbcp2.PoolingDataSource;
 import org.apache.commons.dbcp2.PoolingDriver;
 import org.apache.commons.pool2.impl.GenericObjectPool;
+import org.apache.ibatis.builder.xml.XMLConfigBuilder;
+import org.apache.ibatis.builder.xml.XMLMapperBuilder;
+import org.apache.ibatis.mapping.Environment;
+import org.apache.ibatis.session.Configuration;
+import org.apache.ibatis.session.SqlSession;
+import org.apache.ibatis.session.SqlSessionFactory;
+import org.apache.ibatis.session.SqlSessionFactoryBuilder;
+import org.apache.ibatis.transaction.TransactionFactory;
+import org.apache.ibatis.transaction.managed.ManagedTransactionFactory;
 
 import com.k4m.experdb.db2pg.common.CommonUtil;
 import com.k4m.experdb.db2pg.common.Constant;
 import com.k4m.experdb.db2pg.common.LogUtils;
 import com.k4m.experdb.db2pg.db.datastructure.DBConfigInfo;
+import com.k4m.experdb.db2pg.mapper.TestMapper;
 
 public class DBCPPoolManager {
 	private DBCPPoolManager(){}
-	public static ConcurrentHashMap<String, DBConfigInfo> ConnInfoList = new ConcurrentHashMap<String, DBConfigInfo>();
+	public static ConcurrentHashMap<String, PoolInfo> connInfoList = new ConcurrentHashMap<String, PoolInfo>();
+	
+	private static SqlSessionFactoryBuilder sqlSessionFactoryBuilder = new SqlSessionFactoryBuilder();
+	
+	private static class PoolInfo {
+		DBConfigInfo configInfo;
+		SqlSessionFactory sqlSessionFactory;
+		private PoolInfo(DBConfigInfo configInfo,SqlSessionFactory sqlSessionFactory) {
+			this.configInfo = configInfo;
+			this.sqlSessionFactory = sqlSessionFactory;
+		}
+	}
+	
 	public static void setupDriver(DBConfigInfo configInfo, String poolName, int maxActive) throws Exception {
 		LogUtils.info("************************************************************",DBCPPoolManager.class);
 		LogUtils.info("DBCPPool을 생성합니다. ["+poolName+"]",DBCPPoolManager.class);
-		Connection conn = null;
+		
 		// JDBC 클래스 로딩
 		try {
 			String driver = "";
@@ -69,7 +92,11 @@ public class DBCPPoolManager {
 					break;
 				case Constant.DB_TYPE.MYSQL :
 					driver = "com.mysql.jdbc.Driver" ;
-					connectURI = "jdbc:mysql://"+configInfo.SERVERIP+":"+configInfo.PORT+"/"+configInfo.DBNAME;
+					connectURI = "jdbc:mysql://"+configInfo.SERVERIP+":"+configInfo.PORT+"/"+configInfo.DBNAME+"?useCursorFetch=true";
+					break;
+				case Constant.DB_TYPE.CUB :
+					driver = "cubrid.jdbc.driver.CUBRIDDriver" ;
+					connectURI = "jdbc:CUBRID:"+configInfo.SERVERIP+":"+configInfo.PORT+":"+configInfo.DBNAME+":"+configInfo.DBNAME+"::";
 					break;
     		}
     		
@@ -99,7 +126,12 @@ public class DBCPPoolManager {
 	        // Pool에서 Connection을 받아와 DB에 Query문을 날리기 전에
 	        // 해당 Connection이 Active한지 Check하고 
 	        // Active하지 않으면 해당 Connection을 다시 생성합니다
-	        connectionPool.setTestOnBorrow(true);
+	        //CUBRID는 setTestOnBorrow 속성 시에 Cannot get a connection, pool error: Unable to validate object 에러 발생
+	        
+	        if (!configInfo.DB_TYPE.equals("CUB")) {
+		        connectionPool.setTestOnBorrow(true);	
+	        }
+	        
 	        connectionPool.setTestOnReturn(true);
 	        connectionPool.setTestWhileIdle(true);
 	        connectionPool.setMaxTotal(maxActive);		        
@@ -115,33 +147,57 @@ public class DBCPPoolManager {
             PoolingDataSource<PoolableConnection> dataSource=  new PoolingDataSource<PoolableConnection> (connectionPool);
             dataSource.setAccessToUnderlyingConnectionAllowed(true);
             
+            Environment env = new Environment(poolName, (TransactionFactory)new ManagedTransactionFactory(), dataSource);
+			Configuration config = new Configuration(env); 
+			config.setDatabaseId(configInfo.DB_TYPE);
+			new XMLMapperBuilder(DBCPPoolManager.class.getResourceAsStream("/mapper/TestMapper.xml"),config,"TestMapper",config.getSqlFragments()).parse();
+			new XMLMapperBuilder(DBCPPoolManager.class.getResourceAsStream("/mapper/MetaExtractMapper.xml"),config,"MetadataExtractMapper",config.getSqlFragments()).parse();
+			config.setEnvironment(env);
+			SqlSessionFactory sqlSessionFactory = sqlSessionFactoryBuilder.build(config);
             //Pool 등록
             pDriver.registerPool(poolName, connectionPool);
             
-            ConnInfoList.put(poolName, configInfo);
-            conn = getConnection(poolName);
-            conn.setAutoCommit(false);
-            configInfo.DB_VER = conn.getMetaData().getDatabaseMajorVersion() + "." + conn.getMetaData().getDatabaseMinorVersion();
-            configInfo.ORG_SCHEMA_NM= conn.getMetaData().getUserName();
+            connInfoList.put(poolName, new PoolInfo(configInfo,sqlSessionFactory));
+            
+            setDBConnInfo(poolName, configInfo);
+            
 		} catch (Exception e) {
 			shutdownDriver(poolName);
-			throw e;			
-		}finally{
-			if (conn != null){
-				conn.close();
-			}
+			throw e;
+		} finally {
+			LogUtils.info("DBCPPool 생성 완료 하였습니다. ["+poolName+"]",DBCPPoolManager.class);
+			LogUtils.info("************************************************************",DBCPPoolManager.class);
 		}
-		LogUtils.info("DBCPPool 생성 완료 하였습니다. ["+poolName+"]",DBCPPoolManager.class);
-		LogUtils.info("************************************************************",DBCPPoolManager.class);
 	}
 	
+	/**
+	 * DB 정보 setting
+	 * @param poolName
+	 * @param configInfo
+	 * @throws Exception
+	 */
+	private static void setDBConnInfo(String poolName, DBConfigInfo configInfo) throws Exception{
+		Connection conn = getConnection(poolName);
+		try {
+        conn.setAutoCommit(false);
+        configInfo.DB_VER = conn.getMetaData().getDatabaseMajorVersion() + "." + conn.getMetaData().getDatabaseMinorVersion();
+        configInfo.DB_MAJOR_VER = conn.getMetaData().getDatabaseMajorVersion();
+        configInfo.DB_MINOR_VER = conn.getMetaData().getDatabaseMinorVersion();
+        configInfo.ORG_SCHEMA_NM= conn.getMetaData().getUserName();
+		} catch(Exception e) {
+			
+		} finally {
+	        if (conn != null) conn.close();
+		}
+
+	}
 	
 	public static void shutdownDriver(String poolName) throws Exception {
 		PoolingDriver driver = (PoolingDriver) DriverManager.getDriver("jdbc:apache:commons:dbcp:");
 		driver.closePool(poolName);
 		
-		if (ConnInfoList.containsKey(poolName)) {
-			ConnInfoList.remove(poolName);
+		if (connInfoList.containsKey(poolName)) {
+			connInfoList.remove(poolName);
 		}		
 	}
 	
@@ -150,9 +206,8 @@ public class DBCPPoolManager {
 			PoolingDriver driver = (PoolingDriver) DriverManager.getDriver("jdbc:apache:commons:dbcp:");
 			for (String poolName : driver.getPoolNames()) {
 				driver.closePool(poolName);
-				
-				if (ConnInfoList.containsKey(poolName)) {
-					ConnInfoList.remove(poolName);
+				if (connInfoList.containsKey(poolName)) {
+					connInfoList.remove(poolName);
 				}	
 			}
 		}catch(Exception e){
@@ -180,16 +235,20 @@ public class DBCPPoolManager {
     	return conn;
     }
     
+    public static SqlSession getSession(String poolName) throws Exception {
+		return connInfoList.get(poolName).sqlSessionFactory.openSession(false);
+	}
+    
     public static DBConfigInfo getConfigInfo(String poolName) throws Exception {
-    	if (ConnInfoList.containsKey(poolName)){
-    		return ConnInfoList.get(poolName);
+    	if (connInfoList.containsKey(poolName)){
+    		return connInfoList.get(poolName).configInfo;
     	}else{
     		return null;
     	}
     }
     
     public static boolean ContaintPool(String poolName) throws Exception {
-    	if (ConnInfoList.containsKey(poolName)){
+    	if (connInfoList.containsKey(poolName)){
     		return true;    		
     	}else{
     		return false;
@@ -202,6 +261,6 @@ public class DBCPPoolManager {
     }
     
     public static int getPoolCount() {
-    	return ConnInfoList.size(); 
+    	return connInfoList.size(); 
     }
 }
