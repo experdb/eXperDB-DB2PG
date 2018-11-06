@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.HashMap;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
@@ -15,6 +16,7 @@ import org.apache.commons.cli.ParseException;
 
 import com.k4m.experdb.db2pg.common.Constant;
 import com.k4m.experdb.db2pg.common.LogUtils;
+import com.k4m.experdb.db2pg.common.RunCommandExec;
 import com.k4m.experdb.db2pg.rebuild.RebuildSummary;
 import com.k4m.experdb.db2pg.sample.SampleFileLoader;
 import com.k4m.experdb.db2pg.unload.UnloadSummary;
@@ -57,7 +59,15 @@ public class ArgsParser {
 		option = new Option(null, "tar-constraint-extract", true, "constraint export from target database");
 		option.setRequired(false);
 		options.addOption(option);
-
+		option = new Option(null, "iot-start", true, "Fluentd Service Start");
+		option.setRequired(false);
+		options.addOption(option);
+		option = new Option(null, "iot-stop", true, "Fluentd Service Stop");
+		option.setRequired(false);
+		options.addOption(option);
+		option = new Option(null, "iot-status", true, "Fluentd Service Status");
+		option.setRequired(false);
+		options.addOption(option);
 	}
 
 	public void parse(String[] args) {
@@ -143,7 +153,72 @@ public class ArgsParser {
 			formatter.printHelp("DB2PG", options);
 			System.exit(Constant.ERR_CD.METHOD_NOT_ALLOWD_ERR);
 		}
-
+		if (cmd.hasOption("iot-start")) {			
+			String strCmd = "systemctl start td-agent.service";
+			HashMap<String, String> hp = execIotService(strCmd);
+			
+			String result = (String) hp.get("result");
+			String msg = (String) hp.get("msg");
+			
+			System.out.println(msg);
+			
+			if(result.equals("success")) {
+				System.exit(Constant.ERR_CD.SUCCESS);
+			} else {
+				System.exit(Constant.ERR_CD.UNKNOWN_ERR);
+			}
+		}
+		
+		if (cmd.hasOption("iot-stop")) {			
+			String strCmd = "systemctl stop td-agent.service";
+			HashMap hp = execIotService(strCmd);
+			
+			String result = (String) hp.get("result");
+			String msg = (String) hp.get("msg");
+			
+			System.out.println(msg);
+			
+			if(result.equals("success")) {
+				System.exit(Constant.ERR_CD.SUCCESS);
+			} else {
+				System.exit(Constant.ERR_CD.UNKNOWN_ERR);
+			}
+		}
+		
+		if (cmd.hasOption("iot-status")) {			
+			String strCmd = "systemctl status td-agent.service";
+			HashMap<String, String> hp = execIotService(strCmd);
+			
+			String result = (String) hp.get("result");
+			String msg = (String) hp.get("msg");
+			
+			System.out.println(msg);
+			
+			if(result.equals("success")) {
+				System.exit(Constant.ERR_CD.SUCCESS);
+			} else {
+				System.exit(Constant.ERR_CD.UNKNOWN_ERR);
+			}
+		}
+	}
+	
+	private HashMap<String, String> execIotService(String strCmd) {
+		HashMap<String, String> hp = new HashMap<String, String>();
+		
+		RunCommandExec r = new RunCommandExec(strCmd);
+		r.start();
+		try {
+			r.join();
+		} catch (InterruptedException ie) {
+			ie.printStackTrace();
+		}
+		String retVal = r.call();
+		String strResultMessge = r.getMessage();
+		
+		hp.put("result", retVal);
+		hp.put("msg", strResultMessge);
+		
+		return hp;
 	}
 
 //	public static void main(String[] args) throws Exception {
