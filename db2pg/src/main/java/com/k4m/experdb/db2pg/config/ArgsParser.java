@@ -36,6 +36,8 @@ public class ArgsParser {
 		Option option = null;
 		option = new Option("c", "config", true, "config file path");
 		option.setRequired(false);
+		option = new Option("h", "help", true, null);
+		option.setRequired(false);
 		options.addOption(option);
 		option = new Option("M", "make-templates", false, "make template files");
 		option.setRequired(false);
@@ -122,9 +124,8 @@ public class ArgsParser {
 			File defaultConfig = new File("db2pg.config");
 			if(defaultConfig.exists()) {
 				ConfigInfo.Loader.load(defaultConfig.getAbsolutePath());
-			} else {
-				System.out.println("Enter the config file path");
-				formatter.printHelp("DB2PG", options);
+			}else{
+				System.out.println("Cannot Find db2pg.config File !!!");
 				System.exit(Constant.ERR_CD.METHOD_NOT_ALLOWD_ERR);
 			}
 		}
@@ -137,6 +138,10 @@ public class ArgsParser {
 		}
 		if (cmd.hasOption("tar-constraint-extract")) {
 			ConfigInfo.PG_CONSTRAINT_EXTRACT = true;
+		}
+		if (cmd.hasOption("help")) {			
+			formatter.printHelp("DB2PG", options);
+			System.exit(Constant.ERR_CD.METHOD_NOT_ALLOWD_ERR);
 		}
 
 	}
