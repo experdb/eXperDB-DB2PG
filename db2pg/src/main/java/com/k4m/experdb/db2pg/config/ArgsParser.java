@@ -171,7 +171,7 @@ public class ArgsParser {
 		
 		if (cmd.hasOption("iot-stop")) {			
 			String strCmd = "systemctl stop td-agent.service";
-			HashMap hp = execIotService(strCmd);
+			HashMap<String, String> hp = execIotService(strCmd);
 			
 			String result = (String) hp.get("result");
 			String msg = (String) hp.get("msg");
