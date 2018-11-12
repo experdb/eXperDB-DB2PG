@@ -38,7 +38,7 @@ public class ArgsParser {
 		Option option = null;
 		option = new Option("c", "config", true, "config file path");
 		option.setRequired(false);
-		option = new Option("h", "help", true, null);
+		option = new Option("h", "help", false, "db2pg help");
 		option.setRequired(false);
 		options.addOption(option);
 		option = new Option("M", "make-templates", false, "make template files");
@@ -59,13 +59,13 @@ public class ArgsParser {
 		option = new Option(null, "tar-constraint-extract", true, "constraint export from target database");
 		option.setRequired(false);
 		options.addOption(option);
-		option = new Option(null, "iot-start", true, "Fluentd Service Start");
+		option = new Option(null, "iot-start", false, "Fluentd Service Start");
 		option.setRequired(false);
 		options.addOption(option);
-		option = new Option(null, "iot-stop", true, "Fluentd Service Stop");
+		option = new Option(null, "iot-stop", false, "Fluentd Service Stop");
 		option.setRequired(false);
 		options.addOption(option);
-		option = new Option(null, "iot-status", true, "Fluentd Service Status");
+		option = new Option(null, "iot-status", false, "Fluentd Service Status");
 		option.setRequired(false);
 		options.addOption(option);
 	}
