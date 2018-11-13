@@ -22,10 +22,10 @@ public class ByteAImgCheck {
 		
 		
 		//oracle
-		oracleImgSave(args);
+		//oracleImgSave(args);
 		
 		//postgreSql
-		//postgreSqlImgSave(args);
+		postgreSqlImgSave(args);
 		
 		
 	}
