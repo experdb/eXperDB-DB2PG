@@ -154,7 +154,7 @@ public class ArgsParser {
 			System.exit(Constant.ERR_CD.METHOD_NOT_ALLOWD_ERR);
 		}
 		if (cmd.hasOption("iot-start")) {			
-			String strCmd = "td-agent.sh start";
+			String strCmd = "./td-agent.sh start";
 			HashMap<String, String> hp = execIotService(strCmd);
 			
 			String result = (String) hp.get("result");
@@ -170,7 +170,7 @@ public class ArgsParser {
 		}
 		
 		if (cmd.hasOption("iot-stop")) {			
-			String strCmd = "td-agent.sh stop";
+			String strCmd = "./td-agent.sh stop";
 			HashMap<String, String> hp = execIotService(strCmd);
 			
 			String result = (String) hp.get("result");
@@ -186,7 +186,7 @@ public class ArgsParser {
 		}
 		
 		if (cmd.hasOption("iot-status")) {			
-			String strCmd = "td-agent.sh status";
+			String strCmd = "./td-agent.sh status";
 			HashMap<String, String> hp = execIotService(strCmd);
 			
 			String result = (String) hp.get("result");
