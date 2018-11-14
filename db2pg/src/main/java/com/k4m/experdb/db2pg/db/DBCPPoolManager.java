@@ -46,7 +46,7 @@ public class DBCPPoolManager {
 	
 	public static void setupDriver(DBConfigInfo configInfo, String poolName, int maxActive) throws Exception {
 		LogUtils.info("************************************************************",DBCPPoolManager.class);
-		LogUtils.info("DBCPPool을 생성합니다. ["+poolName+"]",DBCPPoolManager.class);
+		LogUtils.info("Create DBCPPOOL ["+poolName+"]",DBCPPoolManager.class);
 		
 		// JDBC 클래스 로딩
 		try {
@@ -165,7 +165,7 @@ public class DBCPPoolManager {
 			shutdownDriver(poolName);
 			throw e;
 		} finally {
-			LogUtils.info("DBCPPool 생성 완료 하였습니다. ["+poolName+"]",DBCPPoolManager.class);
+			LogUtils.info("Created DBCPPOOL ["+poolName+"]",DBCPPoolManager.class);
 			LogUtils.info("************************************************************",DBCPPoolManager.class);
 		}
 	}
