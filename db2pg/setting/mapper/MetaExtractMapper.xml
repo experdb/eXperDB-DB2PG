@@ -446,7 +446,16 @@
 	
 	
 	<select id="getTableNames" parameterType="map" resultType="java.lang.String" databaseId="ASE" >
-		SELECT name AS table_name FROM sysobjects WHERE type='U' AND user_name(uid)=#{TABLE_SCHEMA}
+		SELECT name AS table_name FROM sysobjects 
+		WHERE user_name(uid)=#{TABLE_SCHEMA}
+		<choose>
+			<when test="TABLE_ONLY == true">
+				AND type in ('U')
+			</when>
+			<otherwise>
+				AND type in ('U', 'V')
+			</otherwise>
+		</choose>
 	</select>
 	<select id="getSourceTableData" parameterType="map" resultType="map" databaseId="ASE">
 		SELECT * FROM ${SCHEMA}${TABLE} ${WHERE}
