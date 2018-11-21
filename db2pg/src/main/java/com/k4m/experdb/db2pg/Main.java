@@ -12,6 +12,7 @@ import com.k4m.experdb.db2pg.convert.DDLConverter;
 import com.k4m.experdb.db2pg.db.DBCPPoolManager;
 import com.k4m.experdb.db2pg.rebuild.MakeSqlFile;
 import com.k4m.experdb.db2pg.rebuild.TargetPgDDL;
+import com.k4m.experdb.db2pg.unload.ExecuteDataTransfer;
 import com.k4m.experdb.db2pg.unload.Unloader;
 
 
@@ -43,20 +44,44 @@ public class Main {
 		}
 		
 		if(ConfigInfo.SRC_EXPORT) {
+			TargetPgDDL dbInform = new TargetPgDDL();
+			ExecuteDataTransfer executeDataTransfer = new ExecuteDataTransfer();
+			
+			LogUtils.debug("[PG_CONSTRAINT_EXTRACT_START]",Main.class);
+			makeSqlFile(dbInform);
+			LogUtils.debug("[PG_CONSTRAINT_EXTRACT_END]",Main.class);
+			
+			if(ConfigInfo.TAR_DROP_CREATE_FK) {
+				LogUtils.debug("[DROP_FK_START]",Main.class);
+				executeDataTransfer.dropFk(dbInform);
+				LogUtils.debug("[DROP_FK_END]",Main.class);
+			}
+			
+			if(ConfigInfo.TAR_DROP_CREATE_INDEX) {
+				LogUtils.debug("[DROP_INDEX_START]",Main.class);
+				executeDataTransfer.dropIndex(dbInform);
+				LogUtils.debug("[DROP_INDEX_END]",Main.class);
+			}
+			
 			LogUtils.debug("[SRC_EXPORT_START]",Main.class);
 			Unloader loader = new Unloader();
 			loader.start();	
 			LogUtils.debug("[SRC_EXPORT_END]",Main.class);
-		}
-		
-		if(ConfigInfo.PG_CONSTRAINT_EXTRACT) {
-			LogUtils.debug("[PG_CONSTRAINT_EXTRACT_START]",Main.class);
 			
-			makeSqlFile();
-
-			LogUtils.debug("[PG_CONSTRAINT_EXTRACT_END]",Main.class);
+			if(ConfigInfo.TAR_DROP_CREATE_FK) {
+				LogUtils.debug("[CREATE_FK_START]",Main.class);
+				executeDataTransfer.createFk(dbInform);
+				LogUtils.debug("[CREATE_FK_END]",Main.class);
+			}
+			
+			if(ConfigInfo.TAR_DROP_CREATE_INDEX) {
+				LogUtils.debug("[CREATE_INDEX_START]",Main.class);
+				executeDataTransfer.createIndex(dbInform);
+				LogUtils.debug("[CREATE_INDEX_END]",Main.class);
+			}
 		}
 		
+
 		//pool 삭제
 		shutDownPool();
 		LogUtils.info("[DB2PG_END]",Main.class);
@@ -118,11 +143,11 @@ public class Main {
 		return dir;
 	}
 	
-	private static void makeSqlFile() throws Exception {
+	private static void makeSqlFile(TargetPgDDL dbInform) throws Exception {
 		
 		checkDirectory(ConfigInfo.OUTPUT_DIRECTORY+"rebuild/");
 		
-		TargetPgDDL dbInform = new TargetPgDDL();
+		//TargetPgDDL dbInform = new TargetPgDDL();
 		
 		MakeSqlFile.listToSqlFile(ConfigInfo.OUTPUT_DIRECTORY + "rebuild/fk_drop.sql", dbInform.getFkDropList());
 		MakeSqlFile.listToSqlFile(ConfigInfo.OUTPUT_DIRECTORY + "rebuild/idx_drop.sql", dbInform.getIdxDropList());

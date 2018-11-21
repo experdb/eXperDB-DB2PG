@@ -76,6 +76,10 @@ public class ConfigInfo {
 	
 	public static int TAR_TABLE_ERR_CNT_EXIT;
 	
+	public static boolean TAR_DROP_CREATE_INDEX;
+	
+	public static boolean TAR_DROP_CREATE_FK;
+	
 	public static class Loader {
 		public static void load(String configFilePath) {
 			try {
@@ -150,6 +154,9 @@ public class ConfigInfo {
 				
 				ConfigInfo.FILE_WRITER_MODE = (boolean)propertyCheck(prop.getProperty("FILE_WRITER_MODE"),false,Boolean.class);
 				ConfigInfo.DB_WRITER_MODE = (boolean)propertyCheck(prop.getProperty("DB_WRITER_MODE"),false,Boolean.class);
+				
+				ConfigInfo.TAR_DROP_CREATE_INDEX = (boolean)propertyCheck(prop.getProperty("TAR_DROP_CREATE_INDEX"),true,Boolean.class);
+				ConfigInfo.TAR_DROP_CREATE_FK = (boolean)propertyCheck(prop.getProperty("TAR_DROP_CREATE_FK"),true,Boolean.class);
 				
 			} catch (FileNotFoundException fnfe) {
 				LogUtils.error("[CONFIG_FILE_NOT_FOUND_ERR]",ConfigInfo.Loader.class,fnfe);
