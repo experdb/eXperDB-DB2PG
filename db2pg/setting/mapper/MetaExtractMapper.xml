@@ -21,7 +21,7 @@
 </resultMap>
 
 	<select id="getTableNames" parameterType="map" resultType="java.lang.String" databaseId="ORA">
-		SELECT OBJECT_NAME as TABLE_NAME FROM ALL_OBJECTS 
+		SELECT OBJECT_NAME AS TABLE_NAME FROM ALL_OBJECTS 
 		WHERE OWNER=#{TABLE_SCHEMA} 
 			AND OBJECT_NAME NOT IN ('TOAD_PLAN_TABLE','PLAN_TABLE') 
 			AND OBJECT_NAME NOT LIKE 'MDRT%'
