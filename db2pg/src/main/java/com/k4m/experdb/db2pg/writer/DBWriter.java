@@ -110,6 +110,8 @@ public class DBWriter {
 			try {	
 				errCount += 1;
 				processErrorLInes = errCount;
+				
+				
 				//String strErrLine = StrUtil.strGetLine(e.toString());
 				int intErrLine = -1;
 				
@@ -119,6 +121,10 @@ public class DBWriter {
 				conn.rollback();
 				
 				writeError(table_nm, e);
+				
+				if(errCount > ConfigInfo.TAR_TABLE_ERR_CNT_EXIT) {
+					throw e;
+				}
 				
 				//call back
 				errDataHandling(lineStr, table_nm, intErrLine);
