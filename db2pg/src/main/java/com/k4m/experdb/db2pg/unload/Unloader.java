@@ -97,7 +97,9 @@ public class Unloader {
 		ExecutorService executorService = Executors.newFixedThreadPool(ConfigInfo.SRC_TABLE_SELECT_PARALLEL);
 		
 		try {
-
+			if(!ConfigInfo.SELECT_QUERIES_FILE.equals("")) {
+				loadSelectQuery(ConfigInfo.SELECT_QUERIES_FILE);
+			}
 			
 			if (ConfigInfo.SRC_DB_CONFIG.SCHEMA_NAME==null && ConfigInfo.SRC_DB_CONFIG.SCHEMA_NAME.equals("")) {
 				LogUtils.error("SCHEMA_NAME NOT FOUND", Unloader.class);
@@ -117,21 +119,15 @@ public class Unloader {
 
 			List<String> selSqlList = new ArrayList<String>();
 
-			List<String> tableNameList =  null;
-			
-			if(!ConfigInfo.SELECT_QUERIES_FILE.equals("")) {
-				loadSelectQuery(ConfigInfo.SELECT_QUERIES_FILE);
-			} else {
-				
-				//태이블조회
-				tableNameList = makeTableList();
-				for (String tableName : tableNameList) {
-	
-					String replaceTableName = getConvertReplaceTableName(tableName);
-					String where = getWhere();
-	
-					selSqlList.add(String.format("SELECT * FROM %s%s %s", schema, replaceTableName, where));
-				}
+			//태이블조회
+			List<String> tableNameList = makeTableList();
+
+			for (String tableName : tableNameList) {
+
+				String replaceTableName = getConvertReplaceTableName(tableName);
+				String where = getWhere();
+
+				selSqlList.add(String.format("SELECT * FROM %s%s %s", schema, replaceTableName, where));
 			}
 
 			int jobSize = 0;

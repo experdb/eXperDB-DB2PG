@@ -446,34 +446,9 @@
 	
 	
 	<select id="getTableNames" parameterType="map" resultType="java.lang.String" databaseId="ASE" >
-		SELECT name AS table_name FROM sysobjects 
-		WHERE user_name(uid)=#{TABLE_SCHEMA}
-		<choose>
-			<when test="TABLE_ONLY == true">
-				AND type in ('U')
-			</when>
-			<otherwise>
-				AND type in ('U', 'V')
-			</otherwise>
-		</choose>	
+		SELECT name AS table_name FROM sysobjects WHERE type='U' AND user_name(uid)=#{TABLE_SCHEMA}
 	</select>
 	<select id="getSourceTableData" parameterType="map" resultType="map" databaseId="ASE">
-		SELECT * FROM ${SCHEMA}${TABLE} ${WHERE}
-	</select>
-	
-	<select id="getTableNames" parameterType="map" resultType="java.lang.String" databaseId="DB2" >
-		SELECT TABLE_NAME AS TABLE_NAME FROM SYSIBM.TABLES 
-		WHERE TABLE_SCHEMA = #{TABLE_SCHEMA}
-		<choose>
-			<when test="TABLE_ONLY == true">
-				AND TABLE_TYPE IN ('BASE TABLE')
-			</when>
-			<otherwise>
-				AND TABLE_TYPE IN ('BASE TABLE','VIEW')
-			</otherwise>
-		</choose>
-	</select>
-	<select id="getSourceTableData" parameterType="map" resultType="map" databaseId="DB2">
 		SELECT * FROM ${SCHEMA}${TABLE} ${WHERE}
 	</select>
 	

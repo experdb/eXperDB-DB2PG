@@ -63,8 +63,8 @@ public class TargetPgDDL {
 				@SuppressWarnings("unchecked")
 				List<Map<String, Object>> results = (List<Map<String, Object>>)mew.getListResult();
 				for (Map<String, Object> result : results){
-					fkCreateList.add((String)result.get("create_ddl_script"));
-					fkDropList.add((String)result.get("drop_ddl_script"));
+					fkCreateList.add((String)result.get("CREATE_DDL_SCRIPT"));
+					fkDropList.add((String)result.get("DROP_DDL_SCRIPT"));
 				}
 			} catch (Exception e){
 				throw(new Exception("[GET_FK_INFORM_ERROR]",e));

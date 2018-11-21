@@ -398,24 +398,19 @@ public class DDLConverter {
 					}else if(convertVO.getToValue().equals("XML")){
 						column.setType(String.format("%s", convertVO.getToValue()));	
 					}else if(convertVO.getToValue().equals("NUMBER")){
-						if(column.getNumericScale()!=null &&column.getNumericScale()>0){
-							column.setType(String.format("%s(%d,%d)", "DECIMAL",column.getNumericPrecision(), column.getNumericScale()));
-						}else{
-							if(column.getTypeLength()!=null){
-								if(column.getTypeLength()<5){
-									column.setType(String.format("SMALLINT"));	
-								}else if(column.getTypeLength()>=5 && column.getTypeLength()<9){
-									column.setType(String.format("INT"));	
-								}else if(column.getTypeLength()>=9 && column.getTypeLength()<19){
-									column.setType(String.format("BIGINT"));	
-								}else if(column.getTypeLength()>=19 && column.getTypeLength()<=38){
-									column.setType(String.format("DECIMAL(%d)",column.getTypeLength()));	
-								}
-							}else{
-								column.setType(String.format("DECIMAL(38)"));	
+						if(column.getTypeLength()!=null){
+							if(column.getTypeLength()<5){
+								column.setType(String.format("SMALLINT"));	
+							}else if(column.getTypeLength()>=5 && column.getTypeLength()<9){
+								column.setType(String.format("INT"));	
+							}else if(column.getTypeLength()>=9 && column.getTypeLength()<19){
+								column.setType(String.format("BIGINT"));	
+							}else if(column.getTypeLength()>=19 && column.getTypeLength()<=38){
+								column.setType(String.format("DECIMAL(%d)",column.getTypeLength()));	
 							}
+						}else{
+							column.setType(String.format("DECIMAL(38)"));	
 						}
-						
 					}else if (convertVO.getToValue().equals("TIMESTAMP WITHOUT TIME ZONE")) {
 						column.setType(String.format("%s(%d)%s", "TIMESTAMP",
 								 column.getNumericScale(), " WITHOUT TIME ZONE"));

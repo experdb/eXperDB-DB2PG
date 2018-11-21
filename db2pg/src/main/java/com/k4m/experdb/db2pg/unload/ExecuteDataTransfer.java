@@ -168,10 +168,8 @@ public class ExecuteDataTransfer implements Runnable{
         		System.out.println("wwv_flow_random_images");
         	}
         	
-        	if(ConfigInfo.DB_WRITER_MODE) {
-	        	if (ConfigInfo.TRUNCATE) {
-	        		execTruncTable(Constant.POOLNAME.TARGET.name(), this.tableName);
-	        	}
+        	if (ConfigInfo.TRUNCATE) {
+        		execTruncTable(Constant.POOLNAME.TARGET.name(), this.tableName);
         	}
 
 			if(ConfigInfo.DB_WRITER_MODE) {

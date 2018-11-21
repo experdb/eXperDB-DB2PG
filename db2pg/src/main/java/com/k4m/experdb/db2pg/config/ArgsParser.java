@@ -4,7 +4,6 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.util.HashMap;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
@@ -16,7 +15,6 @@ import org.apache.commons.cli.ParseException;
 
 import com.k4m.experdb.db2pg.common.Constant;
 import com.k4m.experdb.db2pg.common.LogUtils;
-import com.k4m.experdb.db2pg.common.RunCommandExec;
 import com.k4m.experdb.db2pg.rebuild.RebuildSummary;
 import com.k4m.experdb.db2pg.sample.SampleFileLoader;
 import com.k4m.experdb.db2pg.unload.UnloadSummary;
@@ -38,8 +36,6 @@ public class ArgsParser {
 		Option option = null;
 		option = new Option("c", "config", true, "config file path");
 		option.setRequired(false);
-		option = new Option("h", "help", false, "db2pg help");
-		option.setRequired(false);
 		options.addOption(option);
 		option = new Option("M", "make-templates", false, "make template files");
 		option.setRequired(false);
@@ -59,15 +55,7 @@ public class ArgsParser {
 		option = new Option(null, "tar-constraint-extract", true, "constraint export from target database");
 		option.setRequired(false);
 		options.addOption(option);
-		option = new Option(null, "iot-start", false, "Fluentd Service Start");
-		option.setRequired(false);
-		options.addOption(option);
-		option = new Option(null, "iot-stop", false, "Fluentd Service Stop");
-		option.setRequired(false);
-		options.addOption(option);
-		option = new Option(null, "iot-status", false, "Fluentd Service Status");
-		option.setRequired(false);
-		options.addOption(option);
+
 	}
 
 	public void parse(String[] args) {
@@ -134,8 +122,9 @@ public class ArgsParser {
 			File defaultConfig = new File("db2pg.config");
 			if(defaultConfig.exists()) {
 				ConfigInfo.Loader.load(defaultConfig.getAbsolutePath());
-			}else{
-				System.out.println("Cannot Find db2pg.config File !!!");
+			} else {
+				System.out.println("Enter the config file path");
+				formatter.printHelp("DB2PG", options);
 				System.exit(Constant.ERR_CD.METHOD_NOT_ALLOWD_ERR);
 			}
 		}
@@ -149,76 +138,7 @@ public class ArgsParser {
 		if (cmd.hasOption("tar-constraint-extract")) {
 			ConfigInfo.PG_CONSTRAINT_EXTRACT = true;
 		}
-		if (cmd.hasOption("help")) {			
-			formatter.printHelp("DB2PG", options);
-			System.exit(Constant.ERR_CD.METHOD_NOT_ALLOWD_ERR);
-		}
-		if (cmd.hasOption("iot-start")) {			
-			String strCmd = "./td-agent.sh start";
-			HashMap<String, String> hp = execIotService(strCmd);
-			
-			String result = (String) hp.get("result");
-			String msg = (String) hp.get("msg");
-			
-			System.out.println(msg);
-			
-			if(result.equals("success")) {
-				System.exit(Constant.ERR_CD.SUCCESS);
-			} else {
-				System.exit(Constant.ERR_CD.UNKNOWN_ERR);
-			}
-		}
-		
-		if (cmd.hasOption("iot-stop")) {			
-			String strCmd = "./td-agent.sh stop";
-			HashMap<String, String> hp = execIotService(strCmd);
-			
-			String result = (String) hp.get("result");
-			String msg = (String) hp.get("msg");
-			
-			System.out.println(msg);
-			
-			if(result.equals("success")) {
-				System.exit(Constant.ERR_CD.SUCCESS);
-			} else {
-				System.exit(Constant.ERR_CD.UNKNOWN_ERR);
-			}
-		}
-		
-		if (cmd.hasOption("iot-status")) {			
-			String strCmd = "./td-agent.sh status";
-			HashMap<String, String> hp = execIotService(strCmd);
-			
-			String result = (String) hp.get("result");
-			String msg = (String) hp.get("msg");
-			
-			System.out.println(msg);
-			
-			if(result.equals("success")) {
-				System.exit(Constant.ERR_CD.SUCCESS);
-			} else {
-				System.exit(Constant.ERR_CD.UNKNOWN_ERR);
-			}
-		}
-	}
-	
-	private HashMap<String, String> execIotService(String strCmd) {
-		HashMap<String, String> hp = new HashMap<String, String>();
-		
-		RunCommandExec r = new RunCommandExec(strCmd);
-		r.start();
-		try {
-			r.join();
-		} catch (InterruptedException ie) {
-			ie.printStackTrace();
-		}
-		String retVal = r.call();
-		String strResultMessge = r.getMessage();
-		
-		hp.put("result", retVal);
-		hp.put("msg", strResultMessge);
-		
-		return hp;
+
 	}
 
 //	public static void main(String[] args) throws Exception {
