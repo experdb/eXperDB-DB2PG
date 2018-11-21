@@ -43,6 +43,11 @@ public class Main {
 			LogUtils.debug("[SRC_DDL_EXPORT_END]",Main.class);
 		}
 		
+		if(ConfigInfo.PG_CONSTRAINT_EXTRACT) {
+			TargetPgDDL targetPgDDL = new TargetPgDDL();
+			makeSqlFile(targetPgDDL);
+		}
+		
 		if(ConfigInfo.SRC_EXPORT) {
 			TargetPgDDL dbInform = new TargetPgDDL();
 			ExecuteDataTransfer executeDataTransfer = new ExecuteDataTransfer();
