@@ -56,16 +56,16 @@ public class Main {
 			makeSqlFile(dbInform);
 			LogUtils.debug("[PG_CONSTRAINT_EXTRACT_END]",Main.class);
 			
-			if(ConfigInfo.TAR_DROP_CREATE_FK) {
+			if(ConfigInfo.TAR_DROP_CREATE_CONSTRAINT) {
 				LogUtils.debug("[DROP_FK_START]",Main.class);
 				executeDataTransfer.dropFk(dbInform);
 				LogUtils.debug("[DROP_FK_END]",Main.class);
 				
-				if(ConfigInfo.TAR_DROP_CREATE_INDEX) {
-					LogUtils.debug("[DROP_INDEX_START]",Main.class);
-					executeDataTransfer.dropIndex(dbInform);
-					LogUtils.debug("[DROP_INDEX_END]",Main.class);
-				}
+
+				LogUtils.debug("[DROP_INDEX_START]",Main.class);
+				executeDataTransfer.dropIndex(dbInform);
+				LogUtils.debug("[DROP_INDEX_END]",Main.class);
+
 			}
 			
 
@@ -75,13 +75,11 @@ public class Main {
 			loader.start();	
 			LogUtils.debug("[SRC_EXPORT_END]",Main.class);
 			
-			if(ConfigInfo.TAR_DROP_CREATE_FK) {
+			if(ConfigInfo.TAR_DROP_CREATE_CONSTRAINT) {
 				LogUtils.debug("[CREATE_FK_START]",Main.class);
 				executeDataTransfer.createFk(dbInform);
 				LogUtils.debug("[CREATE_FK_END]",Main.class);
-			}
-			
-			if(ConfigInfo.TAR_DROP_CREATE_INDEX) {
+
 				LogUtils.debug("[CREATE_INDEX_START]",Main.class);
 				executeDataTransfer.createIndex(dbInform);
 				LogUtils.debug("[CREATE_INDEX_END]",Main.class);
