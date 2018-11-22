@@ -60,13 +60,15 @@ public class Main {
 				LogUtils.debug("[DROP_FK_START]",Main.class);
 				executeDataTransfer.dropFk(dbInform);
 				LogUtils.debug("[DROP_FK_END]",Main.class);
+				
+				if(ConfigInfo.TAR_DROP_CREATE_INDEX) {
+					LogUtils.debug("[DROP_INDEX_START]",Main.class);
+					executeDataTransfer.dropIndex(dbInform);
+					LogUtils.debug("[DROP_INDEX_END]",Main.class);
+				}
 			}
 			
-			if(ConfigInfo.TAR_DROP_CREATE_INDEX) {
-				LogUtils.debug("[DROP_INDEX_START]",Main.class);
-				executeDataTransfer.dropIndex(dbInform);
-				LogUtils.debug("[DROP_INDEX_END]",Main.class);
-			}
+
 			
 			LogUtils.debug("[SRC_EXPORT_START]",Main.class);
 			Unloader loader = new Unloader();
