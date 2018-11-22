@@ -14,7 +14,7 @@ import com.k4m.experdb.db2pg.db.datastructure.DBConfigInfo;
 public class ConfigInfo {
 	public static boolean SRC_EXPORT;
 	public static boolean SRC_DDL_EXPORT;
-	public static boolean PG_CONSTRAINT_EXTRACT;
+	public static boolean TAR_CONSTRAINT_EXTRACT;
 			;
 	
 	//region SRC
@@ -86,7 +86,7 @@ public class ConfigInfo {
 				prop.load(new FileInputStream(configFilePath));
 				ConfigInfo.SRC_EXPORT = (boolean)propertyCheck(prop.getProperty("SRC_EXPORT"),false,Boolean.class);
 				ConfigInfo.SRC_DDL_EXPORT = (boolean)propertyCheck(prop.getProperty("SRC_DDL_EXPORT"),false,Boolean.class);
-				ConfigInfo.PG_CONSTRAINT_EXTRACT = (boolean)propertyCheck(prop.getProperty("PG_CONSTRAINT_EXTRACT"),false,Boolean.class);
+				ConfigInfo.TAR_CONSTRAINT_EXTRACT = (boolean)propertyCheck(prop.getProperty("TAR_CONSTRAINT_EXTRACT"),false,Boolean.class);
 				SRC_DB_CONFIG.SERVERIP 		= prop.getProperty("SRC_HOST");
 				SRC_DB_CONFIG.USERID 		= prop.getProperty("SRC_USER");
 				SRC_DB_CONFIG.DB_PW 		= prop.getProperty("SRC_PASSWORD");

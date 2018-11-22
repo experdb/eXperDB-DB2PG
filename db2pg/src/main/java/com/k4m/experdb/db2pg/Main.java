@@ -43,7 +43,7 @@ public class Main {
 			LogUtils.debug("[SRC_DDL_EXPORT_END]",Main.class);
 		}
 		
-		if(ConfigInfo.PG_CONSTRAINT_EXTRACT) {
+		if(ConfigInfo.TAR_CONSTRAINT_EXTRACT) {
 			TargetPgDDL targetPgDDL = new TargetPgDDL();
 			makeSqlFile(targetPgDDL);
 		}
@@ -97,7 +97,7 @@ public class Main {
 		//DBCPPoolManager.setupDriver(ConfigInfo.SRC_DB_CONFIG, Constant.POOLNAME.SOURCE_DDL.name(), 1);
 		DBCPPoolManager.setupDriver(ConfigInfo.SRC_DB_CONFIG, Constant.POOLNAME.SOURCE.name(), ConfigInfo.SRC_TABLE_SELECT_PARALLEL);
 		
-		if(ConfigInfo.PG_CONSTRAINT_EXTRACT || ConfigInfo.SRC_EXPORT) {
+		if(ConfigInfo.TAR_CONSTRAINT_EXTRACT || ConfigInfo.SRC_EXPORT) {
 			
 			int intTarConnCount = ConfigInfo.TAR_CONN_COUNT;
 			if(ConfigInfo.SRC_TABLE_SELECT_PARALLEL > intTarConnCount) {

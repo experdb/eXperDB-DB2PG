@@ -147,7 +147,7 @@ public class ArgsParser {
 			ConfigInfo.SRC_DDL_EXPORT = true;
 		}
 		if (cmd.hasOption("tar-constraint-extract")) {
-			ConfigInfo.PG_CONSTRAINT_EXTRACT = true;
+			ConfigInfo.TAR_CONSTRAINT_EXTRACT = true;
 		}
 		if (cmd.hasOption("help")) {			
 			formatter.printHelp("DB2PG", options);
