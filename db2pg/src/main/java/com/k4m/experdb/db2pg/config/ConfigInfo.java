@@ -14,7 +14,7 @@ import com.k4m.experdb.db2pg.db.datastructure.DBConfigInfo;
 public class ConfigInfo {
 	public static boolean SRC_EXPORT;
 	public static boolean SRC_DDL_EXPORT;
-	public static boolean PG_CONSTRAINT_EXTRACT;
+	public static boolean TAR_CONSTRAINT_EXTRACT;
 			;
 	
 	//region SRC
@@ -76,6 +76,9 @@ public class ConfigInfo {
 	
 	public static int TAR_TABLE_ERR_CNT_EXIT;
 	
+	public static boolean TAR_DROP_CREATE_CONSTRAINT;
+	
+	
 	public static class Loader {
 		public static void load(String configFilePath) {
 			try {
@@ -83,7 +86,7 @@ public class ConfigInfo {
 				prop.load(new FileInputStream(configFilePath));
 				ConfigInfo.SRC_EXPORT = (boolean)propertyCheck(prop.getProperty("SRC_EXPORT"),false,Boolean.class);
 				ConfigInfo.SRC_DDL_EXPORT = (boolean)propertyCheck(prop.getProperty("SRC_DDL_EXPORT"),false,Boolean.class);
-				ConfigInfo.PG_CONSTRAINT_EXTRACT = (boolean)propertyCheck(prop.getProperty("PG_CONSTRAINT_EXTRACT"),false,Boolean.class);
+				ConfigInfo.TAR_CONSTRAINT_EXTRACT = (boolean)propertyCheck(prop.getProperty("TAR_CONSTRAINT_EXTRACT"),false,Boolean.class);
 				SRC_DB_CONFIG.SERVERIP 		= prop.getProperty("SRC_HOST");
 				SRC_DB_CONFIG.USERID 		= prop.getProperty("SRC_USER");
 				SRC_DB_CONFIG.DB_PW 		= prop.getProperty("SRC_PASSWORD");
@@ -150,6 +153,9 @@ public class ConfigInfo {
 				
 				ConfigInfo.FILE_WRITER_MODE = (boolean)propertyCheck(prop.getProperty("FILE_WRITER_MODE"),false,Boolean.class);
 				ConfigInfo.DB_WRITER_MODE = (boolean)propertyCheck(prop.getProperty("DB_WRITER_MODE"),false,Boolean.class);
+				
+				ConfigInfo.TAR_DROP_CREATE_CONSTRAINT = (boolean)propertyCheck(prop.getProperty("TAR_DROP_CREATE_CONSTRAINT"),true,Boolean.class);
+
 				
 			} catch (FileNotFoundException fnfe) {
 				LogUtils.error("[CONFIG_FILE_NOT_FOUND_ERR]",ConfigInfo.Loader.class,fnfe);

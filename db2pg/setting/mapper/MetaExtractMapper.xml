@@ -82,6 +82,8 @@
 	                           THEN NULL
 	                        WHEN UTC.DATA_TYPE='CLOB' OR UTC.DATA_TYPE='BLOB' OR UTC.DATA_TYPE='LONG' OR UTC.DATA_TYPE LIKE '%ROW%'
 	                           THEN NULL
+	                        WHEN UTC.DATA_TYPE='TIMESTAMP(6)' OR UTC.DATA_TYPE='TIMESTAMP(6) WITH LOCAL TIME ZONE'
+	                       	   THEN NULL   
 	                        ELSE DATA_LENGTH
 	                    END AS EXTRA,	                   
 	                   UTC.DATA_PRECISION AS NUMERIC_PRECISION,
@@ -95,7 +97,7 @@
 	               AND UTC.OWNER = #{TABLE_SCHEMA}
 	               AND UTC.TABLE_NAME = #{TABLE_NAME}
 	             ORDER BY ORDINAL_POSITION
-  			)A                      
+  			) A                      
 	</select>
 	<select id="getConstraintInform" parameterType="map" resultType="com.k4m.experdb.db2pg.common.LowerKeyMap" databaseId="ORA">				       
 				SELECT  

@@ -205,7 +205,7 @@
 			"^(?i)DATETIMEOFFSET$"
 		],
 		"ora" :[
-			"^(?i)TIMESTAMP\\s*\\(?[0-9]*\\)?$"
+			"^(?i)TIMESTAMP\\s*\\(?[0-9]*\\)? WITH LOCAL TIME ZONE$"
 		]
 	},
     "date_case_3": {

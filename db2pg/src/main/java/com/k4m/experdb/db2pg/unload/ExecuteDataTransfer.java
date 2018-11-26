@@ -37,6 +37,7 @@ import com.k4m.experdb.db2pg.config.ConfigInfo;
 import com.k4m.experdb.db2pg.db.DBCPPoolManager;
 import com.k4m.experdb.db2pg.db.datastructure.DBConfigInfo;
 import com.k4m.experdb.db2pg.db.oracle.spatial.geometry.Process;
+import com.k4m.experdb.db2pg.rebuild.TargetPgDDL;
 import com.k4m.experdb.db2pg.writer.DBWriter;
 import com.k4m.experdb.db2pg.writer.FileWriter;
 
@@ -67,6 +68,10 @@ public class ExecuteDataTransfer implements Runnable{
 		//this.byteBuffer = ByteBuffer.allocateDirect(ConfigInfo.BUFFER_SIZE);
 		this.success = true;
 	}
+	
+	public ExecuteDataTransfer() {
+	}
+	
 	
 	
 	public String getSrcPoolName() {
@@ -575,6 +580,80 @@ public class ExecuteDataTransfer implements Runnable{
 		}catch(Exception e){
 			LogUtils.error(e.getMessage(),ExecuteQuery.class,e);
 		}
+	}
+	
+	//FK drop
+	public void dropFk(TargetPgDDL dbInform) throws Exception {
+		
+		List<String> fkDropList = dbInform.getFkDropList();
+		
+		if(fkDropList.size() > 0) {
+			for(String fkDropSql : fkDropList) {
+				execSql(Constant.POOLNAME.TARGET.name(), fkDropSql);
+			}
+		}
+		
+	}
+	
+	//Index drop
+	public void dropIndex(TargetPgDDL dbInform) throws Exception {
+		List<String> indexDropList = dbInform.getIdxDropList();
+		
+		if(indexDropList.size() > 0) {
+			for(String indexDropSql : indexDropList) {
+				execSql(Constant.POOLNAME.TARGET.name(), indexDropSql);
+			}
+		}
+	}
+	
+	//createFK
+	public void createFk(TargetPgDDL dbInform) throws Exception {
+		
+		List<String> fkCreateList = dbInform.getFkCreateList();
+		
+		if(fkCreateList.size() > 0) {
+			for(String fkCreateSql : fkCreateList) {
+				execSql(Constant.POOLNAME.TARGET.name(), fkCreateSql);
+			}
+		}
+		
+	}
+	
+	//createIndex
+	public void createIndex(TargetPgDDL dbInform) throws Exception {
+		
+		List<String> idxCreateList = dbInform.getIdxCreateList();
+		
+		if(idxCreateList.size() > 0) {
+			for(String idxCreateSql : idxCreateList) {
+				execSql(Constant.POOLNAME.TARGET.name(), idxCreateSql);
+			}
+		}
+		
+	}
+	
+	private void execSql(String poolName, String sql) throws Exception {
+		PreparedStatement psmt = null;
+		
+		Connection conn = DBCPPoolManager.getConnection(poolName);
+		
+		try {
+		
+			psmt = conn.prepareStatement(sql);
+			
+			psmt.execute();
+			
+			
+	    	conn.commit();
+
+
+		} catch(Exception e) {
+			conn.rollback();
+			throw e;
+		} finally {
+			CloseConn(conn, psmt);
+		}
+		
 	}
 
 }
