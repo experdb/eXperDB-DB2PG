@@ -22,10 +22,10 @@ public class ByteAImgCheck {
 		
 		
 		//oracle
-		//oracleImgSave(args);
+		oracleImgSave(args);
 		
 		//postgreSql
-		postgreSqlImgSave(args);
+//		postgreSqlImgSave(args);
 		
 		
 	}
@@ -34,7 +34,7 @@ public class ByteAImgCheck {
 		ArgsParser argsParser = new ArgsParser();
 		argsParser.parse(args);
 		
-		String url = "jdbc:postgresql://192.168.56.60:5432/db2pg";
+		String url = "jdbc:postgresql://ip:port/db2pg";
 	    String user = "db2pg";
 	    String password = "db2pg";
 
@@ -54,7 +54,7 @@ public class ByteAImgCheck {
 		    	String ext = strImgName.substring( pos + 1 );
 
 		    	
-		    	byteArrayConvertToImageFile(byteImg, strImgName, "C:\\k4m\\01-1. DX 제폼개발\\06. DX-Tcontrol\\07. 시험\\byteaImages\\posImg\\", ext);
+		    	byteArrayConvertToImageFile(byteImg, strImgName, "C:\\Users\\1\\Desktop\\imgCheck\\target_PostgreSQL\\", ext);
 	        }
 	    } catch(Exception e) {
 	    	
@@ -69,11 +69,11 @@ public class ByteAImgCheck {
 		ArgsParser argsParser = new ArgsParser();
 		argsParser.parse(args);
 		
-		String url = "jdbc:oracle:thin:@192.168.56.200:1521/pidsvr";
+		String url = "jdbc:oracle:thin:@ip:port/pidsvr";
 	    String user = "db2pg";
 	    String password = "db2pg";
 
-	    String query = "SELECT image_name, blob_content FROM APEX_030200.wwv_flow_random_images where rownum < 11";
+	    String query = "SELECT image_name, blob_content FROM DB2PG.wwv_flow_random_images where rownum < 11";
 	    
 	    Connection con = DriverManager.getConnection(url, user, password);
 	    PreparedStatement pst = con.prepareStatement(query);
@@ -92,7 +92,7 @@ public class ByteAImgCheck {
 		    	
 		    	
 		    	InputStream in = blob.getBinaryStream();
-		    	FileOutputStream out = new FileOutputStream("C:\\k4m\\01-1. DX 제폼개발\\06. DX-Tcontrol\\07. 시험\\byteaImages\\oraImg\\" + strImgName + "." + ext);
+		    	FileOutputStream out = new FileOutputStream("C:\\Users\\1\\Desktop\\imgCheck\\source_Oracle\\" + strImgName + "." + ext);
 		    	
 		    	int size = blob.getBufferSize();
 		    	byte[] buffer = new byte[size];
