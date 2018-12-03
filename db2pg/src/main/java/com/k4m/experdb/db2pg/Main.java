@@ -56,7 +56,7 @@ public class Main {
 			makeSqlFile(dbInform);
 			LogUtils.debug("[PG_CONSTRAINT_EXTRACT_END]",Main.class);
 						
-			if(!ConfigInfo.FILE_WRITER_MODE ){
+			if(ConfigInfo.DB_WRITER_MODE ){
 				if(ConfigInfo.TAR_DROP_CREATE_CONSTRAINT) {
 					LogUtils.debug("[DROP_FK_START]",Main.class);
 					managementConstraint.dropFk(dbInform);
@@ -73,7 +73,7 @@ public class Main {
 			loader.start();	
 			LogUtils.debug("[SRC_EXPORT_END]",Main.class);
 			
-			if(!ConfigInfo.FILE_WRITER_MODE ){
+			if(ConfigInfo.DB_WRITER_MODE ){
 				if(ConfigInfo.TAR_DROP_CREATE_CONSTRAINT) {					
 					LogUtils.debug("[CREATE_INDEX_START]",Main.class);
 					managementConstraint.createIndex(dbInform);
