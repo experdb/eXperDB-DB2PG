@@ -169,10 +169,6 @@ public class ExecuteDataTransfer implements Runnable{
         	LogUtils.debug("[START_FETCH_DATA]" + outputFileName,ExecuteQuery.class);
         	}
         	
-        	if(tableName.equals("wwv_flow_random_images")) {
-        		System.out.println("wwv_flow_random_images");
-        	}
-        	
         	if(ConfigInfo.DB_WRITER_MODE) {
 	        	if (ConfigInfo.TRUNCATE) {
 	        		execTruncTable(Constant.POOLNAME.TARGET.name(), this.tableName);
