@@ -12,7 +12,7 @@ import com.k4m.experdb.db2pg.convert.DDLConverter;
 import com.k4m.experdb.db2pg.db.DBCPPoolManager;
 import com.k4m.experdb.db2pg.rebuild.MakeSqlFile;
 import com.k4m.experdb.db2pg.rebuild.TargetPgDDL;
-import com.k4m.experdb.db2pg.unload.ExecuteDataTransfer;
+import com.k4m.experdb.db2pg.unload.ManagementConstraint;
 import com.k4m.experdb.db2pg.unload.Unloader;
 
 
@@ -50,20 +50,20 @@ public class Main {
 		
 		if(ConfigInfo.SRC_EXPORT) {
 			TargetPgDDL dbInform = new TargetPgDDL();
-			ExecuteDataTransfer executeDataTransfer = new ExecuteDataTransfer();
+			ManagementConstraint managementConstraint = new ManagementConstraint();
 			
 			LogUtils.debug("[PG_CONSTRAINT_EXTRACT_START]",Main.class);
 			makeSqlFile(dbInform);
 			LogUtils.debug("[PG_CONSTRAINT_EXTRACT_END]",Main.class);
 						
-			if(!ConfigInfo.FILE_WRITER_MODE ){
+			if(ConfigInfo.DB_WRITER_MODE ){
 				if(ConfigInfo.TAR_DROP_CREATE_CONSTRAINT) {
 					LogUtils.debug("[DROP_FK_START]",Main.class);
-					executeDataTransfer.dropFk(dbInform);
+					managementConstraint.dropFk(dbInform);
 					LogUtils.debug("[DROP_FK_END]",Main.class);
 					
 					LogUtils.debug("[DROP_INDEX_START]",Main.class);
-					executeDataTransfer.dropIndex(dbInform);
+					managementConstraint.dropIndex(dbInform);
 					LogUtils.debug("[DROP_INDEX_END]",Main.class);
 				}
 			}
@@ -73,14 +73,14 @@ public class Main {
 			loader.start();	
 			LogUtils.debug("[SRC_EXPORT_END]",Main.class);
 			
-			if(!ConfigInfo.FILE_WRITER_MODE ){
+			if(ConfigInfo.DB_WRITER_MODE ){
 				if(ConfigInfo.TAR_DROP_CREATE_CONSTRAINT) {					
 					LogUtils.debug("[CREATE_INDEX_START]",Main.class);
-					executeDataTransfer.createIndex(dbInform);
+					managementConstraint.createIndex(dbInform);
 					LogUtils.debug("[CREATE_INDEX_END]",Main.class);
 					
 					LogUtils.debug("[CREATE_FK_START]",Main.class);
-					executeDataTransfer.createFk(dbInform);
+					managementConstraint.createFk(dbInform);
 					LogUtils.debug("[CREATE_FK_END]",Main.class);
 				}
 			}	

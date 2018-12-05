@@ -169,10 +169,6 @@ public class ExecuteDataTransfer implements Runnable{
         	LogUtils.debug("[START_FETCH_DATA]" + outputFileName,ExecuteQuery.class);
         	}
         	
-        	if(tableName.equals("wwv_flow_random_images")) {
-        		System.out.println("wwv_flow_random_images");
-        	}
-        	
         	if(ConfigInfo.DB_WRITER_MODE) {
 	        	if (ConfigInfo.TRUNCATE) {
 	        		execTruncTable(Constant.POOLNAME.TARGET.name(), this.tableName);
@@ -582,78 +578,6 @@ public class ExecuteDataTransfer implements Runnable{
 		}
 	}
 	
-	//FK drop
-	public void dropFk(TargetPgDDL dbInform) throws Exception {
-		
-		List<String> fkDropList = dbInform.getFkDropList();
-		
-		if(fkDropList.size() > 0) {
-			for(String fkDropSql : fkDropList) {
-				execSql(Constant.POOLNAME.TARGET.name(), fkDropSql);
-			}
-		}
-		
-	}
-	
-	//Index drop
-	public void dropIndex(TargetPgDDL dbInform) throws Exception {
-		List<String> indexDropList = dbInform.getIdxDropList();
-		
-		if(indexDropList.size() > 0) {
-			for(String indexDropSql : indexDropList) {
-				execSql(Constant.POOLNAME.TARGET.name(), indexDropSql);
-			}
-		}
-	}
-	
-	//createFK
-	public void createFk(TargetPgDDL dbInform) throws Exception {
-		
-		List<String> fkCreateList = dbInform.getFkCreateList();
-		
-		if(fkCreateList.size() > 0) {
-			for(String fkCreateSql : fkCreateList) {
-				execSql(Constant.POOLNAME.TARGET.name(), fkCreateSql);
-			}
-		}
-		
-	}
-	
-	//createIndex
-	public void createIndex(TargetPgDDL dbInform) throws Exception {
-		
-		List<String> idxCreateList = dbInform.getIdxCreateList();
-		
-		if(idxCreateList.size() > 0) {
-			for(String idxCreateSql : idxCreateList) {
-				execSql(Constant.POOLNAME.TARGET.name(), idxCreateSql);
-			}
-		}
-		
-	}
-	
-	private void execSql(String poolName, String sql) throws Exception {
-		PreparedStatement psmt = null;
-		
-		Connection conn = DBCPPoolManager.getConnection(poolName);
-		
-		try {
-		
-			psmt = conn.prepareStatement(sql);
-			
-			psmt.execute();
-			
-			
-	    	conn.commit();
 
-
-		} catch(Exception e) {
-			conn.rollback();
-			throw e;
-		} finally {
-			CloseConn(conn, psmt);
-		}
-		
-	}
 
 }
