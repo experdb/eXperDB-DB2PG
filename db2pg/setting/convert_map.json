@@ -40,7 +40,11 @@
 		"mss": [
             "^(?i)INT\\s*\\(?[0-9]*\\)?$",
             "^(?i)INTEGER\\s*\\(?[0-9]*\\)?$"
-		]		
+		],
+		 "ora": [
+	       "^(?i)INTEGER$",
+	       "^(?i)INT$"
+	    ]		
 	},
 	"integer_case_3": {
 		"postgres": "BIGINT",
@@ -60,13 +64,18 @@
 		"postgres": "NUMERIC",
 		"mss": [
 			"^(?i)NUMERIC$"
+		],
+		"ora": [
+			"^(?i)NUMBER$"
+			"^(?i)NUMBER\\s*\\(?[0-9]*\\)?$",
+			"^(?i)NUMBER\\s*\\(?[0-9]*,[0]*\\)?$",
+			"^(?i)NUMBER\\s*\\(?[0-9]*,[0-9]*\\)?$"
 		]
 	},
-	"number_case_1": {
-		"postgres": "NUMBER"
+	"integer_case_6": {
+		"postgres": "NUMERIC(38)",
 		"ora": [
-			"^(?i)NUMBER\\s*\\(?[0-9]*\\)?$",
-			"^(?i)NUMBER\\s*\\(?[0-9]*,[0]*\\)?$"
+			"^(?i)SMALLINT$"
 		]
 	},
 	"real_case_1": {
@@ -90,9 +99,7 @@
 		],
 		"ora" :[
 			"^(?i)BINARY_DOUBLE$",
-			"^(?i)REAL$",
-			"^(?i)FLOAT$",
-			"^(?i)NUMBER$"
+			"^(?i)REAL$"
 		]
 	},
 	"bool_case": {
@@ -133,7 +140,7 @@
 			"^(?i)NCHAR$"
 		],
 		"ora" :[
-			"^(?i)NCHAR$"
+			"^(?i)NCHAR\\s*\\(?[0-9]*\\)?$"
 		]
 	},
 	"char_case_2": {
@@ -143,10 +150,10 @@
 			"^(?i)VARCHAR$"
 		],
 		"ora" :[
-			"^(?i)UROWID$",
 			"^(?i)VARCHAR2\\s*\\(?[0-9]*\\)?$",
 			"^(?i)NVARCHAR2\\s*\\(?[0-9]*\\)?$",
-			"^(?i)NCHAR VARYING$"
+			"^(?i)UROWID\\s*\\(?[0-9]*\\)?$",
+			"^(?i)NCHAR VARYING\\s*\\(?[0-9]*\\)?$"
 		]
 	},	
 	"char_case_3": {
@@ -156,7 +163,7 @@
 		]
 	},	
 	"char_case_4": {
-		"postgres": "CHAR(10)",
+		"postgres": "VARCHAR(18)",
 		"ora": [
 			"^(?i)ROWID$"
 		]
@@ -205,7 +212,8 @@
 			"^(?i)DATETIMEOFFSET$"
 		],
 		"ora" :[
-			"^(?i)TIMESTAMP\\s*\\(?[0-9]*\\)? WITH LOCAL TIME ZONE$"
+			"^(?i)TIMESTAMP\\s*\\(?[0-9]*\\)? WITH LOCAL TIME ZONE$",
+			"^(?i)TIMESTAMP\\s*\\(?[0-9]*\\)?$"
 		]
 	},
     "date_case_3": {
@@ -224,15 +232,15 @@
 		"postgres": "TIMESTAMP",
 		"mss": [
             "^(?i)DATETIME2$"
+		],
+		"ora": [
+            "^(?i)DATE\\s*\\(?[0-9]*\\)?$"
 		]
 	},
 	 "date_case_6": {
 		"postgres": "TIMESTAMP(0)",
 		"mss": [
             "^(?i)SMALLDATETIME$"
-		],
-		"ora": [
-            "^(?i)DATE\\s*\\(?[0-9]*\\)?$"
 		]
 	},		
 	"date_case_7": {
@@ -248,12 +256,11 @@
 		]
 	},
 	"date_case_9": {
-		"postgres": "CURRENT_TIMESTAMP",
+		"postgres": "INTERVAL YEAR TO MONTH",
 		"ora": [
-            "^(?i)SYSDATE$",
-            "^(?i)\\(?SYSDATE\\s*\\(?\\)?\\)?$"
+            "^(?i)INTERVAL YEAR\\s*\\(?[0-9]*\\)? TO MONTH$"
 		]
-	},	
+	},
 	"decimal_case_1": {
 	    "postgres": "DECIMAL",
 	    "mysql": [
@@ -263,23 +270,12 @@
 	    ],
 	    "mss": [
 	       "^(?i)DECIMAL$"
-	    ],
-		"ora" :[
-			"^(?i)NUMBER\\s*\\(?[0-9]*,[0-9]*\\)?$"
-		]
+	    ]
 	},
 	"decimal_case_2": {
 	    "postgres": "DEC",
 	    "mss": [
 	       "^(?i)DEC$"
-	    ]
-	},
-	"decimal_case_3": {
-	    "postgres": "DECIMAL(38)",
-	    "ora": [
-	       "^(?i)SMALLINT$",
-	       "^(?i)INTEGER$",
-	       "^(?i)INT$"
 	    ]
 	},
 	"fixed_case": {
@@ -304,7 +300,7 @@
 	"xml_case": {
 		"postgres": "XML",
 	    "ora": [
-	        "^(?i)XMLTYPE\\s*\\(?[0-9]*\\)?$"
+	        "^(?i)XMLTYPE$"
 	    ]
 	}	
 }
