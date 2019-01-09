@@ -65,7 +65,7 @@ It works on JAVA basis, so there is no restriction on platforms such as Unix, Li
 
 
 ## Copyright
-Copyright (c) 2016-2018, eXperDB Development Team All rights reserved.
+Copyright (c) 2016-2019, eXperDB Development Team All rights reserved.
 
 
 ## Community
