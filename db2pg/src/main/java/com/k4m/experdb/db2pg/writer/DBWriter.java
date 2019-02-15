@@ -24,7 +24,7 @@ public class DBWriter {
 	
 	private CopyIn copyIn = null;
 	private Connection conn;
-	private int processBytes = 0;
+	private long processBytes = 0;
 	private int processLines = 0;
 	private int processErrorLInes = 0;
 	private int errLine = -1;
@@ -42,7 +42,7 @@ public class DBWriter {
 		this.processErrorLInes = processErrorLInes;
 	}
 
-	public int getProcessBytes() {
+	public long getProcessBytes() {
 		return processBytes;
 	}
 
@@ -92,9 +92,10 @@ public class DBWriter {
 			if(conn == null)
 			conn = DBCPPoolManager.getConnection(poolName);
 			
-			String strTarCopyOptions = ConfigInfo.TAR_COPY_OPTIONS;
-			String strCopyOptions = "";
-			if(strTarCopyOptions != null && !strTarCopyOptions.equals("")) strCopyOptions = " " + strTarCopyOptions;
+			String strCopyOptions = ConfigInfo.TAR_COPY_OPTIONS != null && !ConfigInfo.TAR_COPY_OPTIONS.equals("")
+					? " "+ConfigInfo.TAR_COPY_OPTIONS
+					: ""
+				;
 			
 			CopyManager copyManager = new CopyManager(((DelegatingConnection<?>)conn).getInnermostDelegate().unwrap(BaseConnection.class));
 			copyIn = copyManager.copyIn("COPY " + ConfigInfo.TAR_DB_CONFIG.SCHEMA_NAME + "." + table_nm + " FROM STDIN" + strCopyOptions);
@@ -139,8 +140,7 @@ public class DBWriter {
 			try {
 				//conn.commit();
 				if(conn != null) {
-					conn.close();
-					conn = null;
+					if(!conn.isClosed()) conn.close();
 				}
 			}catch(Exception e){
 			}

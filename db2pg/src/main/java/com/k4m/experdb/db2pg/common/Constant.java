@@ -4,14 +4,9 @@ public class Constant {
 	private Constant(){}
 	public static String S = System.getProperty("file.separator"); // system file separator : "/" on UNIX, "\\" on WINDOWS
 	public static String R = System.getProperty("line.separator");
-
+	public static String L = System.getProperty("user.language");
     
     public static String REPOSITORY_DB_TYPE;
-    public final static String REPLACE_ORG_COL_NM = "$ORG_COLUMN$";
-    public final static String REPLACE_COL_NM = "$COLUMN$";
-    public final static String REPLACE_TBL_NM = "$TABLE$";
-    public final static String REPLACE_SCHEMA_NM = "$SCHEMA$";
-    public final static String REPLACE_COL_VAL = "$COLUMN_VALUE$";
     
     public static final String CONVENTIONAL = "CONVENTIONAL";
     public static final String DIRECT_PATH_LOAD = "DIRECT PATH LOAD";

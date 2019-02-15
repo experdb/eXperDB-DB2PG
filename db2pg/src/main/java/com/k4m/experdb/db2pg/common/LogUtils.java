@@ -20,7 +20,28 @@ public class LogUtils {
 	}
 	
 	
+	public static void conOnlyPrint(StringBuffer sb) {
+		conOnlyPrint(sb.toString());
+	}
 	
+	public static void conOnlyPrint(StringBuilder sb) {
+		conOnlyPrint(sb.toString());
+	}
+	
+	public static void conOnlyPrint(String paramString) {
+		System.out.print(paramString);
+	}
+	public static void conOnlyPrintln(StringBuffer sb) {
+		conOnlyPrintln(sb.toString());
+	}
+	
+	public static void conOnlyPrintln(StringBuilder sb) {
+		conOnlyPrintln(sb.toString());
+	}
+	
+	public static void conOnlyPrintln(String paramString) {
+		System.out.println(paramString);
+	}
 
 
 	//region trace

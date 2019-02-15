@@ -49,12 +49,16 @@ public class Main {
 		}
 		
 		if(ConfigInfo.SRC_EXPORT) {
-			TargetPgDDL dbInform = new TargetPgDDL();
+			TargetPgDDL dbInform = null ;
+			if(ConfigInfo.DB_WRITER_MODE ) dbInform = new TargetPgDDL();
+			
 			ManagementConstraint managementConstraint = new ManagementConstraint();
 			
-			LogUtils.debug("[PG_CONSTRAINT_EXTRACT_START]",Main.class);
-			makeSqlFile(dbInform);
-			LogUtils.debug("[PG_CONSTRAINT_EXTRACT_END]",Main.class);
+			if(ConfigInfo.DB_WRITER_MODE ) {
+				LogUtils.debug("[PG_CONSTRAINT_EXTRACT_START]",Main.class);
+				makeSqlFile(dbInform);
+				LogUtils.debug("[PG_CONSTRAINT_EXTRACT_END]",Main.class);
+			}
 						
 			if(ConfigInfo.DB_WRITER_MODE ){
 				if(ConfigInfo.TAR_DROP_CREATE_CONSTRAINT) {
@@ -95,15 +99,29 @@ public class Main {
 	//pool 생성
 	private static void createPool() throws Exception {
 		//DBCPPoolManager.setupDriver(ConfigInfo.SRC_DB_CONFIG, Constant.POOLNAME.SOURCE_DDL.name(), 1);
-		DBCPPoolManager.setupDriver(ConfigInfo.SRC_DB_CONFIG, Constant.POOLNAME.SOURCE.name(), ConfigInfo.SRC_TABLE_SELECT_PARALLEL);
-		
-		if(ConfigInfo.TAR_CONSTRAINT_EXTRACT || ConfigInfo.SRC_EXPORT) {
-			
-			int intTarConnCount = ConfigInfo.TAR_CONN_COUNT;
-			if(ConfigInfo.SRC_TABLE_SELECT_PARALLEL > intTarConnCount) {
-				intTarConnCount = ConfigInfo.SRC_TABLE_SELECT_PARALLEL;
-			}
-			DBCPPoolManager.setupDriver(ConfigInfo.TAR_DB_CONFIG, Constant.POOLNAME.TARGET.name(), intTarConnCount);
+//		DBCPPoolManager.setupDriver(ConfigInfo.SRC_DB_CONFIG, Constant.POOLNAME.SOURCE.name(), ConfigInfo.SRC_TABLE_SELECT_PARALLEL);
+//		
+//		if(ConfigInfo.TAR_CONSTRAINT_EXTRACT || ConfigInfo.SRC_EXPORT) {
+//			
+//			int intTarConnCount = ConfigInfo.TAR_CONN_COUNT;
+//			if(ConfigInfo.SRC_TABLE_SELECT_PARALLEL > intTarConnCount) {
+//				intTarConnCount = ConfigInfo.SRC_TABLE_SELECT_PARALLEL;
+//			}
+//			DBCPPoolManager.setupDriver(ConfigInfo.TAR_DB_CONFIG, Constant.POOLNAME.TARGET.name(), intTarConnCount);
+//		}
+		if(ConfigInfo.SRC_EXPORT || ConfigInfo.SRC_DDL_EXPORT) {
+			DBCPPoolManager.setupDriver(ConfigInfo.SRC_DB_CONFIG
+					, Constant.POOLNAME.SOURCE.name()
+					, ConfigInfo.SRC_TABLE_SELECT_PARALLEL
+			);
+		}
+		if(ConfigInfo.TAR_CONSTRAINT_EXTRACT || ConfigInfo.DB_WRITER_MODE) {
+			DBCPPoolManager.setupDriver(ConfigInfo.TAR_DB_CONFIG
+					, Constant.POOLNAME.TARGET.name()
+					, ConfigInfo.SRC_TABLE_SELECT_PARALLEL > ConfigInfo.TAR_CONN_COUNT 
+					  ? ConfigInfo.SRC_TABLE_SELECT_PARALLEL
+					  : ConfigInfo.TAR_CONN_COUNT
+		    );
 		}
 	}
 	

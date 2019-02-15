@@ -7,6 +7,7 @@ import java.nio.channels.FileChannel;
 import java.nio.file.StandardOpenOption;
 import java.util.concurrent.ConcurrentHashMap;
 
+import com.k4m.experdb.db2pg.common.Constant;
 import com.k4m.experdb.db2pg.config.ConfigInfo;
 
 public class FileWriter {
@@ -43,7 +44,7 @@ public class FileWriter {
 	
 
 	public void badFileWrite(String lineStr) throws IOException {
-		byte[] inputBytes = (lineStr + "\r\n").getBytes();
+		byte[] inputBytes = (lineStr + Constant.R).getBytes();
 		ByteBuffer byteBuffer = ByteBuffer.wrap(inputBytes);
 		try {
 			badFileChannels.write(byteBuffer);

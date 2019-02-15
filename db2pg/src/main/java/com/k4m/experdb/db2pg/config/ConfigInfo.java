@@ -78,6 +78,8 @@ public class ConfigInfo {
 	
 	public static boolean TAR_DROP_CREATE_CONSTRAINT;
 	
+	public static boolean SRC_CONVERT_VIEW;
+	
 	
 	public static class Loader {
 		public static void load(String configFilePath) {
@@ -155,7 +157,8 @@ public class ConfigInfo {
 				ConfigInfo.DB_WRITER_MODE = (boolean)propertyCheck(trimCheck(prop.getProperty("DB_WRITER_MODE")),false,Boolean.class);
 				
 				ConfigInfo.TAR_DROP_CREATE_CONSTRAINT = (boolean)propertyCheck(trimCheck(prop.getProperty("TAR_DROP_CREATE_CONSTRAINT")),true,Boolean.class);
-
+				
+				ConfigInfo.SRC_CONVERT_VIEW = (boolean)propertyCheck(trimCheck(prop.getProperty("SRC_CONVERT_VIEW")),true,Boolean.class);
 				
 			} catch (FileNotFoundException fnfe) {
 				LogUtils.error("[CONFIG_FILE_NOT_FOUND_ERR]",ConfigInfo.Loader.class,fnfe);
