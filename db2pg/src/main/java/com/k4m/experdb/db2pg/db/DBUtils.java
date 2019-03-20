@@ -23,9 +23,11 @@ public class DBUtils {
 			
 			params.put("TABLE_SCHEMA", dbConfigInfo.SCHEMA_NAME);
 			params.put("TABLE_ONLY", tableOnly);
+			System.out.println(params);
 			
 			MetaExtractWorker mew = new MetaExtractWorker(srcPoolName,new MetaExtractWork(WORK_TYPE.GET_TABLE_NAMES, params));
 			mew.run();
+			
 			tableNames = (List<String>)mew.getResult();
 			LogUtils.info("[GET_TABLE_NAMES]"+tableNames,DBUtils.class);
 			stopWatch.stop();
