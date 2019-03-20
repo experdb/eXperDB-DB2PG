@@ -24,6 +24,32 @@ public class Main {
 		LogUtils.setVerbose(ConfigInfo.VERBOSE);
 		LogManager.getRootLogger().setLevel(ConfigInfo.LOG_LEVEL);
 		
+		if ( ConfigInfo.LOG_LEVEL == org.apache.log4j.Level.DEBUG ) {
+			org.apache.log4j.ConsoleAppender appender = new org.apache.log4j.ConsoleAppender();
+			appender.setName("sqlAppender");
+			
+			org.apache.log4j.PatternLayout layout = new org.apache.log4j.PatternLayout();
+			layout.setConversionPattern("%d [%t] %-5p %c{1} - %m%n");
+			appender.setLayout(layout);
+			
+			org.apache.log4j.varia.StringMatchFilter strMatchFilter = new org.apache.log4j.varia.StringMatchFilter();
+			strMatchFilter.setStringToMatch("Result");
+			strMatchFilter.setAcceptOnMatch(false);
+			appender.addFilter(strMatchFilter);
+			
+			org.apache.log4j.Logger[] queryLogger = { 
+				  LogManager.getLogger("org.mybatis")
+				, LogManager.getLogger("java.sql")
+			};
+			for (org.apache.log4j.Logger logger : queryLogger) {
+				logger.setLevel(org.apache.log4j.Level.DEBUG);
+				logger.setAdditivity(false);
+				logger.removeAllAppenders();
+				logger.addAppender(appender);
+			}
+		}
+		
+		
 		checkConfigInfo();
 		
 		//pool 생성
