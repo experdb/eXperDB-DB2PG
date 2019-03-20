@@ -72,6 +72,8 @@ public class ConfigInfo {
 	
 	public static boolean FILE_WRITER_MODE, DB_WRITER_MODE;
 	
+	public static boolean FILE_APPEND_OPT;
+	
 	public static boolean TAR_TABLE_BAD;
 	
 	public static int TAR_TABLE_ERR_CNT_EXIT;
@@ -153,7 +155,8 @@ public class ConfigInfo {
 				
 				ConfigInfo.TAR_TABLE_ERR_CNT_EXIT = (int)propertyCheck(trimCheck(prop.getProperty("TAR_TABLE_ERR_CNT_EXIT")),0,Integer.class);
 				
-				ConfigInfo.FILE_WRITER_MODE = (boolean)propertyCheck(trimCheck(prop.getProperty("FILE_WRITER_MODE")),false,Boolean.class);
+				ConfigInfo.FILE_WRITER_MODE = (boolean)propertyCheck(trimCheck(prop.getProperty("FILE_WRITER_MODE")),true,Boolean.class);
+				ConfigInfo.FILE_APPEND_OPT = (boolean)propertyCheck(trimCheck(prop.getProperty("FILE_APPEND_OPT")),false,Boolean.class);
 				ConfigInfo.DB_WRITER_MODE = (boolean)propertyCheck(trimCheck(prop.getProperty("DB_WRITER_MODE")),false,Boolean.class);
 				
 				ConfigInfo.TAR_DROP_CREATE_CONSTRAINT = (boolean)propertyCheck(trimCheck(prop.getProperty("TAR_DROP_CREATE_CONSTRAINT")),true,Boolean.class);
