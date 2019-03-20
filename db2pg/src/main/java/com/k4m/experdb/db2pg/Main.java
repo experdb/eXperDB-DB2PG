@@ -36,7 +36,6 @@ public class Main {
 		makeDirectory();
 		
 		if(ConfigInfo.SRC_DDL_EXPORT) {
-			
 			LogUtils.debug("[SRC_DDL_EXPORT_START]",Main.class);
 			DDLConverter ddlConv = DDLConverter.getInstance();
 			ddlConv.start();

@@ -25,8 +25,8 @@ public class DBWriter {
 	private CopyIn copyIn = null;
 	private Connection conn;
 	private long processBytes = 0;
-	private int processLines = 0;
-	private int processErrorLInes = 0;
+	private long processLines = 0;
+	private long processErrorLInes = 0;
 	private int errLine = -1;
 	private int errCount = 0;
 	
@@ -34,11 +34,11 @@ public class DBWriter {
 	private String poolName = "";
 	
 	
-	public int getProcessErrorLInes() {
+	public long getProcessErrorLInes() {
 		return processErrorLInes;
 	}
 
-	public void setProcessErrorLInes(int processErrorLInes) {
+	public void setProcessErrorLInes(long processErrorLInes) {
 		this.processErrorLInes = processErrorLInes;
 	}
 
@@ -46,15 +46,15 @@ public class DBWriter {
 		return processBytes;
 	}
 
-	public void setProcessBytes(int processBytes) {
+	public void setProcessBytes(long processBytes) {
 		this.processBytes = processBytes;
 	}
 
-	public int getProcessLines() {
+	public long getProcessLines() {
 		return processLines;
 	}
 
-	public void setProcessLines(int processLines) {
+	public void setProcessLines(long processLines) {
 		this.processLines = processLines;
 	}
 

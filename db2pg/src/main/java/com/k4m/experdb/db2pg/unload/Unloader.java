@@ -1,7 +1,9 @@
 package com.k4m.experdb.db2pg.unload;
+import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.FileReader;
+import java.io.PrintWriter;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 import java.text.SimpleDateFormat;
@@ -23,14 +25,13 @@ import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
 
 import com.k4m.experdb.db2pg.common.Constant;
+import com.k4m.experdb.db2pg.common.DevUtils;
 import com.k4m.experdb.db2pg.common.LogUtils;
 import com.k4m.experdb.db2pg.config.ConfigInfo;
 import com.k4m.experdb.db2pg.db.DBUtils;
 
 public class Unloader {
-	
-
-	
+	private File impSql = null;
 	List<SelectQuery> selectQuerys = new ArrayList<SelectQuery>();
 
 	long startTime;
@@ -171,7 +172,11 @@ public class Unloader {
         	LogUtils.debug("\n",Unloader.class);
         	LogUtils.info("[SUMMARY_INFO]",Unloader.class);
         	
-        	StringBuffer sb = new StringBuffer();
+        	impSql = new File(ConfigInfo.OUTPUT_DIRECTORY + "data/import.sql");
+        	PrintWriter pw = new PrintWriter(impSql);
+        	
+        	
+        	StringBuffer sb = new StringBuffer(), impsb = new StringBuffer();
         	int failCnt = 0;
     		for(int i=0;i<jobList.size();i++) {
     			sb.setLength(0);
@@ -182,6 +187,11 @@ public class Unloader {
     			sb.append(", STATE : ");
     			if(jobList.get(i).isSuccess()){
     				sb.append("SUCCESS");
+    				impsb.append("\\copy \"");
+    				impsb.append(DevUtils.classifyString(jobList.get(i).getTableName(),ConfigInfo.CLASSIFY_STRING));
+    				impsb.append("\" from '");
+    				impsb.append(DevUtils.classifyString(jobList.get(i).getTableName(),ConfigInfo.CLASSIFY_STRING));
+    				impsb.append(".out'\n");
     			} else {
     				sb.append("FAILURE");
     				failCnt++;
@@ -189,6 +199,10 @@ public class Unloader {
 //    			sb.append('\n');
     			LogUtils.info(sb.toString(),Unloader.class);
     		}
+    		pw.println(impsb);
+    		impsb.setLength(0);
+    		impsb = null;
+    		pw.close();
     		
     		LogUtils.info(String.format("[TOTAL_INFO] SUCCESS : %d / FAILURE : %d / TOTAL: %d",jobList.size()-failCnt,failCnt,jobList.size()),Unloader.class);
     		LogUtils.info("[ELAPSED_TIME] " + makeElapsedTimeString(estimatedTime/1000),Unloader.class);

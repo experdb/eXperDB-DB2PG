@@ -166,7 +166,7 @@ public class ExecuteDataTransfer implements Runnable{
         	LogUtils.debug(String.format("[%s-CREATE_BUFFEREDOUTPUTSTREAM]",this.tableName),ExecuteQuery.class);
         	
         	if(ConfigInfo.FILE_WRITER_MODE) {
-        	LogUtils.debug("[START_FETCH_DATA]" + outputFileName,ExecuteQuery.class);
+        		LogUtils.debug("[START_FETCH_DATA]" + outputFileName,ExecuteQuery.class);
         	}
         	
         	if(ConfigInfo.DB_WRITER_MODE) {
@@ -266,7 +266,7 @@ public class ExecuteDataTransfer implements Runnable{
 				LogUtils.error("EXCEPTION!!!!", ExecuteDataTransfer.class,e);
 		} finally {
 			try {
-				if(ConfigInfo.FILE_WRITER_MODE) fileWriter.closeFileChannels();
+				if(ConfigInfo.FILE_WRITER_MODE) fileWriter.closeFileChannels(this.tableName);
 				
 				if(ConfigInfo.DB_WRITER_MODE) {
 					LogUtils.info("COMPLETE UNLOAD (TABLE_NAME : " +tableName + ", getProcessLines : " + dbWriter.getProcessLines() + ", getProcessBytes : " + dbWriter.getProcessBytes() + " , getProcessErrorLInes : " + dbWriter.getProcessErrorLInes() + ") !!!",ExecuteQuery.class);

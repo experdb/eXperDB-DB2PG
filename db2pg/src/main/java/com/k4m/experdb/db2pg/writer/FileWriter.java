@@ -14,8 +14,8 @@ public class FileWriter {
 	protected String outputDirectory = ConfigInfo.OUTPUT_DIRECTORY + "data/";
 	private  FileChannel fileChannels;
 	private  FileChannel badFileChannels ;
-	private static int successByteCount; // Writer가 처리한 총 Byte 수
-	private static int errByteCount = 0; // 
+	private static long successByteCount; // Writer가 처리한 총 Byte 수
+	private static long errByteCount = 0; // 
 	public static ConcurrentHashMap<String, ConfigInfo> ConnInfoList = new ConcurrentHashMap<String, ConfigInfo>();
 	
 	public FileWriter(){}
@@ -73,13 +73,13 @@ public class FileWriter {
 	}
 	
 	
-	public void closeFileChannels() throws Exception {
+	public void closeFileChannels(String table_nm) throws Exception {
 		if (fileChannels != null && fileChannels.isOpen()) {
 			try {
 				WriterVO wv = new WriterVO();
 
-				System.out.println("Writer가 성공한 총 Byte 수 =" + successByteCount);
-				System.out.println("Writer가 실패한 총 Byte 수 =" + errByteCount);
+				System.out.println("[" + table_nm + "] succeeded bytes : " + successByteCount);
+				System.out.println("[" + table_nm + "] failed bytes : " + errByteCount);
 				wv.setProcessLines(0);
 				wv.setProcessBytes(successByteCount);
 				wv.setPorcessErrorLines(errByteCount);
