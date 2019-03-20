@@ -1,5 +1,4 @@
 package com.k4m.experdb.db2pg.unload;
-import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.FileReader;
@@ -66,13 +65,13 @@ public class Unloader {
 		return tableNameList;
 	}
 	
-	private String getConvertReplaceTableName(String strTableName) throws Exception {
+	private String getConvertObjectName(String objName) throws Exception {
 		String strReplaceTableName = "";
 		
 		if(ConfigInfo.SRC_DB_CONFIG.DB_TYPE.equals(Constant.DB_TYPE.MYSQL)) {
-			strReplaceTableName = "`" + strTableName + "`";
+			strReplaceTableName = "`" + objName + "`";
 		} else {
-			strReplaceTableName =  "\"" + strTableName + "\"";
+			strReplaceTableName =  "\"" + objName + "\"";
 		}
 		
 		return strReplaceTableName;
@@ -104,8 +103,6 @@ public class Unloader {
 				LogUtils.error("SCHEMA_NAME NOT FOUND", Unloader.class);
 				System.exit(0);
 			}
-			String schema = ConfigInfo.SRC_DB_CONFIG.SCHEMA_NAME+".";
-			
 			startTime = System.currentTimeMillis();
 			
 			LogUtils.debug("START UNLOADER !!!", Unloader.class);
@@ -122,18 +119,21 @@ public class Unloader {
 			
 			if(!ConfigInfo.SELECT_QUERIES_FILE.equals("")) {
 				loadSelectQuery(ConfigInfo.SELECT_QUERIES_FILE);
-			} else {
+			} 
+
 				
-				//태이블조회
-				tableNameList = makeTableList();
-				for (String tableName : tableNameList) {
-	
-					String replaceTableName = getConvertReplaceTableName(tableName);
-					String where = getWhere();
-	
-					selSqlList.add(String.format("SELECT * FROM %s%s %s", schema, replaceTableName, where));
-				}
+			//Table Select
+			tableNameList = makeTableList();
+			for (String tableName : tableNameList) {
+				String schema = ConfigInfo.SRC_DB_CONFIG.SCHEMA_NAME!=null && !ConfigInfo.SRC_DB_CONFIG.SCHEMA_NAME.equals("") 
+									? getConvertObjectName(ConfigInfo.SRC_DB_CONFIG.SCHEMA_NAME)+"." 
+									: "" ;
+				String replaceTableName = getConvertObjectName(tableName);
+				String where = getWhere();
+
+				selSqlList.add(String.format("SELECT * FROM %s%s %s", schema, replaceTableName, where));
 			}
+
 
 			int jobSize = 0;
 			if(selSqlList != null) {
@@ -189,7 +189,16 @@ public class Unloader {
     				sb.append("SUCCESS");
     				impsb.append("\\copy \"");
     				impsb.append(DevUtils.classifyString(jobList.get(i).getTableName(),ConfigInfo.CLASSIFY_STRING));
-    				impsb.append("\" from '");
+    				impsb.append("\" (");
+    				for(int cnmIdx=0; cnmIdx < jobList.get(i).columnNames.size(); cnmIdx++ ) {
+    					impsb.append("\"");
+    					impsb.append(jobList.get(i).columnNames.get(cnmIdx));
+    					impsb.append("\"");
+    					if(cnmIdx != jobList.get(i).columnNames.size()-1) {
+    						impsb.append(", ");
+    					}
+    				}
+    				impsb.append(") from '");
     				impsb.append(DevUtils.classifyString(jobList.get(i).getTableName(),ConfigInfo.CLASSIFY_STRING));
     				impsb.append(".out'\n");
     			} else {

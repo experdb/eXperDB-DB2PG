@@ -50,6 +50,7 @@ public class ExecuteDataTransfer implements Runnable{
 	long  rowCnt = 0;
 	private boolean success;
 	private StringBuffer bf = new StringBuffer();
+	List<String> columnNames;
 
 	private DBConfigInfo dbConfigInfo;
 
@@ -155,7 +156,7 @@ public class ExecuteDataTransfer implements Runnable{
 			preSrcStmt.setFetchSize(ConfigInfo.STATEMENT_FETCH_SIZE);
         	rs = preSrcStmt.executeQuery();
         	
-        	List<String> columnNames = new ArrayList<String>();
+        	columnNames = new ArrayList<String>();
         	ResultSetMetaData rsmd = rs.getMetaData();	
      
         	for(int i=1;i<=rsmd.getColumnCount();i++) {
@@ -165,35 +166,24 @@ public class ExecuteDataTransfer implements Runnable{
         	LogUtils.debug(String.format("[%s-CREATE_PIPE_LINE]",this.tableName),ExecuteQuery.class);
         	LogUtils.debug(String.format("[%s-CREATE_BUFFEREDOUTPUTSTREAM]",this.tableName),ExecuteQuery.class);
         	
-        	if(ConfigInfo.FILE_WRITER_MODE) {
-        		LogUtils.debug("[START_FETCH_DATA]" + outputFileName,ExecuteQuery.class);
-        	}
         	
-        	if(ConfigInfo.DB_WRITER_MODE) {
-	        	if (ConfigInfo.TRUNCATE) {
-	        		execTruncTable(Constant.POOLNAME.TARGET.name(), this.tableName);
-	        	}
-        	}
-
 			if(ConfigInfo.DB_WRITER_MODE) {
+				if (ConfigInfo.TRUNCATE) {
+					execTruncTable(Constant.POOLNAME.TARGET.name(), this.tableName);
+				}
 				dbWriter = new DBWriter(Constant.POOLNAME.TARGET.name());
 			}
-			
 			if(ConfigInfo.FILE_WRITER_MODE) {
+				LogUtils.debug("[START_FETCH_DATA]" + outputFileName,ExecuteQuery.class);
 				fileWriter = new FileWriter(this.tableName);
 			}
-        	
-        	
+			
 			int intErrCnt = 0;
 			
         	while (rs.next()){
         		rowCnt += 1;
-
-        		
-
         		for (int i = 1; i <= rsmd.getColumnCount(); i++) {	
         			int type = rsmd.getColumnType(i);
-        			
         			///System.out.println(ConvertDataToString(SrcConn,type, rs, i));
         			
         			bf.append(ConvertDataToString(SrcConn,type, rs, i));
@@ -211,17 +201,13 @@ public class ExecuteDataTransfer implements Runnable{
         		
 
         		if((rowCnt % ConfigInfo.SRC_TABLE_COPY_SEGMENT_SIZE == 0) || (bf.length() > intBUFFER_SIZE)) {
-        			
         			if(ConfigInfo.DB_WRITER_MODE) {
-
         					dbWriterN(dbWriter);
-        					
         					intErrCnt += dbWriter.getErrCount();
         			} 
         			
         			if(ConfigInfo.FILE_WRITER_MODE) {
         				fileWriter.dataWriteToFile(bf.toString(), this.tableName);
-
         			}
         			
         			bf.setLength(0);
@@ -234,15 +220,12 @@ public class ExecuteDataTransfer implements Runnable{
         	}
         	
         	if (bf.length() != 0){
-        		
-        		
 	    		if(ConfigInfo.DB_WRITER_MODE) {
 	       			if(!(intErrCnt > ConfigInfo.TAR_TABLE_ERR_CNT_EXIT)) {
 	    				dbWriter.DBWrite(bf.toString(), this.tableName);
 	    			}
 	    		} 
    
-    			
     			if(ConfigInfo.FILE_WRITER_MODE) {
     				fileWriter.dataWriteToFile(bf.toString(), this.tableName);
     			}
@@ -297,7 +280,7 @@ public class ExecuteDataTransfer implements Runnable{
 	}
 	
 	private void writeError(String errFileName, Exception e) throws Exception {
-		File output_file = new File(errFileName+".error");
+		File output_file = new File(ConfigInfo.OUTPUT_DIRECTORY+errFileName+".error");
 
 		PrintStream ps = new PrintStream(output_file);
 		ps.print("ERROR :\n");
