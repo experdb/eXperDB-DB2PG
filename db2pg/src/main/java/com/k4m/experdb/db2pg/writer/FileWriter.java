@@ -56,19 +56,20 @@ public class FileWriter {
 	
 	public void fileCreater(String file_nm) throws IOException {
 		File file = new File(file_nm);
-		if(!file.isFile()){
-			fileChannels = FileChannel.open(file.toPath(), StandardOpenOption.CREATE, StandardOpenOption.WRITE);
-		}else{
+		boolean b = ConfigInfo.FILE_APPEND_OPT;
+		if(ConfigInfo.FILE_APPEND_OPT && file.isFile()) {
 			fileChannels = FileChannel.open(file.toPath(), StandardOpenOption.APPEND);
+		} else {
+			fileChannels = FileChannel.open(file.toPath(), StandardOpenOption.CREATE, StandardOpenOption.WRITE, StandardOpenOption.TRUNCATE_EXISTING);
 		}
 	}
 
 	public void badFileCreater(String file_nm) throws IOException {
 		File file = new File(file_nm);
-		if(!file.isFile()){
-			badFileChannels = FileChannel.open(file.toPath(), StandardOpenOption.CREATE, StandardOpenOption.WRITE);
-		}else{
+		if(ConfigInfo.FILE_APPEND_OPT && file.isFile()) {
 			badFileChannels = FileChannel.open(file.toPath(), StandardOpenOption.APPEND);
+		} else {
+			badFileChannels = FileChannel.open(file.toPath(), StandardOpenOption.CREATE, StandardOpenOption.WRITE, StandardOpenOption.TRUNCATE_EXISTING);
 		}
 	}
 	
