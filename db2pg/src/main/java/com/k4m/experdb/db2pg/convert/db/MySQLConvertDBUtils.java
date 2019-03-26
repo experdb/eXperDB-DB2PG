@@ -24,7 +24,7 @@ import com.k4m.experdb.db2pg.convert.table.key.option.ReferenceDefinition;
 import com.k4m.experdb.db2pg.db.datastructure.DBConfigInfo;
 import com.k4m.experdb.db2pg.work.db.impl.MetaExtractWork;
 import com.k4m.experdb.db2pg.work.db.impl.MetaExtractWorker;
-import com.k4m.experdb.db2pg.work.db.impl.MetaExtractWorker.WORK_TYPE;
+import com.k4m.experdb.db2pg.work.db.impl.WORK_TYPE;
 
 public class MySQLConvertDBUtils {
 	/** [Add] sequence extract function**/

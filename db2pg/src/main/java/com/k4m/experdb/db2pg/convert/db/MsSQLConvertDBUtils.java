@@ -6,7 +6,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import com.k4m.experdb.db2pg.common.Constant;
 import com.k4m.experdb.db2pg.common.LogUtils;
 import com.k4m.experdb.db2pg.convert.table.Column;
 import com.k4m.experdb.db2pg.convert.table.Table;
@@ -25,7 +24,7 @@ import com.k4m.experdb.db2pg.convert.table.key.option.ReferenceDefinition;
 import com.k4m.experdb.db2pg.db.datastructure.DBConfigInfo;
 import com.k4m.experdb.db2pg.work.db.impl.MetaExtractWork;
 import com.k4m.experdb.db2pg.work.db.impl.MetaExtractWorker;
-import com.k4m.experdb.db2pg.work.db.impl.MetaExtractWorker.WORK_TYPE;
+import com.k4m.experdb.db2pg.work.db.impl.WORK_TYPE;
 
 public class MsSQLConvertDBUtils {
 	/** [Add] sequence extract function**/
