@@ -4,7 +4,6 @@ import java.text.MessageFormat;
 import java.util.LinkedList;
 import java.util.List;
 
-import com.k4m.experdb.db2pg.common.CommonUtil;
 import com.k4m.experdb.db2pg.common.Constant;
 import com.k4m.experdb.db2pg.common.DevUtils;
 import com.k4m.experdb.db2pg.config.ConfigInfo;
@@ -13,7 +12,7 @@ import com.k4m.experdb.db2pg.convert.pattern.SqlPattern;
 import com.k4m.experdb.db2pg.convert.table.Column;
 import com.k4m.experdb.db2pg.convert.table.Sequence;
 import com.k4m.experdb.db2pg.convert.table.Table;
-import com.k4m.experdb.db2pg.convert.table.key.CLUSTER;
+import com.k4m.experdb.db2pg.convert.table.key.Cluster;
 import com.k4m.experdb.db2pg.convert.table.key.ForeignKey;
 import com.k4m.experdb.db2pg.convert.table.key.Key;
 import com.k4m.experdb.db2pg.convert.table.key.NormalKey;
@@ -298,11 +297,11 @@ public class PgDDLMaker<T> {
 				break;
 			case CLUSTER:
 				try {
-					CLUSTER cluster = key.unwrap(CLUSTER.class);
+					Cluster cluster = key.unwrap(Cluster.class);
 					tmpsb.append("CLUSTER  \"");
 					tmpsb.append(DevUtils.classifyString(cluster.getTableName(),ConfigInfo.CLASSIFY_STRING));
 					tmpsb.append("\" USING \"");
-					tmpsb.append(DevUtils.classifyString(cluster.getTableName(),ConfigInfo.CLASSIFY_STRING)+"_"+DevUtils.classifyString(cluster.getIndex_name(),ConfigInfo.CLASSIFY_STRING));
+					tmpsb.append(DevUtils.classifyString(cluster.getTableName(),ConfigInfo.CLASSIFY_STRING)+"_"+DevUtils.classifyString(cluster.getIndexName(),ConfigInfo.CLASSIFY_STRING));
 					tmpsb.append("\" ");
 					tmpStringVOs.add(new DDLString().setString(tmpsb.toString()).setDDLType(DDL_TYPE.CREATE)
 							.setCommandType(COMMAND_TYPE.INDEX).setPriority(3));

@@ -10,7 +10,7 @@ import com.k4m.experdb.db2pg.common.LogUtils;
 import com.k4m.experdb.db2pg.convert.table.Column;
 import com.k4m.experdb.db2pg.convert.table.Table;
 import com.k4m.experdb.db2pg.convert.table.View;
-import com.k4m.experdb.db2pg.convert.table.key.CLUSTER;
+import com.k4m.experdb.db2pg.convert.table.key.Cluster;
 import com.k4m.experdb.db2pg.convert.table.key.ForeignKey;
 import com.k4m.experdb.db2pg.convert.table.key.Key.IndexType;
 import com.k4m.experdb.db2pg.convert.table.key.Key.Type;
@@ -490,7 +490,7 @@ public class MsSQLConvertDBUtils {
     			String indexType = obj!=null?obj.toString():null;
     			
     			NormalKey nkey = new NormalKey();
-    			CLUSTER cluster = new CLUSTER();
+    			Cluster cluster = new Cluster();
     			
     			boolean isAdded = false;
     			for(int i=0; i<table.getKeys().size();i++) {
@@ -524,7 +524,7 @@ public class MsSQLConvertDBUtils {
     			} else if(indexType.equals("1")) {
     				nkey.setIndexType(IndexType.BTREE);
     				cluster.setTableName(tableName);
-    				cluster.setIndex_name(result.get("index_name").toString());
+    				cluster.setIndexName(result.get("index_name").toString());
     				table.getKeys().add(cluster);
     			} else if (indexType.equals("2")) {
     				nkey.setIndexType(IndexType.BTREE);
