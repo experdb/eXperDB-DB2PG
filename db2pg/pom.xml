@@ -10,8 +10,8 @@
 	<url>http://maven.apache.org</url>
 
 	<properties>
-		<maven.compiler.source>1.7</maven.compiler.source>
-		<maven.compiler.target>1.7</maven.compiler.target>
+		<maven.compiler.source>1.8</maven.compiler.source>
+		<maven.compiler.target>1.8</maven.compiler.target>
 		<deploy.target.dir>jars</deploy.target.dir>
 		<lib.dir>lib</lib.dir>
 		<jar.name>db2pg</jar.name>
@@ -66,7 +66,7 @@
 			<artifactId>postgresql</artifactId>
 			<version>42.2.4.jre7</version>
 			<scope>system</scope>
-			<systemPath>${project.basedir}/src/main/resources/postgresql-42.2.4.jre7.jar</systemPath>
+			<systemPath>${project.basedir}/src/main/resources/postgresql-42.2.5.jar</systemPath>
 		</dependency>
 
 		<dependency>
