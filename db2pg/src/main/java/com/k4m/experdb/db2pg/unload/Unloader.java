@@ -192,7 +192,7 @@ public class Unloader {
     				impsb.append("\" (");
     				for(int cnmIdx=0; cnmIdx < jobList.get(i).columnNames.size(); cnmIdx++ ) {
     					impsb.append("\"");
-    					impsb.append(jobList.get(i).columnNames.get(cnmIdx));
+    					impsb.append(DevUtils.classifyString(jobList.get(i).columnNames.get(cnmIdx),ConfigInfo.CLASSIFY_STRING));
     					impsb.append("\"");
     					if(cnmIdx != jobList.get(i).columnNames.size()-1) {
     						impsb.append(", ");
