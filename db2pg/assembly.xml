@@ -14,9 +14,12 @@
 			<directory>target</directory>
 			<outputDirectory>DB2PG-${project.version}</outputDirectory>
 			<includes>
-				<include>db2pg-${project.version}.jar</include>
+<!-- 				<include>db2pg-${project.version}.jar</include> -->
 				<include>db2pg.bat</include>
 				<include>db2pg.sh</include>
+				<include>LICENSE</include>
+				<include>db2pg.config</include>
+				<include>queries.xml</include>
 				<include>lib/*</include>
 			</includes>
 		</fileSet>
