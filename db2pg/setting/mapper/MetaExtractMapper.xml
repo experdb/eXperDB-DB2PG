@@ -35,9 +35,6 @@
 			</otherwise>
 		</choose>
 	</select>
-	<select id="getSourceTableData" parameterType="map" resultType="map" databaseId="ORA">
-		SELECT * FROM ${SCHEMA}${TABLE} ${WHERE}
-	</select>
 	<select id="getTableInform" parameterType="map" resultType="com.k4m.experdb.db2pg.common.LowerKeyMap" databaseId="ORA">
 		SELECT UT.OBJECT_NAME AS TABLE_NAME,
                NVL(SUBSTRB(UTC.COMMENTS,1,500),'') AS TABLE_COMMENT,
@@ -184,9 +181,6 @@
 			</otherwise>
 		</choose>
 		ORDER BY 1
-	</select>
-	<select id="getSourceTableData" parameterType="map" resultType="map" databaseId="MSS">
-		SELECT * FROM ${SCHEMA}${TABLE} ${WHERE}
 	</select>
 	<select id="getTableInform"  parameterType="map" resultType="map" databaseId="MSS">
 		SELECT
@@ -459,9 +453,6 @@
 			</otherwise>
 		</choose>	
 	</select>
-	<select id="getSourceTableData" parameterType="map" resultType="map" databaseId="ASE">
-		SELECT * FROM ${SCHEMA}${TABLE} ${WHERE}
-	</select>
 	
 	<select id="getTableNames" parameterType="map" resultType="java.lang.String" databaseId="DB2" >
 		SELECT TABLE_NAME AS TABLE_NAME FROM SYSIBM.TABLES 
@@ -474,9 +465,6 @@
 				AND TABLE_TYPE IN ('BASE TABLE','VIEW')
 			</otherwise>
 		</choose>
-	</select>
-	<select id="getSourceTableData" parameterType="map" resultType="map" databaseId="DB2">
-		SELECT * FROM ${SCHEMA}${TABLE} ${WHERE}
 	</select>
 	
 	<select id="getTableNames" parameterType="map" resultType="java.lang.String" databaseId="MYSQL">
@@ -492,9 +480,6 @@
 			</otherwise>
 		</choose>
 	</select>
-	<select id="getSourceTableData" parameterType="map" resultType="map" databaseId="MYSQL">
-		SELECT * FROM ${SCHEMA}${TABLE} ${WHERE}
-	</select> 
 	<select id="getTableInform" parameterType="map" resultType="map" databaseId="MYSQL">
 		SELECT table_schema AS schema_name, table_name AS table_name, table_comment AS table_comment
 		 FROM information_schema.tables

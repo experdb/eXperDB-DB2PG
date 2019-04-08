@@ -88,8 +88,10 @@ public class DDLConverter {
 		DDLString ddlStrVO = null;
 		List<Table> tables = ConvertDBUtils.getTableInform(tableNameList, true, Constant.POOLNAME.SOURCE.name(),dbConfigInfo);
 		
-		List<View> views = ConvertDBUtils.setViewInform(tableSchema, Constant.POOLNAME.SOURCE.name(),dbConfigInfo);
-		viewFileCreate(views);
+		if(ConfigInfo.SRC_CONVERT_VIEW) {
+			List<View> views = ConvertDBUtils.setViewInform(tableSchema, Constant.POOLNAME.SOURCE.name(),dbConfigInfo);
+			viewFileCreate(views);
+		}
 		
 		PgDDLMaker<Table> maker = new PgDDLMaker<Table>(DDL_TYPE.CREATE);
 		Queue<DDLString> ddlQueue = new LinkedBlockingQueue<DDLString>();

@@ -9,6 +9,7 @@ import com.k4m.experdb.db2pg.db.DBCPPoolManager;
 import com.k4m.experdb.db2pg.db.datastructure.DBConfigInfo;
 import com.k4m.experdb.db2pg.work.db.impl.MetaExtractWork;
 import com.k4m.experdb.db2pg.work.db.impl.MetaExtractWorker;
+import com.k4m.experdb.db2pg.work.db.impl.WORK_TYPE;
 
 public class MetaExtractWorkerTest {
 	public static void main(String[] args) throws Exception {
@@ -23,7 +24,7 @@ public class MetaExtractWorkerTest {
 		dbconf.DB_TYPE=Constant.DB_TYPE.POG;
 		String poolName = "MetaExtractWorkerTest";
 		DBCPPoolManager.setupDriver(dbconf, poolName, 2);
-		MetaExtractWorker metaExtractWorker = new MetaExtractWorker(poolName, new MetaExtractWork(MetaExtractWorker.WORK_TYPE.GET_PG_CURRENT_SCHEMA, null));
+		MetaExtractWorker metaExtractWorker = new MetaExtractWorker(poolName, new MetaExtractWork(WORK_TYPE.GET_PG_CURRENT_SCHEMA, null));
 //		executorService.execute(metaExtractWorker);
 		metaExtractWorker.run();
 		

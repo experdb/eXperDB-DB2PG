@@ -24,6 +24,32 @@ public class Main {
 		LogUtils.setVerbose(ConfigInfo.VERBOSE);
 		LogManager.getRootLogger().setLevel(ConfigInfo.LOG_LEVEL);
 		
+		if ( ConfigInfo.LOG_LEVEL == org.apache.log4j.Level.DEBUG ) {
+			org.apache.log4j.ConsoleAppender appender = new org.apache.log4j.ConsoleAppender();
+			appender.setName("sqlAppender");
+			
+			org.apache.log4j.PatternLayout layout = new org.apache.log4j.PatternLayout();
+			layout.setConversionPattern("%d [%t] %-5p %c{1} - %m%n");
+			appender.setLayout(layout);
+			
+			org.apache.log4j.varia.StringMatchFilter strMatchFilter = new org.apache.log4j.varia.StringMatchFilter();
+			strMatchFilter.setStringToMatch("Result");
+			strMatchFilter.setAcceptOnMatch(false);
+			appender.addFilter(strMatchFilter);
+			
+			org.apache.log4j.Logger[] queryLogger = { 
+				  LogManager.getLogger("org.mybatis")
+				, LogManager.getLogger("java.sql")
+			};
+			for (org.apache.log4j.Logger logger : queryLogger) {
+				logger.setLevel(org.apache.log4j.Level.DEBUG);
+				logger.setAdditivity(false);
+				logger.removeAllAppenders();
+				logger.addAppender(appender);
+			}
+		}
+		
+		
 		checkConfigInfo();
 		
 		//pool 생성
@@ -36,7 +62,6 @@ public class Main {
 		makeDirectory();
 		
 		if(ConfigInfo.SRC_DDL_EXPORT) {
-			
 			LogUtils.debug("[SRC_DDL_EXPORT_START]",Main.class);
 			DDLConverter ddlConv = DDLConverter.getInstance();
 			ddlConv.start();
@@ -49,12 +74,16 @@ public class Main {
 		}
 		
 		if(ConfigInfo.SRC_EXPORT) {
-			TargetPgDDL dbInform = new TargetPgDDL();
+			TargetPgDDL dbInform = null ;
+			if(ConfigInfo.DB_WRITER_MODE ) dbInform = new TargetPgDDL();
+			
 			ManagementConstraint managementConstraint = new ManagementConstraint();
 			
-			LogUtils.debug("[PG_CONSTRAINT_EXTRACT_START]",Main.class);
-			makeSqlFile(dbInform);
-			LogUtils.debug("[PG_CONSTRAINT_EXTRACT_END]",Main.class);
+			if(ConfigInfo.DB_WRITER_MODE ) {
+				LogUtils.debug("[PG_CONSTRAINT_EXTRACT_START]",Main.class);
+				makeSqlFile(dbInform);
+				LogUtils.debug("[PG_CONSTRAINT_EXTRACT_END]",Main.class);
+			}
 						
 			if(ConfigInfo.DB_WRITER_MODE ){
 				if(ConfigInfo.TAR_DROP_CREATE_CONSTRAINT) {
@@ -95,15 +124,29 @@ public class Main {
 	//pool 생성
 	private static void createPool() throws Exception {
 		//DBCPPoolManager.setupDriver(ConfigInfo.SRC_DB_CONFIG, Constant.POOLNAME.SOURCE_DDL.name(), 1);
-		DBCPPoolManager.setupDriver(ConfigInfo.SRC_DB_CONFIG, Constant.POOLNAME.SOURCE.name(), ConfigInfo.SRC_TABLE_SELECT_PARALLEL);
-		
-		if(ConfigInfo.TAR_CONSTRAINT_EXTRACT || ConfigInfo.SRC_EXPORT) {
-			
-			int intTarConnCount = ConfigInfo.TAR_CONN_COUNT;
-			if(ConfigInfo.SRC_TABLE_SELECT_PARALLEL > intTarConnCount) {
-				intTarConnCount = ConfigInfo.SRC_TABLE_SELECT_PARALLEL;
-			}
-			DBCPPoolManager.setupDriver(ConfigInfo.TAR_DB_CONFIG, Constant.POOLNAME.TARGET.name(), intTarConnCount);
+//		DBCPPoolManager.setupDriver(ConfigInfo.SRC_DB_CONFIG, Constant.POOLNAME.SOURCE.name(), ConfigInfo.SRC_TABLE_SELECT_PARALLEL);
+//		
+//		if(ConfigInfo.TAR_CONSTRAINT_EXTRACT || ConfigInfo.SRC_EXPORT) {
+//			
+//			int intTarConnCount = ConfigInfo.TAR_CONN_COUNT;
+//			if(ConfigInfo.SRC_TABLE_SELECT_PARALLEL > intTarConnCount) {
+//				intTarConnCount = ConfigInfo.SRC_TABLE_SELECT_PARALLEL;
+//			}
+//			DBCPPoolManager.setupDriver(ConfigInfo.TAR_DB_CONFIG, Constant.POOLNAME.TARGET.name(), intTarConnCount);
+//		}
+		if(ConfigInfo.SRC_EXPORT || ConfigInfo.SRC_DDL_EXPORT) {
+			DBCPPoolManager.setupDriver(ConfigInfo.SRC_DB_CONFIG
+					, Constant.POOLNAME.SOURCE.name()
+					, ConfigInfo.SRC_TABLE_SELECT_PARALLEL
+			);
+		}
+		if(ConfigInfo.TAR_CONSTRAINT_EXTRACT || ConfigInfo.DB_WRITER_MODE) {
+			DBCPPoolManager.setupDriver(ConfigInfo.TAR_DB_CONFIG
+					, Constant.POOLNAME.TARGET.name()
+					, ConfigInfo.SRC_TABLE_SELECT_PARALLEL > ConfigInfo.TAR_CONN_COUNT 
+					  ? ConfigInfo.SRC_TABLE_SELECT_PARALLEL
+					  : ConfigInfo.TAR_CONN_COUNT
+		    );
 		}
 	}
 	

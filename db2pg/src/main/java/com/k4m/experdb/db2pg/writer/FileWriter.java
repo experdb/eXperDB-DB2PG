@@ -7,14 +7,15 @@ import java.nio.channels.FileChannel;
 import java.nio.file.StandardOpenOption;
 import java.util.concurrent.ConcurrentHashMap;
 
+import com.k4m.experdb.db2pg.common.Constant;
 import com.k4m.experdb.db2pg.config.ConfigInfo;
 
 public class FileWriter {
 	protected String outputDirectory = ConfigInfo.OUTPUT_DIRECTORY + "data/";
 	private  FileChannel fileChannels;
 	private  FileChannel badFileChannels ;
-	private static int successByteCount; // Writer가 처리한 총 Byte 수
-	private static int errByteCount = 0; // 
+	private static long successByteCount; // Writer가 처리한 총 Byte 수
+	private static long errByteCount = 0; // 
 	public static ConcurrentHashMap<String, ConfigInfo> ConnInfoList = new ConcurrentHashMap<String, ConfigInfo>();
 	
 	public FileWriter(){}
@@ -43,7 +44,7 @@ public class FileWriter {
 	
 
 	public void badFileWrite(String lineStr) throws IOException {
-		byte[] inputBytes = (lineStr + "\r\n").getBytes();
+		byte[] inputBytes = (lineStr + Constant.R).getBytes();
 		ByteBuffer byteBuffer = ByteBuffer.wrap(inputBytes);
 		try {
 			badFileChannels.write(byteBuffer);
@@ -55,30 +56,31 @@ public class FileWriter {
 	
 	public void fileCreater(String file_nm) throws IOException {
 		File file = new File(file_nm);
-		if(!file.isFile()){
-			fileChannels = FileChannel.open(file.toPath(), StandardOpenOption.CREATE, StandardOpenOption.WRITE);
-		}else{
+		boolean b = ConfigInfo.FILE_APPEND_OPT;
+		if(ConfigInfo.FILE_APPEND_OPT && file.isFile()) {
 			fileChannels = FileChannel.open(file.toPath(), StandardOpenOption.APPEND);
+		} else {
+			fileChannels = FileChannel.open(file.toPath(), StandardOpenOption.CREATE, StandardOpenOption.WRITE, StandardOpenOption.TRUNCATE_EXISTING);
 		}
 	}
 
 	public void badFileCreater(String file_nm) throws IOException {
 		File file = new File(file_nm);
-		if(!file.isFile()){
-			badFileChannels = FileChannel.open(file.toPath(), StandardOpenOption.CREATE, StandardOpenOption.WRITE);
-		}else{
+		if(ConfigInfo.FILE_APPEND_OPT && file.isFile()) {
 			badFileChannels = FileChannel.open(file.toPath(), StandardOpenOption.APPEND);
+		} else {
+			badFileChannels = FileChannel.open(file.toPath(), StandardOpenOption.CREATE, StandardOpenOption.WRITE, StandardOpenOption.TRUNCATE_EXISTING);
 		}
 	}
 	
 	
-	public void closeFileChannels() throws Exception {
+	public void closeFileChannels(String table_nm) throws Exception {
 		if (fileChannels != null && fileChannels.isOpen()) {
 			try {
 				WriterVO wv = new WriterVO();
 
-				System.out.println("Writer가 성공한 총 Byte 수 =" + successByteCount);
-				System.out.println("Writer가 실패한 총 Byte 수 =" + errByteCount);
+				System.out.println("[" + table_nm + "] succeeded bytes : " + successByteCount);
+				System.out.println("[" + table_nm + "] failed bytes : " + errByteCount);
 				wv.setProcessLines(0);
 				wv.setProcessBytes(successByteCount);
 				wv.setPorcessErrorLines(errByteCount);

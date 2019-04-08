@@ -10,7 +10,7 @@ import com.k4m.experdb.db2pg.common.LogUtils;
 import com.k4m.experdb.db2pg.db.datastructure.DBConfigInfo;
 import com.k4m.experdb.db2pg.work.db.impl.MetaExtractWork;
 import com.k4m.experdb.db2pg.work.db.impl.MetaExtractWorker;
-import com.k4m.experdb.db2pg.work.db.impl.MetaExtractWorker.WORK_TYPE;
+import com.k4m.experdb.db2pg.work.db.impl.WORK_TYPE;
 
 public class DBUtils {
 	public static List<String> getTableNames(boolean tableOnly, String srcPoolName, DBConfigInfo dbConfigInfo) {
@@ -23,9 +23,11 @@ public class DBUtils {
 			
 			params.put("TABLE_SCHEMA", dbConfigInfo.SCHEMA_NAME);
 			params.put("TABLE_ONLY", tableOnly);
+			System.out.println(params);
 			
 			MetaExtractWorker mew = new MetaExtractWorker(srcPoolName,new MetaExtractWork(WORK_TYPE.GET_TABLE_NAMES, params));
 			mew.run();
+			
 			tableNames = (List<String>)mew.getResult();
 			LogUtils.info("[GET_TABLE_NAMES]"+tableNames,DBUtils.class);
 			stopWatch.stop();

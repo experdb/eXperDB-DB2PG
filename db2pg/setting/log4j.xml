@@ -57,11 +57,6 @@
 		<appender-ref ref="sql" />
 	</category>
 
-<!-- 	<logger name="com.k4m.db2pg"> -->
-<!-- 		<level value="INFO" /> -->
-<!-- 	</logger> -->
-
-
 	<root>
 		<priority value="info" />
 		<appender-ref ref="consoleToFile" />

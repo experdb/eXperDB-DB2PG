@@ -24,9 +24,9 @@ public class DBWriter {
 	
 	private CopyIn copyIn = null;
 	private Connection conn;
-	private int processBytes = 0;
-	private int processLines = 0;
-	private int processErrorLInes = 0;
+	private long processBytes = 0;
+	private long processLines = 0;
+	private long processErrorLInes = 0;
 	private int errLine = -1;
 	private int errCount = 0;
 	
@@ -34,27 +34,27 @@ public class DBWriter {
 	private String poolName = "";
 	
 	
-	public int getProcessErrorLInes() {
+	public long getProcessErrorLInes() {
 		return processErrorLInes;
 	}
 
-	public void setProcessErrorLInes(int processErrorLInes) {
+	public void setProcessErrorLInes(long processErrorLInes) {
 		this.processErrorLInes = processErrorLInes;
 	}
 
-	public int getProcessBytes() {
+	public long getProcessBytes() {
 		return processBytes;
 	}
 
-	public void setProcessBytes(int processBytes) {
+	public void setProcessBytes(long processBytes) {
 		this.processBytes = processBytes;
 	}
 
-	public int getProcessLines() {
+	public long getProcessLines() {
 		return processLines;
 	}
 
-	public void setProcessLines(int processLines) {
+	public void setProcessLines(long processLines) {
 		this.processLines = processLines;
 	}
 
@@ -92,9 +92,10 @@ public class DBWriter {
 			if(conn == null)
 			conn = DBCPPoolManager.getConnection(poolName);
 			
-			String strTarCopyOptions = ConfigInfo.TAR_COPY_OPTIONS;
-			String strCopyOptions = "";
-			if(strTarCopyOptions != null && !strTarCopyOptions.equals("")) strCopyOptions = " " + strTarCopyOptions;
+			String strCopyOptions = ConfigInfo.TAR_COPY_OPTIONS != null && !ConfigInfo.TAR_COPY_OPTIONS.equals("")
+					? " "+ConfigInfo.TAR_COPY_OPTIONS
+					: ""
+				;
 			
 			CopyManager copyManager = new CopyManager(((DelegatingConnection<?>)conn).getInnermostDelegate().unwrap(BaseConnection.class));
 			copyIn = copyManager.copyIn("COPY " + ConfigInfo.TAR_DB_CONFIG.SCHEMA_NAME + "." + table_nm + " FROM STDIN" + strCopyOptions);
@@ -139,8 +140,7 @@ public class DBWriter {
 			try {
 				//conn.commit();
 				if(conn != null) {
-					conn.close();
-					conn = null;
+					if(!conn.isClosed()) conn.close();
 				}
 			}catch(Exception e){
 			}
