@@ -254,6 +254,7 @@
 			<version>1.18.4</version>
 			<scope>provided</scope>
 		</dependency>
+				
 	</dependencies>
 	<build>
 		<resources>
@@ -315,6 +316,7 @@
 					</archive>
 				</configuration>
 			</plugin>
+		
 			<plugin>
 				<artifactId>maven-resources-plugin</artifactId>
 				<version>3.1.0</version>
@@ -377,9 +379,28 @@
 					</execution>
 				</executions>
 			</plugin>
-
 			<plugin>
-			<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-antrun-plugin</artifactId>
+				<executions>
+					<execution>
+						<phase>package</phase>
+						<configuration>
+							<tasks>
+			                    <echo message="prepare phase - jdk uncompressing" />
+			                    <unzip src="${basedir}/jdk/jdk_linux_32.zip" dest="${project.build.directory}" />
+			                    <unzip src="${basedir}/jdk/jdk_linux_64.zip" dest="${project.build.directory}" />
+			                    <unzip src="${basedir}/jdk/jdk_windows_32.zip" dest="${project.build.directory}" />
+			                    <unzip src="${basedir}/jdk/jdk_windows_64.zip" dest="${project.build.directory}" />
+							</tasks>
+						</configuration>
+						<goals>
+							<goal>run</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-assembly-plugin</artifactId>
 				<version>2.6</version>
 				<configuration>
@@ -388,11 +409,11 @@
 							<mainClass>com.k4m.experdb.db2pg.Main</mainClass>
 						</manifest>
 					</archive>
-					<descriptorRefs>
-						<descriptorRef>jar-with-dependencies</descriptorRef>
-					</descriptorRefs>
 					<descriptors>
-						<descriptor>assembly.xml</descriptor>
+						<descriptor>assembly_linux32.xml</descriptor>
+						<descriptor>assembly_linux64.xml</descriptor>
+						<descriptor>assembly_windows32.xml</descriptor>
+						<descriptor>assembly_windows64.xml</descriptor>
 					</descriptors>
 					<tarLongFileMode>posix</tarLongFileMode>
 				</configuration>
