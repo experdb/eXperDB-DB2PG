@@ -2,25 +2,28 @@
 	xmlns="http://maven.apache.org/plugins/maven-assembly-plugin/assembly/1.1.2"
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/plugins/maven-assembly-plugin/assembly/1.1.2 http://maven.apache.org/xsd/assembly-1.1.2.xsd">
-	<id>bundle</id>
+	<id>windows32</id>
 	<formats>
-		<format>tar.gz</format>
 		<format>zip</format>
-		<format>tar</format>
 	</formats>
 	<includeBaseDirectory>false</includeBaseDirectory>
 	<fileSets>
 		<fileSet>
 			<directory>target</directory>
-			<outputDirectory>DB2PG-${project.version}</outputDirectory>
+			<outputDirectory>db2pg-${project.version}-windows32</outputDirectory>
 			<includes>
-<!-- 				<include>db2pg-${project.version}.jar</include> -->
 				<include>db2pg.bat</include>
-				<include>db2pg.sh</include>
 				<include>LICENSE</include>
 				<include>db2pg.config</include>
 				<include>queries.xml</include>
 				<include>lib/*</include>
+			</includes>
+		</fileSet>
+		<fileSet>
+			<directory>target/java_windows_32</directory>
+			<outputDirectory>db2pg-${project.version}-windows32</outputDirectory>
+			<includes>
+				<include>openjdk-8/**</include>
 			</includes>
 		</fileSet>
 	</fileSets>
