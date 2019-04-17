@@ -65,6 +65,7 @@ public class Unloader {
 		return tableNameList;
 	}
 	
+	// getConvertReplaceTableName에서 getConvertObjectName로 메소드명 변경
 	private String getConvertObjectName(String objName) throws Exception {
 		String strReplaceTableName = "";
 		
@@ -172,6 +173,7 @@ public class Unloader {
         	LogUtils.debug("\n",Unloader.class);
         	LogUtils.info("[SUMMARY_INFO]",Unloader.class);
         	
+        	// import.sql을 생성
         	impSql = new File(ConfigInfo.OUTPUT_DIRECTORY + "data/import.sql");
         	PrintWriter pw = new PrintWriter(impSql);
         	
@@ -187,6 +189,8 @@ public class Unloader {
     			sb.append(", STATE : ");
     			if(jobList.get(i).isSuccess()){
     				sb.append("SUCCESS");
+    				// 파일로 데이터 추출시 import.sql 파일에 psql을 이용한 데이터 적재가 가능하도록 구문 생성
+    				// linux-ex) nohup psql -d testdb -U test -f import.sql > import.log 2>&1 &
     				impsb.append("\\copy \"");
     				impsb.append(DevUtils.classifyString(jobList.get(i).getTableName(),ConfigInfo.CLASSIFY_STRING));
     				impsb.append("\" (");

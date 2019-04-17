@@ -38,6 +38,7 @@ public class ArgsParser {
 		Option option = null;
 		option = new Option("c", "config", true, "config file path");
 		option.setRequired(false);
+		// config 옵션 활성화를 위해 아래의 객체 추가
 		options.addOption(option);
 		option = new Option("h", "help", false, "db2pg help");
 		option.setRequired(false);

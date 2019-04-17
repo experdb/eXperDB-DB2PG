@@ -3,7 +3,7 @@ package com.k4m.experdb.db2pg.common;
 public class Constant {
 	private Constant(){}
 	public static String S = System.getProperty("file.separator"); // system file separator : "/" on UNIX, "\\" on WINDOWS
-	public static String R = System.getProperty("line.separator");
+	public static String R = System.getProperty("line.separator"); // "\n" on LINUX, "\r\n" on WINDOWS
 	public static String L = System.getProperty("user.language");
     
     public static String REPOSITORY_DB_TYPE;

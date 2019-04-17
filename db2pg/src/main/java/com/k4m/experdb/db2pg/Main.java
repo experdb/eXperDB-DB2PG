@@ -24,6 +24,7 @@ public class Main {
 		LogUtils.setVerbose(ConfigInfo.VERBOSE);
 		LogManager.getRootLogger().setLevel(ConfigInfo.LOG_LEVEL);
 		
+		// 디버깅 모드 동작시 mybatis의 디버깅을 위하여 logger 추가
 		if ( ConfigInfo.LOG_LEVEL == org.apache.log4j.Level.DEBUG ) {
 			org.apache.log4j.ConsoleAppender appender = new org.apache.log4j.ConsoleAppender();
 			appender.setName("sqlAppender");

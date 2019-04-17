@@ -67,6 +67,7 @@ public class PgDDLMaker<T> {
 		return ddlType;
 	}
 	
+	// CLASSIFY_STRING 옵션에 따라 대문자, 소문자, 원본 지정을 할 수 있게끔 DevUtils.classifyString(String,String) 함수 사용
 	public List<DDLString> makeCreateTable(Table table) {
 		List<DDLString> ddlStringVOs = new LinkedList<DDLString>();
 		List<DDLString> tmpStringVOs = new LinkedList<DDLString>();

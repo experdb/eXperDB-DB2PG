@@ -88,6 +88,7 @@ public class DDLConverter {
 		DDLString ddlStrVO = null;
 		List<Table> tables = ConvertDBUtils.getTableInform(tableNameList, true, Constant.POOLNAME.SOURCE.name(),dbConfigInfo);
 		
+		// DDL 추출시 view 제외 여부
 		if(ConfigInfo.SRC_CONVERT_VIEW) {
 			List<View> views = ConvertDBUtils.setViewInform(tableSchema, Constant.POOLNAME.SOURCE.name(),dbConfigInfo);
 			viewFileCreate(views);

@@ -80,6 +80,7 @@ public class ConfigInfo {
 	
 	public static boolean TAR_DROP_CREATE_CONSTRAINT;
 	
+	// DDL 추출시 view 제외 옵션
 	public static boolean SRC_CONVERT_VIEW;
 	
 	
@@ -155,7 +156,7 @@ public class ConfigInfo {
 				
 				ConfigInfo.TAR_TABLE_ERR_CNT_EXIT = (int)propertyCheck(trimCheck(prop.getProperty("TAR_TABLE_ERR_CNT_EXIT")),0,Integer.class);
 				
-				ConfigInfo.FILE_WRITER_MODE = (boolean)propertyCheck(trimCheck(prop.getProperty("FILE_WRITER_MODE")),true,Boolean.class);
+				ConfigInfo.FILE_WRITER_MODE = (boolean)propertyCheck(trimCheck(prop.getProperty("FILE_WRITER_MODE")),false,Boolean.class);
 				ConfigInfo.FILE_APPEND_OPT = (boolean)propertyCheck(trimCheck(prop.getProperty("FILE_APPEND_OPT")),false,Boolean.class);
 				ConfigInfo.DB_WRITER_MODE = (boolean)propertyCheck(trimCheck(prop.getProperty("DB_WRITER_MODE")),false,Boolean.class);
 				

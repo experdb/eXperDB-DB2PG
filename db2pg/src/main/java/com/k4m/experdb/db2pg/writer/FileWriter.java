@@ -44,6 +44,7 @@ public class FileWriter {
 	
 
 	public void badFileWrite(String lineStr) throws IOException {
+		// Constant.R : LINUX = '\n', WINDOWS = '\r\n'
 		byte[] inputBytes = (lineStr + Constant.R).getBytes();
 		ByteBuffer byteBuffer = ByteBuffer.wrap(inputBytes);
 		try {
