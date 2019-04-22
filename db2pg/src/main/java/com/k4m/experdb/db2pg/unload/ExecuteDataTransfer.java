@@ -256,6 +256,8 @@ public class ExecuteDataTransfer implements Runnable{
 					if(dbWriter.getProcessErrorLInes() > 0) {
 						this.success = false;
 					}
+					//dbWriter Closed
+					dbWriter.shutdown();
 				}
 				if(rs != null) rs.close();
 			} catch (Exception e) {
