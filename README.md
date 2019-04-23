@@ -23,7 +23,7 @@ It works on JAVA basis, so there is no restriction on platforms such as Unix, Li
 ## TODO
 * Export Oracle schema to a PostgreSQL schema.
 * Export DDL to PostgreSQL DDL.
-* Support MySQL(MariaDB)
+* Support CUBRID.
 <!--* Export predefined functions, triggers, procedures. -->
 <!--* Support cubrid.-->
 
