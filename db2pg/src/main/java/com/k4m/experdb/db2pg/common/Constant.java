@@ -21,23 +21,18 @@ public class Constant {
     {
     	public static final String ORA = "ORA";
     	public static final String POG = "POG";
-    	public static final String POG_REP = "POG_REP";
 	    public static final String MSS = "MSS";
 	    public static final String TBR = "TBR";
 	    public static final String DB2 = "DB2";
 	    public static final String ASE = "ASE";
-	    public static final String MYSQL = "MYSQL";
+	    public static final String MYSQL = "MYS";
 	    public static final String CUB = "CUB";
-	    public static final String IQ = "IQ";
     }
-    
-    
-    
+
     public static enum POOLNAME
     {
     	REPOSITORY, SOURCE, SOURCE_DDL, TARGET;
     }    
-    
 
     public static final String SERVER_LOCAL_IP = "127.0.0.1";
 

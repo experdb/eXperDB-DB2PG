@@ -129,7 +129,7 @@ public class DBWriter {
 				
 				writeError(table_nm, e);
 				
-				if(errCount > ConfigInfo.TAR_TABLE_ERR_CNT_EXIT) {
+				if(errCount > ConfigInfo.TAR_LIMIT_ERROR) {
 					throw e;
 				}
 				
@@ -220,7 +220,7 @@ public class DBWriter {
 	private void errDataFileWrite(String strErrLine, String tableName, int intErrLine) throws Exception {
 		if(ConfigInfo.TAR_TABLE_BAD) {
 			FileWriter fileWriter = new FileWriter(tableName);
-			fileWriter.badFileCreater(ConfigInfo.OUTPUT_DIRECTORY + tableName + ".bad");
+			fileWriter.badFileCreater(ConfigInfo.SRC_FILE_OUTPUT_DIR_PATH + tableName + ".bad");
 			fileWriter.badFileWrite(strErrLine);
 			LogUtils.debug("[Err Line Skip] ErrLine : " + intErrLine + " ErrData : " + strErrLine, DBWriter.class);
 		}
@@ -299,7 +299,7 @@ public class DBWriter {
 		LogUtils.error(
 				"\""
 				+ ( ConfigInfo.TAR_DB_CONFIG.CHARSET != null && !ConfigInfo.TAR_DB_CONFIG.CHARSET.equals("")
-					? DevUtils.classifyString(ConfigInfo.TAR_DB_CONFIG.CHARSET,ConfigInfo.CLASSIFY_STRING) + "\".\""
+					? DevUtils.classifyString(ConfigInfo.TAR_DB_CONFIG.CHARSET,ConfigInfo.SRC_CLASSIFY_STRING) + "\".\""
 					: "")
 				+ table_nm + "\"",ExecuteQuery.class,e);
 	}

@@ -12,34 +12,34 @@ import com.k4m.experdb.db2pg.db.datastructure.DBConfigInfo;
 
 
 public class ConfigInfo {
-	public static boolean SRC_EXPORT;
+	public static boolean SRC_INCLUDE_DATA_EXPORT;
 	public static boolean SRC_DDL_EXPORT;
-	public static boolean TAR_CONSTRAINT_EXTRACT;
+	public static boolean TAR_CONSTRAINT_DDL;
 			;
 	
 	//region SRC
 	public static DBConfigInfo SRC_DB_CONFIG = new DBConfigInfo();
 	//region PROCESSING
-	public static int SRC_LOB_FETCH_SIZE // 1024
-			, STATEMENT_FETCH_SIZE // 3000
+	public static int SRC_LOB_BUFFER_SIZE // 1024
+			, SRC_STATEMENT_FETCH_SIZE // 3000
 			;
-	public static int SRC_TABLE_SELECT_PARALLEL // 1
-			, SRC_TABLE_COPY_SEGMENT_SIZE // one time copy command load tuple count (10000)
+	public static int SRC_SELECT_ON_PARALLEL // 1
+			, SRC_COPY_SEGMENT_SIZE // one time copy command load tuple count (10000)
 			;
 	public static boolean VERBOSE // check process log (true)
 			, SRC_IS_ASCII // only use source encoding is ascii (false)
 			;
 	//endregion
 	//region OPTIONAL_PROCESSING
-	public static String SRC_WHERE=null
+	public static String SRC_WHERE_CONDITION=null
 			;
-	public static boolean TABLE_ONLY // true
-			, TRUNCATE // false
+	public static boolean SRC_TABLE_DDL // true
+			, TAR_TRUNCATE // false
 			;
-	public static List<String> SRC_ALLOW_TABLES = null
+	public static List<String> SRC_INCLUDE_TABLES = null
 			, SRC_EXCLUDE_TABLES = null
 			;
-	public static int SRC_ROWNUM //select rownum (-1)
+	public static int SRC_ROWS_EXPORT //select rownum (-1)
 			;
 	//endregion
 	//endregion
@@ -54,31 +54,31 @@ public class ConfigInfo {
 	//endregion
 	
 	//region OUTPUT
-	public static String OUTPUT_DIRECTORY // "./"
-			, CLASSIFY_STRING //  original(default), small, capital 
+	public static String SRC_FILE_OUTPUT_DIR_PATH // "./"
+			, SRC_CLASSIFY_STRING //  original(default), toupper, tolower 
 			;
 	//endregion
 	
 	//region INPUT
-	public static String SELECT_QUERIES_FILE = null;
+	public static String SRC_FILE_QUERY_DIR_PATH = null;
 	//endregion
 	
 	//region OUTPUT
 	//buffer size
-	public static int BUFFER_SIZE; //10*1024*1024
+	public static int SRC_BUFFER_SIZE; //10*1024*1024
 	//endregion
 	
 	public static org.apache.log4j.Level LOG_LEVEL;
 	
 	public static boolean FILE_WRITER_MODE, DB_WRITER_MODE;
 	
-	public static boolean FILE_APPEND_OPT;
+	public static boolean SRC_FILE_APPEND;
 	
 	public static boolean TAR_TABLE_BAD;
 	
-	public static int TAR_TABLE_ERR_CNT_EXIT;
+	public static int TAR_LIMIT_ERROR;
 	
-	public static boolean TAR_DROP_CREATE_CONSTRAINT;
+	public static boolean TAR_CONSTRAINT_REBUILD;
 	
 	// DDL 추출시 view 제외 옵션
 	public static boolean SRC_CONVERT_VIEW;
@@ -89,27 +89,30 @@ public class ConfigInfo {
 			try {
 				Properties prop = new Properties();
 				prop.load(new FileInputStream(configFilePath));
-				ConfigInfo.SRC_EXPORT = (boolean)propertyCheck(trimCheck(prop.getProperty("SRC_EXPORT")),false,Boolean.class);
+				ConfigInfo.SRC_INCLUDE_DATA_EXPORT = (boolean)propertyCheck(trimCheck(prop.getProperty("SRC_INCLUDE_DATA_EXPORT")),false,Boolean.class);
 				ConfigInfo.SRC_DDL_EXPORT = (boolean)propertyCheck(trimCheck(prop.getProperty("SRC_DDL_EXPORT")),false,Boolean.class);
-				ConfigInfo.TAR_CONSTRAINT_EXTRACT = (boolean)propertyCheck(trimCheck(prop.getProperty("TAR_CONSTRAINT_EXTRACT")),false,Boolean.class);
+				ConfigInfo.TAR_CONSTRAINT_DDL = (boolean)propertyCheck(trimCheck(prop.getProperty("TAR_CONSTRAINT_DDL")),false,Boolean.class);
 				SRC_DB_CONFIG.SERVERIP 		= trimCheck(prop.getProperty("SRC_HOST"));
 				SRC_DB_CONFIG.USERID 		= trimCheck(prop.getProperty("SRC_USER"));
 				SRC_DB_CONFIG.DB_PW 		= trimCheck(prop.getProperty("SRC_PASSWORD")); 
 				SRC_DB_CONFIG.DBNAME 		= trimCheck(prop.getProperty("SRC_DATABASE")); 
 				SRC_DB_CONFIG.SCHEMA_NAME 	= trimCheck(prop.getProperty("SRC_SCHEMA")); 
-				SRC_DB_CONFIG.DB_TYPE 		= (String)propertyCheck(trimCheck(prop.getProperty("SRC_DB_TYPE")),"ORA",String.class);
+				SRC_DB_CONFIG.DB_TYPE 		= (String)propertyCheck(trimCheck(prop.getProperty("SRC_DBMS_TYPE")),"ORA",String.class);
 				SRC_DB_CONFIG.PORT			= (String)propertyCheck(trimCheck(prop.getProperty("SRC_PORT")),"1521",String.class);
 				SRC_DB_CONFIG.CHARSET 		= (String)propertyCheck(trimCheck(prop.getProperty("SRC_DB_CHARSET")),null,String.class);
-				ConfigInfo.SRC_LOB_FETCH_SIZE = (int)propertyCheck(trimCheck(prop.getProperty("SRC_LOB_FETCH_SIZE")),1024,Integer.class);
-				ConfigInfo.STATEMENT_FETCH_SIZE = (int)propertyCheck(trimCheck(prop.getProperty("STATEMENT_FETCH_SIZE")),3000,Integer.class);
-				ConfigInfo.SRC_TABLE_SELECT_PARALLEL = (int)propertyCheck(trimCheck(prop.getProperty("SRC_TABLE_SELECT_PARALLEL")),1,Integer.class);
-				ConfigInfo.SRC_TABLE_COPY_SEGMENT_SIZE = (int)propertyCheck(trimCheck(prop.getProperty("SRC_TABLE_COPY_SEGMENT_SIZE")),10000,Integer.class);
+				ConfigInfo.SRC_LOB_BUFFER_SIZE = (int)propertyCheck(trimCheck(prop.getProperty("SRC_LOB_BUFFER_SIZE")),1024,Integer.class);
+				ConfigInfo.SRC_LOB_BUFFER_SIZE = ConfigInfo.SRC_LOB_BUFFER_SIZE>0?ConfigInfo.SRC_LOB_BUFFER_SIZE:1024;
+				ConfigInfo.SRC_LOB_BUFFER_SIZE = ConfigInfo.SRC_LOB_BUFFER_SIZE * 1024 * 1024;
+				
+				ConfigInfo.SRC_STATEMENT_FETCH_SIZE = (int)propertyCheck(trimCheck(prop.getProperty("SRC_STATEMENT_FETCH_SIZE")),3000,Integer.class);
+				ConfigInfo.SRC_SELECT_ON_PARALLEL = (int)propertyCheck(trimCheck(prop.getProperty("SRC_SELECT_ON_PARALLEL")),1,Integer.class);
+				ConfigInfo.SRC_COPY_SEGMENT_SIZE = (int)propertyCheck(trimCheck(prop.getProperty("SRC_COPY_SEGMENT_SIZE")),10000,Integer.class);
 				ConfigInfo.VERBOSE = (boolean)propertyCheck(trimCheck(prop.getProperty("VERBOSE")),true,Boolean.class);
 				ConfigInfo.TAR_TABLE_BAD = (boolean)propertyCheck(trimCheck(prop.getProperty("TAR_TABLE_BAD")),true,Boolean.class);
-				ConfigInfo.SRC_WHERE = trimCheck(prop.getProperty("SRC_WHERE"));
-				ConfigInfo.TABLE_ONLY = (boolean)propertyCheck(trimCheck(prop.getProperty("TABLE_ONLY")),true,Boolean.class);
-				ConfigInfo.TRUNCATE = (boolean)propertyCheck(trimCheck(prop.getProperty("TRUNCATE")),true,Boolean.class);
-				String allowTableStrs = trimCheck(prop.getProperty("SRC_ALLOW_TABLES"));
+				ConfigInfo.SRC_WHERE_CONDITION = trimCheck(prop.getProperty("SRC_WHERE_CONDITION"));
+				ConfigInfo.SRC_TABLE_DDL = (boolean)propertyCheck(trimCheck(prop.getProperty("SRC_TABLE_DDL")),true,Boolean.class);
+				ConfigInfo.TAR_TRUNCATE = (boolean)propertyCheck(trimCheck(prop.getProperty("TAR_TRUNCATE")),false,Boolean.class);
+				String allowTableStrs = trimCheck(prop.getProperty("SRC_INCLUDE_TABLES"));
 				if(allowTableStrs != null && !allowTableStrs.equals("")){
 					List<String> tmps = new ArrayList<String>();
 					for(String allowTableStr : allowTableStrs.split(",")){
@@ -117,7 +120,7 @@ public class ConfigInfo {
 						if(tmp.equals("")) continue;
 						tmps.add(tmp);
 					}
-					ConfigInfo.SRC_ALLOW_TABLES = tmps.size()>0 ? tmps : null;
+					ConfigInfo.SRC_INCLUDE_TABLES = tmps.size()>0 ? tmps : null;
 				}
 				String excludeTableStrs = trimCheck(prop.getProperty("SRC_EXCLUDE_TABLES"));
 				if(excludeTableStrs != null && !excludeTableStrs.equals("")){
@@ -129,7 +132,7 @@ public class ConfigInfo {
 					}
 					ConfigInfo.SRC_EXCLUDE_TABLES = tmps.size()>0 ? tmps : null;
 				}
-				ConfigInfo.SRC_ROWNUM = (int)propertyCheck(trimCheck(prop.getProperty("SRC_ROWNUM")),-1,Integer.class);
+				ConfigInfo.SRC_ROWS_EXPORT = (int)propertyCheck(trimCheck(prop.getProperty("SRC_ROWS_EXPORT")),-1,Integer.class);
 				TAR_DB_CONFIG.SERVERIP = trimCheck(prop.getProperty("TAR_HOST"));
 				TAR_DB_CONFIG.USERID = trimCheck(prop.getProperty("TAR_USER"));
 				TAR_DB_CONFIG.DB_PW = trimCheck(prop.getProperty("TAR_PASSWORD"));
@@ -138,14 +141,14 @@ public class ConfigInfo {
 				TAR_DB_CONFIG.DB_TYPE = trimCheck(prop.getProperty("TAR_DB_TYPE"));
 				TAR_DB_CONFIG.PORT = (String)propertyCheck(trimCheck(prop.getProperty("TAR_PORT")),"5432",String.class);
 				TAR_DB_CONFIG.CHARSET = (String)propertyCheck(trimCheck(prop.getProperty("TAR_DB_CHARSET")),null,String.class);
-				String outputDirectory = ((String)propertyCheck(trimCheck(prop.getProperty("OUTPUT_DIRECTORY")),"./",String.class)).trim().replace("\\", "/");
-				ConfigInfo.OUTPUT_DIRECTORY = outputDirectory.length()-1 == outputDirectory.lastIndexOf("/")
+				String outputDirectory = ((String)propertyCheck(trimCheck(prop.getProperty("SRC_FILE_OUTPUT_DIR_PATH")),"./",String.class)).trim().replace("\\", "/");
+				ConfigInfo.SRC_FILE_OUTPUT_DIR_PATH = outputDirectory.length()-1 == outputDirectory.lastIndexOf("/")
 													? outputDirectory : outputDirectory.concat("/");
-				ConfigInfo.CLASSIFY_STRING = (String)propertyCheck(trimCheck(prop.getProperty("CLASSIFY_STRING")),"original",String.class);
-				ConfigInfo.SELECT_QUERIES_FILE = (String)propertyCheck(trimCheck(prop.getProperty("SELECT_QUERIES_FILE")),"",String.class);
-				ConfigInfo.BUFFER_SIZE=(int)propertyCheck(trimCheck(prop.getProperty("BUFFER_SIZE")),10,Integer.class);
-				ConfigInfo.BUFFER_SIZE = ConfigInfo.BUFFER_SIZE>0?ConfigInfo.BUFFER_SIZE:10;
-				ConfigInfo.BUFFER_SIZE = ConfigInfo.BUFFER_SIZE * 1024 * 1024;
+				ConfigInfo.SRC_CLASSIFY_STRING = (String)propertyCheck(trimCheck(prop.getProperty("SRC_CLASSIFY_STRING")),"original",String.class);
+				ConfigInfo.SRC_FILE_QUERY_DIR_PATH = (String)propertyCheck(trimCheck(prop.getProperty("SRC_FILE_QUERY_DIR_PATH")),"",String.class);
+				ConfigInfo.SRC_BUFFER_SIZE=(int)propertyCheck(trimCheck(prop.getProperty("SRC_BUFFER_SIZE")),10,Integer.class);
+				ConfigInfo.SRC_BUFFER_SIZE = ConfigInfo.SRC_BUFFER_SIZE>0?ConfigInfo.SRC_BUFFER_SIZE:10;
+				ConfigInfo.SRC_BUFFER_SIZE = ConfigInfo.SRC_BUFFER_SIZE * 1024 * 1024;
 				
 				ConfigInfo.LOG_LEVEL = (org.apache.log4j.Level)propertyCheck(trimCheck(prop.getProperty("LOG_LEVEL"))
 						,org.apache.log4j.Level.INFO,org.apache.log4j.Level.class);
@@ -154,13 +157,13 @@ public class ConfigInfo {
 				ConfigInfo.TAR_TABLE_BAD_COUNT = (int)propertyCheck(trimCheck(prop.getProperty("TAR_TABLE_BAD_COUNT")),-1,Integer.class);
 				ConfigInfo.TAR_COPY_OPTIONS = (String)propertyCheck(trimCheck(prop.getProperty("TAR_COPY_OPTIONS")),null,String.class);
 				
-				ConfigInfo.TAR_TABLE_ERR_CNT_EXIT = (int)propertyCheck(trimCheck(prop.getProperty("TAR_TABLE_ERR_CNT_EXIT")),0,Integer.class);
+				ConfigInfo.TAR_LIMIT_ERROR = (int)propertyCheck(trimCheck(prop.getProperty("TAR_LIMIT_ERROR")),0,Integer.class);
 				
 				ConfigInfo.FILE_WRITER_MODE = (boolean)propertyCheck(trimCheck(prop.getProperty("FILE_WRITER_MODE")),false,Boolean.class);
-				ConfigInfo.FILE_APPEND_OPT = (boolean)propertyCheck(trimCheck(prop.getProperty("FILE_APPEND_OPT")),false,Boolean.class);
+				ConfigInfo.SRC_FILE_APPEND = (boolean)propertyCheck(trimCheck(prop.getProperty("SRC_FILE_APPEND")),false,Boolean.class);
 				ConfigInfo.DB_WRITER_MODE = (boolean)propertyCheck(trimCheck(prop.getProperty("DB_WRITER_MODE")),false,Boolean.class);
 				
-				ConfigInfo.TAR_DROP_CREATE_CONSTRAINT = (boolean)propertyCheck(trimCheck(prop.getProperty("TAR_DROP_CREATE_CONSTRAINT")),true,Boolean.class);
+				ConfigInfo.TAR_CONSTRAINT_REBUILD = (boolean)propertyCheck(trimCheck(prop.getProperty("TAR_CONSTRAINT_REBUILD")),true,Boolean.class);
 				
 				ConfigInfo.SRC_CONVERT_VIEW = (boolean)propertyCheck(trimCheck(prop.getProperty("SRC_CONVERT_VIEW")),true,Boolean.class);
 				

@@ -61,12 +61,12 @@ public class ExecuteDataTransfer implements Runnable{
 		this.srcPoolName = srcPoolName;
 		this.selectQuery = selectQuery;
 		this.outputFileName = outputFileName.replace("\"", "");
-		this.tableName = DevUtils.classifyString(outputFileName,ConfigInfo.CLASSIFY_STRING);
-		this.outputFileName = ConfigInfo.OUTPUT_DIRECTORY
-								+ DevUtils.classifyString(outputFileName,ConfigInfo.CLASSIFY_STRING).replace("$", "-")+".sql";
+		this.tableName = DevUtils.classifyString(outputFileName,ConfigInfo.SRC_CLASSIFY_STRING);
+		this.outputFileName = ConfigInfo.SRC_FILE_OUTPUT_DIR_PATH
+								+ DevUtils.classifyString(outputFileName,ConfigInfo.SRC_CLASSIFY_STRING).replace("$", "-")+".sql";
 		this.dbConfigInfo = dbConfigInfo;
 
-		//this.byteBuffer = ByteBuffer.allocateDirect(ConfigInfo.BUFFER_SIZE);
+		//this.byteBuffer = ByteBuffer.allocateDirect(ConfigInfo.SRC_BUFFER_SIZE);
 		this.success = true;
 	}
 	
@@ -149,11 +149,11 @@ public class ExecuteDataTransfer implements Runnable{
 			SrcConn = DBCPPoolManager.getConnection(srcPoolName);
 			preSrcStmt = SrcConn.prepareStatement(selectQuery);
 			
-			if(ConfigInfo.SRC_ROWNUM>-1) {
-				preSrcStmt.setMaxRows(ConfigInfo.SRC_ROWNUM);
+			if(ConfigInfo.SRC_ROWS_EXPORT>-1) {
+				preSrcStmt.setMaxRows(ConfigInfo.SRC_ROWS_EXPORT);
 			}
 			
-			preSrcStmt.setFetchSize(ConfigInfo.STATEMENT_FETCH_SIZE);
+			preSrcStmt.setFetchSize(ConfigInfo.SRC_STATEMENT_FETCH_SIZE);
         	rs = preSrcStmt.executeQuery();
         	
         	columnNames = new ArrayList<String>();
@@ -168,7 +168,7 @@ public class ExecuteDataTransfer implements Runnable{
         	
         	
 			if(ConfigInfo.DB_WRITER_MODE) {
-				if (ConfigInfo.TRUNCATE) {
+				if (ConfigInfo.TAR_TRUNCATE) {
 					execTruncTable(Constant.POOLNAME.TARGET.name(), this.tableName);
 				}
 				dbWriter = new DBWriter(Constant.POOLNAME.TARGET.name());
@@ -196,11 +196,11 @@ public class ExecuteDataTransfer implements Runnable{
         		
         		//System.out.println("length : " + bf.length() + " " + bf.toString());
 
-        		int intBUFFER_SIZE = ConfigInfo.BUFFER_SIZE;
-        		//ByteBuffer byteBuffer = ByteBuffer.allocateDirect(ConfigInfo.BUFFER_SIZE);
+        		int intSRC_BUFFER_SIZE = ConfigInfo.SRC_BUFFER_SIZE;
+        		//ByteBuffer byteBuffer = ByteBuffer.allocateDirect(ConfigInfo.SRC_BUFFER_SIZE);
         		
 
-        		if((rowCnt % ConfigInfo.SRC_TABLE_COPY_SEGMENT_SIZE == 0) || (bf.length() > intBUFFER_SIZE)) {
+        		if((rowCnt % ConfigInfo.SRC_COPY_SEGMENT_SIZE == 0) || (bf.length() > intSRC_BUFFER_SIZE)) {
         			if(ConfigInfo.DB_WRITER_MODE) {
         					dbWriterN(dbWriter);
         					intErrCnt += dbWriter.getErrCount();
@@ -212,7 +212,7 @@ public class ExecuteDataTransfer implements Runnable{
         			
         			bf.setLength(0);
         			
-        			if(intErrCnt > ConfigInfo.TAR_TABLE_ERR_CNT_EXIT) {
+        			if(intErrCnt > ConfigInfo.TAR_LIMIT_ERROR) {
         				break;
         			}
         		}
@@ -221,7 +221,7 @@ public class ExecuteDataTransfer implements Runnable{
         	
         	if (bf.length() != 0){
 	    		if(ConfigInfo.DB_WRITER_MODE) {
-	       			if(!(intErrCnt > ConfigInfo.TAR_TABLE_ERR_CNT_EXIT)) {
+	       			if(!(intErrCnt > ConfigInfo.TAR_LIMIT_ERROR)) {
 	    				dbWriter.DBWrite(bf.toString(), this.tableName);
 	    			}
 	    		} 
@@ -282,7 +282,7 @@ public class ExecuteDataTransfer implements Runnable{
 	}
 	
 	private void writeError(String errFileName, Exception e) throws Exception {
-		File output_file = new File(ConfigInfo.OUTPUT_DIRECTORY+errFileName+".error");
+		File output_file = new File(ConfigInfo.SRC_FILE_OUTPUT_DIR_PATH+errFileName+".error");
 
 		PrintStream ps = new PrintStream(output_file);
 		ps.print("ERROR :\n");
@@ -294,7 +294,7 @@ public class ExecuteDataTransfer implements Runnable{
 		LogUtils.error(
 				"\""
 				+ ( ConfigInfo.TAR_DB_CONFIG.CHARSET != null && !ConfigInfo.TAR_DB_CONFIG.CHARSET.equals("")
-					? DevUtils.classifyString(ConfigInfo.TAR_DB_CONFIG.CHARSET,ConfigInfo.CLASSIFY_STRING) + "\".\""
+					? DevUtils.classifyString(ConfigInfo.TAR_DB_CONFIG.CHARSET,ConfigInfo.SRC_CLASSIFY_STRING) + "\".\""
 					: "")
 				+ this.tableName + "\"",ExecuteQuery.class,e);
 	}
@@ -369,7 +369,7 @@ public class ExecuteDataTransfer implements Runnable{
 							reader = new BufferedReader(clob.getCharacterStream());
 						}
 						
-						char[] buffer = new char[ ConfigInfo.SRC_LOB_FETCH_SIZE ];
+						char[] buffer = new char[ ConfigInfo.SRC_LOB_BUFFER_SIZE ];
 						
 						int n = 0;
 /*						StringBuffer sb = new StringBuffer();
@@ -402,12 +402,12 @@ public class ExecuteDataTransfer implements Runnable{
 					
 					//System.out.println("@@@@@@@@@@ ===> " + in.available());
 					
-					byte[] buffer = new byte[ConfigInfo.SRC_LOB_FETCH_SIZE];
+					byte[] buffer = new byte[ConfigInfo.SRC_LOB_BUFFER_SIZE];
 					
 					if (blob != null){
 						ByteArrayOutputStream buffeOutr = new ByteArrayOutputStream();
 						bf.append("\\\\x");
-						if (blob.length() < ConfigInfo.SRC_LOB_FETCH_SIZE){								
+						if (blob.length() < ConfigInfo.SRC_LOB_BUFFER_SIZE){								
 							len = in.read(buffer);
 							buffeOutr.write(buffer, 0, len);
 							buffeOutr.flush();
@@ -435,7 +435,7 @@ public class ExecuteDataTransfer implements Runnable{
 				if(in == null) {
 					return "\\N";
 				} else {
-					byte[] buffer = new byte[ConfigInfo.BUFFER_SIZE];
+					byte[] buffer = new byte[ConfigInfo.SRC_BUFFER_SIZE];
 					int len = 0;
 					
 					ByteArrayOutputStream buffeOutr = new ByteArrayOutputStream();

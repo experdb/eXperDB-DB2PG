@@ -67,14 +67,14 @@ public class PgDDLMaker<T> {
 		return ddlType;
 	}
 	
-	// CLASSIFY_STRING 옵션에 따라 대문자, 소문자, 원본 지정을 할 수 있게끔 DevUtils.classifyString(String,String) 함수 사용
+	// SRC_SRC_CLASSIFY_STRING 옵션에 따라 대문자, 소문자, 원본 지정을 할 수 있게끔 DevUtils.classifyString(String,String) 함수 사용
 	public List<DDLString> makeCreateTable(Table table) {
 		List<DDLString> ddlStringVOs = new LinkedList<DDLString>();
 		List<DDLString> tmpStringVOs = new LinkedList<DDLString>();
 		StringBuilder ctsb = new StringBuilder();
 		StringBuilder tmpsb = new StringBuilder();
 		ctsb.append("CREATE TABLE \"");
-		ctsb.append(DevUtils.classifyString(table.getName(),ConfigInfo.CLASSIFY_STRING));
+		ctsb.append(DevUtils.classifyString(table.getName(),ConfigInfo.SRC_CLASSIFY_STRING));
 		ctsb.append("\" (\"");
 		boolean isFirst = true;
 		for (Column column : table.getColumns()) {
@@ -83,7 +83,7 @@ public class PgDDLMaker<T> {
 			} else {
 				isFirst = !isFirst;
 			}
-			ctsb.append(DevUtils.classifyString(column.getName(),ConfigInfo.CLASSIFY_STRING));
+			ctsb.append(DevUtils.classifyString(column.getName(),ConfigInfo.SRC_CLASSIFY_STRING));
 			ctsb.append("\" ");
 			if(ConfigInfo.SRC_DB_CONFIG.DB_TYPE.equals(Constant.DB_TYPE.MYSQL) && SqlPattern.check(column.getType(), SqlPattern.MYSQL.ENUM)) {
 				String typeName = String.format("%s_%s_enum", table.getName(), column.getName());
@@ -133,15 +133,15 @@ public class PgDDLMaker<T> {
 				String seqName = String.format("%s_%s_seq", table.getName(),column.getName());
 				ctsb.append(" DEFAULT NEXTVAL('");
 				
-				ctsb.append(DevUtils.classifyString(seqName,ConfigInfo.CLASSIFY_STRING));
+				ctsb.append(DevUtils.classifyString(seqName,ConfigInfo.SRC_CLASSIFY_STRING));
 				ctsb.append("')");
 				tmpsb.append("CREATE SEQUENCE \"");
-				tmpsb.append(DevUtils.classifyString(seqName,ConfigInfo.CLASSIFY_STRING));
+				tmpsb.append(DevUtils.classifyString(seqName,ConfigInfo.SRC_CLASSIFY_STRING));
 				tmpsb.append('"');
 				tmpsb.append(String.format(" INCREMENT %d MINVALUE %d START %d", column.getSeqIncValue(), column.getSeqMinValue(), column.getSeqStart()));
 				
 				tmpsb.append("\nALTER SEQUENCE \"");
-				tmpsb.append(DevUtils.classifyString(seqName,ConfigInfo.CLASSIFY_STRING));
+				tmpsb.append(DevUtils.classifyString(seqName,ConfigInfo.SRC_CLASSIFY_STRING));
 				tmpsb.append('"');
 				tmpsb.append(String.format(" RESTART WITH %d", column.getSeqStart()));
 				tmpStringVOs.add(new DDLString().setString(tmpsb.toString()).setDDLType(DDL_TYPE.CREATE)
@@ -153,11 +153,11 @@ public class PgDDLMaker<T> {
 				tmpsb.append("COMMENT ON COLUMN ");
 				if(table.getName() != null && !table.getName().equals("")) {
 					tmpsb.append('"');
-					tmpsb.append(DevUtils.classifyString(table.getName(),ConfigInfo.CLASSIFY_STRING));
+					tmpsb.append(DevUtils.classifyString(table.getName(),ConfigInfo.SRC_CLASSIFY_STRING));
 					tmpsb.append("\".");
 				}
 				tmpsb.append('"');
-				tmpsb.append(DevUtils.classifyString(column.getName(),ConfigInfo.CLASSIFY_STRING));
+				tmpsb.append(DevUtils.classifyString(column.getName(),ConfigInfo.SRC_CLASSIFY_STRING));
 				tmpsb.append('"');
 				tmpsb.append(" IS '");
 				tmpsb.append(column.getComment());
@@ -172,12 +172,12 @@ public class PgDDLMaker<T> {
 		if(ConfigInfo.SRC_DB_CONFIG.DB_TYPE.equals(Constant.DB_TYPE.ORA) && table.getSequence() !=null){
 			for(Sequence sequence : table.getSequence()) {
 				tmpsb.append("CREATE SEQUENCE \"");
-				tmpsb.append(DevUtils.classifyString(sequence.getSeqName(),ConfigInfo.CLASSIFY_STRING));
+				tmpsb.append(DevUtils.classifyString(sequence.getSeqName(),ConfigInfo.SRC_CLASSIFY_STRING));
 				tmpsb.append('"');
 				tmpsb.append(String.format(" INCREMENT %d MINVALUE %d START %d", sequence.getSeqIncValue(), sequence.getSeqMinValue(), sequence.getSeqStart()));
 				
 				tmpsb.append("\nALTER SEQUENCE \"");
-				tmpsb.append(DevUtils.classifyString(sequence.getSeqName(),ConfigInfo.CLASSIFY_STRING));
+				tmpsb.append(DevUtils.classifyString(sequence.getSeqName(),ConfigInfo.SRC_CLASSIFY_STRING));
 				tmpsb.append('"');
 				tmpsb.append(String.format(" RESTART WITH %d", sequence.getSeqStart()));
 				tmpStringVOs.add(new DDLString().setString(tmpsb.toString()).setDDLType(DDL_TYPE.CREATE)
@@ -192,9 +192,9 @@ public class PgDDLMaker<T> {
 				try {
 					PrimaryKey pkey = key.unwrap(PrimaryKey.class);
 					tmpsb.append("ALTER TABLE \"");
-					tmpsb.append(DevUtils.classifyString(pkey.getTableName(),ConfigInfo.CLASSIFY_STRING));
+					tmpsb.append(DevUtils.classifyString(pkey.getTableName(),ConfigInfo.SRC_CLASSIFY_STRING));
 					tmpsb.append("\" ADD PRIMARY KEY (");
-					String columns = DevUtils.classifyString(pkey.getColumns().toString(),ConfigInfo.CLASSIFY_STRING);
+					String columns = DevUtils.classifyString(pkey.getColumns().toString(),ConfigInfo.SRC_CLASSIFY_STRING);
 					tmpsb.append(columns.substring(columns.indexOf("[")+1,columns.indexOf("]")));
 					tmpsb.append(")");
 					tmpStringVOs.add(new DDLString().setString(tmpsb.toString()).setDDLType(DDL_TYPE.CREATE)
@@ -209,11 +209,11 @@ public class PgDDLMaker<T> {
 					ForeignKey fkey = key.unwrap(ForeignKey.class);
 					if(fkey.getRefTable() != null){
 					tmpsb.append("ALTER TABLE \"");
-					tmpsb.append(DevUtils.classifyString(fkey.getTableName(),ConfigInfo.CLASSIFY_STRING));
+					tmpsb.append(DevUtils.classifyString(fkey.getTableName(),ConfigInfo.SRC_CLASSIFY_STRING));
 					tmpsb.append("\" ADD CONSTRAINT \"");
 					tmpsb.append(fkey.getName().toLowerCase());
 					tmpsb.append("\" FOREIGN KEY (");
-					String columns = DevUtils.classifyString(fkey.getColumns().toString(),ConfigInfo.CLASSIFY_STRING);
+					String columns = DevUtils.classifyString(fkey.getColumns().toString(),ConfigInfo.SRC_CLASSIFY_STRING);
 					tmpsb.append(columns.substring(columns.indexOf("[")+1,columns.indexOf("]")));
 					tmpsb.append(") REFERENCES \"");
 					if(ConfigInfo.SRC_DB_CONFIG.DB_TYPE.equals(Constant.DB_TYPE.MSS)){
@@ -222,9 +222,9 @@ public class PgDDLMaker<T> {
 						tmpsb.append("\" (");
 						columns = fkey.getRefColumns().toString();
 					}else{
-						tmpsb.append(DevUtils.classifyString(fkey.getRefTable(),ConfigInfo.CLASSIFY_STRING));
+						tmpsb.append(DevUtils.classifyString(fkey.getRefTable(),ConfigInfo.SRC_CLASSIFY_STRING));
 						tmpsb.append("\" (");
-						columns = DevUtils.classifyString(fkey.getRefColumns().toString(),ConfigInfo.CLASSIFY_STRING);
+						columns = DevUtils.classifyString(fkey.getRefColumns().toString(),ConfigInfo.SRC_CLASSIFY_STRING);
 					}
 					tmpsb.append(columns.substring(columns.indexOf("[")+1,columns.indexOf("]")));
 					tmpsb.append(")");
@@ -260,13 +260,13 @@ public class PgDDLMaker<T> {
 				try {
 					UniqueKey ukey = key.unwrap(UniqueKey.class);
 					tmpsb.append("CREATE UNIQUE INDEX \"");
-					tmpsb.append(DevUtils.classifyString(ukey.getTableName(),ConfigInfo.CLASSIFY_STRING));
+					tmpsb.append(DevUtils.classifyString(ukey.getTableName(),ConfigInfo.SRC_CLASSIFY_STRING));
 					tmpsb.append("_");
-					tmpsb.append(DevUtils.classifyString(ukey.getName(),ConfigInfo.CLASSIFY_STRING));
+					tmpsb.append(DevUtils.classifyString(ukey.getName(),ConfigInfo.SRC_CLASSIFY_STRING));
 					tmpsb.append("\" ON \"");
-					tmpsb.append(DevUtils.classifyString(ukey.getTableName(),ConfigInfo.CLASSIFY_STRING));
+					tmpsb.append(DevUtils.classifyString(ukey.getTableName(),ConfigInfo.SRC_CLASSIFY_STRING));
 					tmpsb.append("\" (");
-					String columns = DevUtils.classifyString(ukey.getColumns().toString(),ConfigInfo.CLASSIFY_STRING);
+					String columns = DevUtils.classifyString(ukey.getColumns().toString(),ConfigInfo.SRC_CLASSIFY_STRING);
 					tmpsb.append(columns.substring(columns.indexOf("[")+1,columns.indexOf("]")));
 					tmpsb.append(")");
 					tmpStringVOs.add(new DDLString().setString(tmpsb.toString()).setDDLType(DDL_TYPE.CREATE)
@@ -280,13 +280,13 @@ public class PgDDLMaker<T> {
 				try {
 					NormalKey nkey = key.unwrap(NormalKey.class);
 					tmpsb.append("CREATE INDEX \"");
-					tmpsb.append(DevUtils.classifyString(nkey.getTableName(),ConfigInfo.CLASSIFY_STRING));
+					tmpsb.append(DevUtils.classifyString(nkey.getTableName(),ConfigInfo.SRC_CLASSIFY_STRING));
 					tmpsb.append("_");
-					tmpsb.append(DevUtils.classifyString(nkey.getName(),ConfigInfo.CLASSIFY_STRING));
+					tmpsb.append(DevUtils.classifyString(nkey.getName(),ConfigInfo.SRC_CLASSIFY_STRING));
 					tmpsb.append("\" ON \"");
-					tmpsb.append(DevUtils.classifyString(nkey.getTableName(),ConfigInfo.CLASSIFY_STRING));
+					tmpsb.append(DevUtils.classifyString(nkey.getTableName(),ConfigInfo.SRC_CLASSIFY_STRING));
 					tmpsb.append("\" (");
-					String columns = DevUtils.classifyString(nkey.getColumns().toString(),ConfigInfo.CLASSIFY_STRING);
+					String columns = DevUtils.classifyString(nkey.getColumns().toString(),ConfigInfo.SRC_CLASSIFY_STRING);
 					tmpsb.append(columns.substring(columns.indexOf("[")+1,columns.indexOf("]")));
 					tmpsb.append(")");
 					tmpStringVOs.add(new DDLString().setString(tmpsb.toString()).setDDLType(DDL_TYPE.CREATE)
@@ -300,9 +300,9 @@ public class PgDDLMaker<T> {
 				try {
 					Cluster cluster = key.unwrap(Cluster.class);
 					tmpsb.append("CLUSTER  \"");
-					tmpsb.append(DevUtils.classifyString(cluster.getTableName(),ConfigInfo.CLASSIFY_STRING));
+					tmpsb.append(DevUtils.classifyString(cluster.getTableName(),ConfigInfo.SRC_CLASSIFY_STRING));
 					tmpsb.append("\" USING \"");
-					tmpsb.append(DevUtils.classifyString(cluster.getTableName(),ConfigInfo.CLASSIFY_STRING)+"_"+DevUtils.classifyString(cluster.getIndexName(),ConfigInfo.CLASSIFY_STRING));
+					tmpsb.append(DevUtils.classifyString(cluster.getTableName(),ConfigInfo.SRC_CLASSIFY_STRING)+"_"+DevUtils.classifyString(cluster.getIndexName(),ConfigInfo.SRC_CLASSIFY_STRING));
 					tmpsb.append("\" ");
 					tmpStringVOs.add(new DDLString().setString(tmpsb.toString()).setDDLType(DDL_TYPE.CREATE)
 							.setCommandType(COMMAND_TYPE.INDEX).setPriority(3));
@@ -319,9 +319,9 @@ public class PgDDLMaker<T> {
 		//comment
 		if(table.getComment() != null && !table.getComment().equals(""))  {
 			tmpsb.append("COMMENT ON TABLE \"");
-			tmpsb.append(DevUtils.classifyString(table.getName(),ConfigInfo.CLASSIFY_STRING));
+			tmpsb.append(DevUtils.classifyString(table.getName(),ConfigInfo.SRC_CLASSIFY_STRING));
 			tmpsb.append("\" IS '");
-			tmpsb.append(DevUtils.classifyString(table.getComment(),ConfigInfo.CLASSIFY_STRING));
+			tmpsb.append(DevUtils.classifyString(table.getComment(),ConfigInfo.SRC_CLASSIFY_STRING));
 			tmpsb.append('\'');
 			tmpStringVOs.add(new DDLString().setString(tmpsb.toString()).setDDLType(DDL_TYPE.CREATE)
 					.setCommandType(COMMAND_TYPE.COMMENT).setPriority(4));

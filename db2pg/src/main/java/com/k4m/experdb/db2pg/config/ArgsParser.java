@@ -52,13 +52,13 @@ public class ArgsParser {
 		option = new Option(null, "unload-summary", true, "unload log file summary");
 		option.setRequired(false);
 		options.addOption(option);
-		option = new Option(null, "src-export", true, "data export from source database");
+		option = new Option(null, "src-include-data-export", true, "data export from source database");
 		option.setRequired(false);
 		options.addOption(option);
 		option = new Option(null, "src-ddl-export", true, "ddl export from source database");
 		option.setRequired(false);
 		options.addOption(option);
-		option = new Option(null, "tar-constraint-extract", true, "constraint export from target database");
+		option = new Option(null, "tar-constraint-ddl", true, "constraint export from target database");
 		option.setRequired(false);
 		options.addOption(option);
 		option = new Option(null, "iot-start", false, "Fluentd Service Start");
@@ -142,14 +142,14 @@ public class ArgsParser {
 			}
 		}
 
-		if (cmd.hasOption("src-export")) {
-			ConfigInfo.SRC_EXPORT = true;
+		if (cmd.hasOption("src-include-data-export")) {
+			ConfigInfo.SRC_INCLUDE_DATA_EXPORT = true;
 		}
 		if (cmd.hasOption("src-ddl-export")) {
 			ConfigInfo.SRC_DDL_EXPORT = true;
 		}
-		if (cmd.hasOption("tar-constraint-extract")) {
-			ConfigInfo.TAR_CONSTRAINT_EXTRACT = true;
+		if (cmd.hasOption("tar-constraint-ddl")) {
+			ConfigInfo.TAR_CONSTRAINT_DDL = true;
 		}
 		if (cmd.hasOption("help")) {			
 			formatter.printHelp("DB2PG", options);

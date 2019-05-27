@@ -64,11 +64,11 @@ public class ExecuteQuery implements Runnable{
 		this.srcPoolName = srcPoolName;
 		this.selectQuery = selectQuery;
 		this.outputFileName = outputFileName.replace("\"", "");
-		this.tableName = DevUtils.classifyString(outputFileName,ConfigInfo.CLASSIFY_STRING);
-		this.outputFileName = ConfigInfo.OUTPUT_DIRECTORY
-								+ DevUtils.classifyString(outputFileName,ConfigInfo.CLASSIFY_STRING).replace("$", "-")+".sql";
+		this.tableName = DevUtils.classifyString(outputFileName,ConfigInfo.SRC_CLASSIFY_STRING);
+		this.outputFileName = ConfigInfo.SRC_FILE_OUTPUT_DIR_PATH
+								+ DevUtils.classifyString(outputFileName,ConfigInfo.SRC_CLASSIFY_STRING).replace("$", "-")+".sql";
 		this.dbConfigInfo = dbConfigInfo;
-		this.byteBuffer = ByteBuffer.allocateDirect(ConfigInfo.BUFFER_SIZE);
+		this.byteBuffer = ByteBuffer.allocateDirect(ConfigInfo.SRC_BUFFER_SIZE);
 		this.success = true;
 	}
 	
@@ -120,9 +120,9 @@ public class ExecuteQuery implements Runnable{
 			LogUtils.info(String.format("%s : %s", this.tableName, selectQuery),ExecuteQuery.class);
 			SrcConn = DBCPPoolManager.getConnection(srcPoolName);
 			preSrcStmt = SrcConn.prepareStatement(selectQuery);
-			if(ConfigInfo.SRC_ROWNUM>-1)
-				preSrcStmt.setMaxRows(ConfigInfo.SRC_ROWNUM);
-			preSrcStmt.setFetchSize(ConfigInfo.STATEMENT_FETCH_SIZE);
+			if(ConfigInfo.SRC_ROWS_EXPORT>-1)
+				preSrcStmt.setMaxRows(ConfigInfo.SRC_ROWS_EXPORT);
+			preSrcStmt.setFetchSize(ConfigInfo.SRC_STATEMENT_FETCH_SIZE);
         	ResultSet rs = preSrcStmt.executeQuery();
         	ResultSetMetaData rsmd = rs.getMetaData();	
         	List<String> columnNames = new ArrayList<String>();
@@ -144,13 +144,13 @@ public class ExecuteQuery implements Runnable{
         	stringBuffer.append("';\n\n");
         	stringBuffer.append("\\set ON_ERROR_STOP OFF\n\n");
         	stringBuffer.append("\\set ON_ERROR_ROLLBACK OFF\n\n");
-        	if (ConfigInfo.TRUNCATE) {
+        	if (ConfigInfo.TAR_TRUNCATE) {
             	stringBuffer.append("TRUNCATE TABLE \"");
             	if(ConfigInfo.TAR_DB_CONFIG.SCHEMA_NAME != null && !ConfigInfo.TAR_DB_CONFIG.SCHEMA_NAME.equals("")) {
             		stringBuffer.append(ConfigInfo.TAR_DB_CONFIG.SCHEMA_NAME);
             		stringBuffer.append("\".\"");
             	}
-            	stringBuffer.append(DevUtils.classifyString(this.tableName,ConfigInfo.CLASSIFY_STRING));
+            	stringBuffer.append(DevUtils.classifyString(this.tableName,ConfigInfo.SRC_CLASSIFY_STRING));
             	stringBuffer.append("\";\n\n");
             	LogUtils.debug("[ADD_TRUNCATE_COMMAND] " + this.tableName,ExecuteQuery.class);
         	} else {
@@ -161,11 +161,11 @@ public class ExecuteQuery implements Runnable{
         		stringBuffer.append(ConfigInfo.TAR_DB_CONFIG.SCHEMA_NAME);
         		stringBuffer.append("\".\"");
         	}
-        	stringBuffer.append(DevUtils.classifyString(this.tableName,ConfigInfo.CLASSIFY_STRING));
+        	stringBuffer.append(DevUtils.classifyString(this.tableName,ConfigInfo.SRC_CLASSIFY_STRING));
         	stringBuffer.append("\" (");
         	for(int i=0; i<columnNames.size(); i++){
         		stringBuffer.append('"');
-        		stringBuffer.append(DevUtils.classifyString(columnNames.get(i),ConfigInfo.CLASSIFY_STRING));
+        		stringBuffer.append(DevUtils.classifyString(columnNames.get(i),ConfigInfo.SRC_CLASSIFY_STRING));
         		stringBuffer.append('"');
         		if(i<columnNames.size()-1) stringBuffer.append(',');
         	}
@@ -183,7 +183,7 @@ public class ExecuteQuery implements Runnable{
         		stringBuffer.append("\n");
         		rowCnt += 1;
 
-        		if(rowCnt % ConfigInfo.STATEMENT_FETCH_SIZE == 0 && stringBuffer.length() > byteBuffer.capacity()) {
+        		if(rowCnt % ConfigInfo.SRC_STATEMENT_FETCH_SIZE == 0 && stringBuffer.length() > byteBuffer.capacity()) {
         			divideProcessing();
         		}
         	}
@@ -216,7 +216,7 @@ public class ExecuteQuery implements Runnable{
 			LogUtils.error(
 					"\""
 					+ ( ConfigInfo.TAR_DB_CONFIG.CHARSET != null && !ConfigInfo.TAR_DB_CONFIG.CHARSET.equals("")
-						? DevUtils.classifyString(ConfigInfo.TAR_DB_CONFIG.CHARSET,ConfigInfo.CLASSIFY_STRING) + "\".\""
+						? DevUtils.classifyString(ConfigInfo.TAR_DB_CONFIG.CHARSET,ConfigInfo.SRC_CLASSIFY_STRING) + "\".\""
 						: "")
 					+ this.tableName + "\"",ExecuteQuery.class,e);
 		} finally {
@@ -226,7 +226,6 @@ public class ExecuteQuery implements Runnable{
 			LogUtils.info("COMPLETE UNLOAD (TABLE_NAME : " +tableName + ", ROWNUM : " + rowCnt + ") !!!",ExecuteQuery.class);
 		}
 	}
-	
 	
 	private String ConvertDataToString(Connection SrcConn,int columnType, ResultSet rs, int index) throws SQLException, Exception {
 		try {
@@ -323,12 +322,12 @@ public class ExecuteQuery implements Runnable{
 				if (blob == null){
 					return "\\N";
 				} else {
-					byte[] buffer = new byte[ConfigInfo.BUFFER_SIZE];
+					byte[] buffer = new byte[ConfigInfo.SRC_BUFFER_SIZE];
 					int len = 0;
 					in = blob.getBinaryStream();
 					if (blob != null){
 						ByteArrayOutputStream buffeOutr = new ByteArrayOutputStream();
-						if (blob.length() < ConfigInfo.BUFFER_SIZE) {		
+						if (blob.length() < ConfigInfo.SRC_BUFFER_SIZE) {		
 							len = in.read(buffer);
 							if(len > -1)
 								buffeOutr.write(buffer, 0, len);
@@ -365,7 +364,7 @@ public class ExecuteQuery implements Runnable{
 				if(in == null) {
 					return "\\N";
 				} else {
-					byte[] buffer = new byte[ConfigInfo.BUFFER_SIZE];
+					byte[] buffer = new byte[ConfigInfo.SRC_BUFFER_SIZE];
 					int len = 0;
 					
 					ByteArrayOutputStream buffeOutr = new ByteArrayOutputStream();

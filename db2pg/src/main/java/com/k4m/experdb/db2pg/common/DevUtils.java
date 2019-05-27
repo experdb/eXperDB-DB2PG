@@ -29,9 +29,9 @@ public class DevUtils {
 		String convStr = null;
 		type = type.toLowerCase();
 		if(str != null) {
-			if(type.equals("capital")) {
+			if(type.equals("toupper")) {
 				convStr = str.toUpperCase();
-			} else if (type.equals("small")) {
+			} else if (type.equals("tolower")) {
 				convStr = str.toLowerCase();
 			} else {
 				convStr = str;
