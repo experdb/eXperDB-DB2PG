@@ -63,7 +63,7 @@ public class Main {
 		LogUtils.info("[DB2PG_START]",Main.class);
 		
 		// check output directory 
-		// checkDirectory(ConfigInfo.SRC_FILE_OUTPUT_DIR_PATH);
+		// checkDirectory(ConfigInfo.SRC_FILE_OUTPUT_PATH);
 		makeDirectory();
 		
 		if(ConfigInfo.SRC_DDL_EXPORT) {
@@ -89,7 +89,7 @@ public class Main {
 				makeSqlFile(dbInform);
 				LogUtils.debug("[PG_CONSTRAINT_EXTRACT_END]",Main.class);
 			}
-						
+
 			if(ConfigInfo.DB_WRITER_MODE && ConfigInfo.TAR_CONSTRAINT_REBUILD) {
 				LogUtils.debug("[DROP_FK_START]",Main.class);
 				managementConstraint.dropFk(dbInform);
@@ -158,11 +158,11 @@ public class Main {
 	}
 	
 	private static void makeDirectory() throws Exception {
-		checkDirectory(ConfigInfo.SRC_FILE_OUTPUT_DIR_PATH);
-		checkDirectory(ConfigInfo.SRC_FILE_OUTPUT_DIR_PATH+"data/");
-		checkDirectory(ConfigInfo.SRC_FILE_OUTPUT_DIR_PATH+"ddl/");
-		checkDirectory(ConfigInfo.SRC_FILE_OUTPUT_DIR_PATH+"rebuild/");
-		checkDirectory(ConfigInfo.SRC_FILE_OUTPUT_DIR_PATH+"result/");		
+		checkDirectory(ConfigInfo.SRC_FILE_OUTPUT_PATH);
+		checkDirectory(ConfigInfo.SRC_FILE_OUTPUT_PATH+"data/");
+		checkDirectory(ConfigInfo.SRC_FILE_OUTPUT_PATH+"ddl/");
+		checkDirectory(ConfigInfo.SRC_FILE_OUTPUT_PATH+"rebuild/");
+		checkDirectory(ConfigInfo.SRC_FILE_OUTPUT_PATH+"result/");		
 	}
 	
 	private static File checkDirectory(String strDirectory) throws Exception {
@@ -182,14 +182,14 @@ public class Main {
 	
 	private static void makeSqlFile(TargetPgDDL dbInform) throws Exception {
 		
-		checkDirectory(ConfigInfo.SRC_FILE_OUTPUT_DIR_PATH+"rebuild/");
+		checkDirectory(ConfigInfo.SRC_FILE_OUTPUT_PATH+"rebuild/");
 		
 		//TargetPgDDL dbInform = new TargetPgDDL();
 		
-		MakeSqlFile.listToSqlFile(ConfigInfo.SRC_FILE_OUTPUT_DIR_PATH + "rebuild/fk_drop.sql", dbInform.getFkDropList());
-		MakeSqlFile.listToSqlFile(ConfigInfo.SRC_FILE_OUTPUT_DIR_PATH + "rebuild/idx_drop.sql", dbInform.getIdxDropList());
-		MakeSqlFile.listToSqlFile(ConfigInfo.SRC_FILE_OUTPUT_DIR_PATH + "rebuild/idx_create.sql", dbInform.getIdxCreateList());
-		MakeSqlFile.listToSqlFile(ConfigInfo.SRC_FILE_OUTPUT_DIR_PATH + "rebuild/fk_create.sql", dbInform.getFkCreateList());
+		MakeSqlFile.listToSqlFile(ConfigInfo.SRC_FILE_OUTPUT_PATH + "rebuild/fk_drop.sql", dbInform.getFkDropList());
+		MakeSqlFile.listToSqlFile(ConfigInfo.SRC_FILE_OUTPUT_PATH + "rebuild/idx_drop.sql", dbInform.getIdxDropList());
+		MakeSqlFile.listToSqlFile(ConfigInfo.SRC_FILE_OUTPUT_PATH + "rebuild/idx_create.sql", dbInform.getIdxCreateList());
+		MakeSqlFile.listToSqlFile(ConfigInfo.SRC_FILE_OUTPUT_PATH + "rebuild/fk_create.sql", dbInform.getFkCreateList());
 	}
 	
 }

@@ -174,7 +174,7 @@ public class Unloader {
         	LogUtils.info("[SUMMARY_INFO]",Unloader.class);
         	
         	// import.sql을 생성
-        	impSql = new File(ConfigInfo.SRC_FILE_OUTPUT_DIR_PATH + "data/import.sql");
+        	impSql = new File(ConfigInfo.SRC_FILE_OUTPUT_PATH + "data/import.sql");
         	PrintWriter pw = new PrintWriter(impSql);
         	
         	
@@ -248,7 +248,7 @@ public class Unloader {
 			ByteBuffer fileBuffer = ByteBuffer.allocateDirect(ConfigInfo.SRC_BUFFER_SIZE);
 			FileChannel fch = null;
 				
-			File file = new File(ConfigInfo.SRC_FILE_OUTPUT_DIR_PATH+"result/summary_"+today+".out");
+			File file = new File(ConfigInfo.SRC_FILE_OUTPUT_PATH+"result/summary_"+today+".out");
 			
 			FileOutputStream fos = new FileOutputStream( file);
 			fch = fos.getChannel();

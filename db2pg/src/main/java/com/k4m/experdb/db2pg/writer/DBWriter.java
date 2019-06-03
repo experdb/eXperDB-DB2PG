@@ -220,7 +220,7 @@ public class DBWriter {
 	private void errDataFileWrite(String strErrLine, String tableName, int intErrLine) throws Exception {
 		if(ConfigInfo.TAR_TABLE_BAD) {
 			FileWriter fileWriter = new FileWriter(tableName);
-			fileWriter.badFileCreater(ConfigInfo.SRC_FILE_OUTPUT_DIR_PATH + tableName + ".bad");
+			fileWriter.badFileCreater(ConfigInfo.SRC_FILE_OUTPUT_PATH + tableName + ".bad");
 			fileWriter.badFileWrite(strErrLine);
 			LogUtils.debug("[Err Line Skip] ErrLine : " + intErrLine + " ErrData : " + strErrLine, DBWriter.class);
 		}

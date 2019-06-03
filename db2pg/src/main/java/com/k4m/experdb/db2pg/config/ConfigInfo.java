@@ -54,7 +54,7 @@ public class ConfigInfo {
 	//endregion
 	
 	//region OUTPUT
-	public static String SRC_FILE_OUTPUT_DIR_PATH // "./"
+	public static String SRC_FILE_OUTPUT_PATH // "./"
 			, SRC_CLASSIFY_STRING //  original(default), toupper, tolower 
 			;
 	//endregion
@@ -141,8 +141,8 @@ public class ConfigInfo {
 				TAR_DB_CONFIG.DB_TYPE = trimCheck(prop.getProperty("TAR_DB_TYPE"));
 				TAR_DB_CONFIG.PORT = (String)propertyCheck(trimCheck(prop.getProperty("TAR_PORT")),"5432",String.class);
 				TAR_DB_CONFIG.CHARSET = (String)propertyCheck(trimCheck(prop.getProperty("TAR_DB_CHARSET")),null,String.class);
-				String outputDirectory = ((String)propertyCheck(trimCheck(prop.getProperty("SRC_FILE_OUTPUT_DIR_PATH")),"./",String.class)).trim().replace("\\", "/");
-				ConfigInfo.SRC_FILE_OUTPUT_DIR_PATH = outputDirectory.length()-1 == outputDirectory.lastIndexOf("/")
+				String outputDirectory = ((String)propertyCheck(trimCheck(prop.getProperty("SRC_FILE_OUTPUT_PATH")),"./",String.class)).trim().replace("\\", "/");
+				ConfigInfo.SRC_FILE_OUTPUT_PATH = outputDirectory.length()-1 == outputDirectory.lastIndexOf("/")
 													? outputDirectory : outputDirectory.concat("/");
 				ConfigInfo.SRC_CLASSIFY_STRING = (String)propertyCheck(trimCheck(prop.getProperty("SRC_CLASSIFY_STRING")),"original",String.class);
 				ConfigInfo.SRC_FILE_QUERY_DIR_PATH = (String)propertyCheck(trimCheck(prop.getProperty("SRC_FILE_QUERY_DIR_PATH")),"",String.class);

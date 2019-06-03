@@ -23,7 +23,6 @@ public class ManagementConstraint {
 				execSql(Constant.POOLNAME.TARGET.name(), fkDropSql);
 			}
 		}
-		
 	}
 	
 	//Index drop
@@ -47,7 +46,6 @@ public class ManagementConstraint {
 				execSql(Constant.POOLNAME.TARGET.name(), fkCreateSql);
 			}
 		}
-		
 	}
 	
 	//createIndex
@@ -60,7 +58,6 @@ public class ManagementConstraint {
 				execSql(Constant.POOLNAME.TARGET.name(), idxCreateSql);
 			}
 		}
-		
 	}
 	
 	private void execSql(String poolName, String sql) throws Exception {
@@ -69,23 +66,16 @@ public class ManagementConstraint {
 		Connection conn = DBCPPoolManager.getConnection(poolName);
 		
 		try {
-		
 			psmt = conn.prepareStatement(sql);
-			
 			psmt.execute();
-			
-			
 	    	conn.commit();
-
-
 		} catch(Exception e) {
 			conn.rollback();
 			throw e;
 		} finally {
 			CloseConn(conn, psmt);
 		}
-		
-	}	
+	}
 	
 	private void CloseConn(Connection conn, Statement stmt) {
 		try{

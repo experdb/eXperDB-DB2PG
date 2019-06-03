@@ -62,7 +62,7 @@ public class ExecuteDataTransfer implements Runnable{
 		this.selectQuery = selectQuery;
 		this.outputFileName = outputFileName.replace("\"", "");
 		this.tableName = DevUtils.classifyString(outputFileName,ConfigInfo.SRC_CLASSIFY_STRING);
-		this.outputFileName = ConfigInfo.SRC_FILE_OUTPUT_DIR_PATH
+		this.outputFileName = ConfigInfo.SRC_FILE_OUTPUT_PATH
 								+ DevUtils.classifyString(outputFileName,ConfigInfo.SRC_CLASSIFY_STRING).replace("$", "-")+".sql";
 		this.dbConfigInfo = dbConfigInfo;
 
@@ -282,7 +282,7 @@ public class ExecuteDataTransfer implements Runnable{
 	}
 	
 	private void writeError(String errFileName, Exception e) throws Exception {
-		File output_file = new File(ConfigInfo.SRC_FILE_OUTPUT_DIR_PATH+errFileName+".error");
+		File output_file = new File(ConfigInfo.SRC_FILE_OUTPUT_PATH+errFileName+".error");
 
 		PrintStream ps = new PrintStream(output_file);
 		ps.print("ERROR :\n");

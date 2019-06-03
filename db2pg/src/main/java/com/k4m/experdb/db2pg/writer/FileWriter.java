@@ -11,7 +11,7 @@ import com.k4m.experdb.db2pg.common.Constant;
 import com.k4m.experdb.db2pg.config.ConfigInfo;
 
 public class FileWriter {
-	protected String outputDirectory = ConfigInfo.SRC_FILE_OUTPUT_DIR_PATH + "data/";
+	protected String outputDirectory = ConfigInfo.SRC_FILE_OUTPUT_PATH + "data/";
 	private  FileChannel fileChannels;
 	private  FileChannel badFileChannels ;
 	private static long successByteCount; // Writer가 처리한 총 Byte 수

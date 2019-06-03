@@ -37,7 +37,7 @@ public class DDLConverter {
 			viewQueue = new PriorityBlockingQueue<DDLString>(5, DDLString.getComparator()),
 			constraintsQueue = new PriorityBlockingQueue<DDLString>(5, DDLString.getComparator());
 	protected DBConfigInfo dbConfigInfo;
-	protected String outputDirectory = ConfigInfo.SRC_FILE_OUTPUT_DIR_PATH + "ddl/";
+	protected String outputDirectory = ConfigInfo.SRC_FILE_OUTPUT_PATH + "ddl/";
 	protected List<String> tableNameList = null, excludes = null;
 	protected String tableSchema = ConfigInfo.SRC_DB_CONFIG.SCHEMA_NAME;
 

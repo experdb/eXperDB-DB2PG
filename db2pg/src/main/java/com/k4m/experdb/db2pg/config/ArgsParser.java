@@ -38,14 +38,20 @@ public class ArgsParser {
 		Option option = null;
 		option = new Option("c", "config", true, "config file path");
 		option.setRequired(false);
-		// config 옵션 활성화를 위해 아래의 객체 추가
 		options.addOption(option);
+
+		option = new Option("x", "query-file", true, "Query XML file path");
+		option.setRequired(false);
+		options.addOption(option);
+		
 		option = new Option("h", "help", false, "db2pg help");
 		option.setRequired(false);
 		options.addOption(option);
-		option = new Option("M", "make-templates", false, "make template files");
+		
+		option = new Option("M", "make-templates", false, "make configuration sample file");
 		option.setRequired(false);
 		options.addOption(option);
+		
 		option = new Option(null, "rebuild-summary", true, "rebuild log files summary");
 		option.setRequired(false);
 		options.addOption(option);
@@ -141,7 +147,10 @@ public class ArgsParser {
 				System.exit(Constant.ERR_CD.METHOD_NOT_ALLOWD_ERR);
 			}
 		}
-
+		
+		if (cmd.hasOption("query-file")) {
+			ConfigInfo.SRC_FILE_QUERY_DIR_PATH = cmd.getOptionValue("query-file");
+		}
 		if (cmd.hasOption("src-include-data-export")) {
 			ConfigInfo.SRC_INCLUDE_DATA_EXPORT = true;
 		}

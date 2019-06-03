@@ -65,7 +65,7 @@ public class ExecuteQuery implements Runnable{
 		this.selectQuery = selectQuery;
 		this.outputFileName = outputFileName.replace("\"", "");
 		this.tableName = DevUtils.classifyString(outputFileName,ConfigInfo.SRC_CLASSIFY_STRING);
-		this.outputFileName = ConfigInfo.SRC_FILE_OUTPUT_DIR_PATH
+		this.outputFileName = ConfigInfo.SRC_FILE_OUTPUT_PATH
 								+ DevUtils.classifyString(outputFileName,ConfigInfo.SRC_CLASSIFY_STRING).replace("$", "-")+".sql";
 		this.dbConfigInfo = dbConfigInfo;
 		this.byteBuffer = ByteBuffer.allocateDirect(ConfigInfo.SRC_BUFFER_SIZE);
