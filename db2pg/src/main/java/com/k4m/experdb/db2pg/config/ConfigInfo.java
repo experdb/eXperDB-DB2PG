@@ -72,7 +72,7 @@ public class ConfigInfo {
 	
 	public static boolean FILE_WRITER_MODE, DB_WRITER_MODE;
 	
-	public static boolean SRC_FILE_APPEND;
+	public static boolean TAR_FILE_APPEND;
 	
 	public static boolean TAR_TABLE_BAD;
 	
@@ -100,8 +100,8 @@ public class ConfigInfo {
 				SRC_DB_CONFIG.DB_TYPE 		= (String)propertyCheck(trimCheck(prop.getProperty("SRC_DBMS_TYPE")),"ORA",String.class);
 				SRC_DB_CONFIG.PORT			= (String)propertyCheck(trimCheck(prop.getProperty("SRC_PORT")),"1521",String.class);
 				SRC_DB_CONFIG.CHARSET 		= (String)propertyCheck(trimCheck(prop.getProperty("SRC_DB_CHARSET")),null,String.class);
-				ConfigInfo.SRC_LOB_BUFFER_SIZE = (int)propertyCheck(trimCheck(prop.getProperty("SRC_LOB_BUFFER_SIZE")),1024,Integer.class);
-				ConfigInfo.SRC_LOB_BUFFER_SIZE = ConfigInfo.SRC_LOB_BUFFER_SIZE>0?ConfigInfo.SRC_LOB_BUFFER_SIZE:1024;
+				ConfigInfo.SRC_LOB_BUFFER_SIZE = (int)propertyCheck(trimCheck(prop.getProperty("SRC_LOB_BUFFER_SIZE")),100,Integer.class);
+				ConfigInfo.SRC_LOB_BUFFER_SIZE = ConfigInfo.SRC_LOB_BUFFER_SIZE>0?ConfigInfo.SRC_LOB_BUFFER_SIZE:100;
 				ConfigInfo.SRC_LOB_BUFFER_SIZE = ConfigInfo.SRC_LOB_BUFFER_SIZE * 1024 * 1024;
 				
 				ConfigInfo.SRC_STATEMENT_FETCH_SIZE = (int)propertyCheck(trimCheck(prop.getProperty("SRC_STATEMENT_FETCH_SIZE")),3000,Integer.class);
@@ -160,7 +160,7 @@ public class ConfigInfo {
 				ConfigInfo.TAR_LIMIT_ERROR = (int)propertyCheck(trimCheck(prop.getProperty("TAR_LIMIT_ERROR")),0,Integer.class);
 				
 				ConfigInfo.FILE_WRITER_MODE = (boolean)propertyCheck(trimCheck(prop.getProperty("FILE_WRITER_MODE")),false,Boolean.class);
-				ConfigInfo.SRC_FILE_APPEND = (boolean)propertyCheck(trimCheck(prop.getProperty("SRC_FILE_APPEND")),false,Boolean.class);
+				ConfigInfo.TAR_FILE_APPEND = (boolean)propertyCheck(trimCheck(prop.getProperty("TAR_FILE_APPEND")),false,Boolean.class);
 				ConfigInfo.DB_WRITER_MODE = (boolean)propertyCheck(trimCheck(prop.getProperty("DB_WRITER_MODE")),false,Boolean.class);
 				
 				ConfigInfo.TAR_CONSTRAINT_REBUILD = (boolean)propertyCheck(trimCheck(prop.getProperty("TAR_CONSTRAINT_REBUILD")),true,Boolean.class);

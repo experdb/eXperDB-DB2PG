@@ -58,13 +58,13 @@ public class ArgsParser {
 		option = new Option(null, "unload-summary", true, "unload log file summary");
 		option.setRequired(false);
 		options.addOption(option);
-		option = new Option(null, "src-include-data-export", true, "data export from source database");
+		option = new Option(null, "src-include-data-export", false, "data export from source database");
 		option.setRequired(false);
 		options.addOption(option);
-		option = new Option(null, "src-ddl-export", true, "ddl export from source database");
+		option = new Option(null, "src-ddl-export", false, "ddl export from source database");
 		option.setRequired(false);
 		options.addOption(option);
-		option = new Option(null, "tar-constraint-ddl", true, "constraint export from target database");
+		option = new Option(null, "tar-constraint-ddl", false, "constraint export from target database");
 		option.setRequired(false);
 		options.addOption(option);
 		option = new Option(null, "iot-start", false, "Fluentd Service Start");
@@ -144,6 +144,7 @@ public class ArgsParser {
 				ConfigInfo.Loader.load(defaultConfig.getAbsolutePath());
 			}else{
 				System.out.println("Cannot Find db2pg.config File !!!");
+				System.out.println(System.getProperty("user.dir"));
 				System.exit(Constant.ERR_CD.METHOD_NOT_ALLOWD_ERR);
 			}
 		}

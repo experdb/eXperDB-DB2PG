@@ -115,37 +115,40 @@ public class Unloader {
 			//DBCPPoolManager.setupDriver(ConfigInfo.SRC_DB_CONFIG, Constant.POOLNAME.SOURCE.name(), ConfigInfo.SRC_SELECT_ON_PARALLEL);
 
 			List<String> selSqlList = new ArrayList<String>();
-
 			List<String> tableNameList =  null;
+			int jobSize = 0;
 			
+			// Query XML file Check
 			if(!ConfigInfo.SRC_FILE_QUERY_DIR_PATH.equals("")) {
-				loadSelectQuery(ConfigInfo.SRC_FILE_QUERY_DIR_PATH);
-			} 
-
-				
-			//Table Select
-			tableNameList = makeTableList();
-			for (String tableName : tableNameList) {
-				String schema = ConfigInfo.SRC_DB_CONFIG.SCHEMA_NAME!=null && !ConfigInfo.SRC_DB_CONFIG.SCHEMA_NAME.equals("") 
-									? getConvertObjectName(ConfigInfo.SRC_DB_CONFIG.SCHEMA_NAME)+"." 
-									: "" ;
-				String replaceTableName = getConvertObjectName(tableName);
-				String where = getWhere();
-
-				selSqlList.add(String.format("SELECT * FROM %s%s %s", schema, replaceTableName, where));
+				File f = new File(ConfigInfo.SRC_FILE_QUERY_DIR_PATH);
+				if(f.exists() && !f.isDirectory())
+					loadSelectQuery(ConfigInfo.SRC_FILE_QUERY_DIR_PATH);
 			}
 
+			// ASIS Data Export
+			if(ConfigInfo.SRC_INCLUDE_DATA_EXPORT) {
+				
+				//Table Select
+				tableNameList = makeTableList();
+				for (String tableName : tableNameList) {
+					String schema = ConfigInfo.SRC_DB_CONFIG.SCHEMA_NAME!=null && !ConfigInfo.SRC_DB_CONFIG.SCHEMA_NAME.equals("") 
+										? getConvertObjectName(ConfigInfo.SRC_DB_CONFIG.SCHEMA_NAME)+"." 
+										: "" ;
+					String replaceTableName = getConvertObjectName(tableName);
+					String where = getWhere();
+	
+					selSqlList.add(String.format("SELECT * FROM %s%s %s", schema, replaceTableName, where));
+				}
 
-			int jobSize = 0;
-			if(selSqlList != null) {
-				jobSize += selSqlList.size();
+				if(selSqlList != null) {
+					jobSize += selSqlList.size();
+				}
 			}
 			
 			if(selectQuerys != null) {
 				jobSize += selectQuerys.size();
 			}
 			List<ExecuteDataTransfer> jobList = new ArrayList<ExecuteDataTransfer>(jobSize);
-			
 			
 			if(selSqlList != null) {
 				for(int i=0; i<selSqlList.size(); i++){

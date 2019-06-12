@@ -78,7 +78,7 @@ public class Main {
 			makeSqlFile(targetPgDDL);
 		}
 		
-		if(ConfigInfo.SRC_INCLUDE_DATA_EXPORT) {
+		if( (ConfigInfo.SRC_INCLUDE_DATA_EXPORT || checkQueryXml()) && (ConfigInfo.DB_WRITER_MODE || ConfigInfo.FILE_WRITER_MODE)) {
 			TargetPgDDL dbInform = null ;
 			if(ConfigInfo.DB_WRITER_MODE ) dbInform = new TargetPgDDL();
 			
@@ -99,7 +99,7 @@ public class Main {
 				managementConstraint.dropIndex(dbInform);
 				LogUtils.debug("[DROP_INDEX_END]",Main.class);
 			}
-		
+
 			LogUtils.debug("[SRC_INCLUDE_DATA_EXPORT_START]",Main.class);
 			Unloader loader = new Unloader();
 			loader.start();	
@@ -135,7 +135,7 @@ public class Main {
 //			}
 //			DBCPPoolManager.setupDriver(ConfigInfo.TAR_DB_CONFIG, Constant.POOLNAME.TARGET.name(), intTarConnCount);
 //		}
-		if(ConfigInfo.SRC_INCLUDE_DATA_EXPORT || ConfigInfo.SRC_DDL_EXPORT) {
+		if(ConfigInfo.SRC_INCLUDE_DATA_EXPORT || ConfigInfo.SRC_DDL_EXPORT || checkQueryXml()) {
 			DBCPPoolManager.setupDriver(ConfigInfo.SRC_DB_CONFIG
 					, Constant.POOLNAME.SOURCE.name()
 					, ConfigInfo.SRC_SELECT_ON_PARALLEL
@@ -190,6 +190,16 @@ public class Main {
 		MakeSqlFile.listToSqlFile(ConfigInfo.SRC_FILE_OUTPUT_PATH + "rebuild/idx_drop.sql", dbInform.getIdxDropList());
 		MakeSqlFile.listToSqlFile(ConfigInfo.SRC_FILE_OUTPUT_PATH + "rebuild/idx_create.sql", dbInform.getIdxCreateList());
 		MakeSqlFile.listToSqlFile(ConfigInfo.SRC_FILE_OUTPUT_PATH + "rebuild/fk_create.sql", dbInform.getFkCreateList());
+	}
+	
+	private static Boolean checkQueryXml() throws Exception {
+		if(!ConfigInfo.SRC_FILE_QUERY_DIR_PATH.equals("")) {
+			File f = new File(ConfigInfo.SRC_FILE_QUERY_DIR_PATH);
+			if(f.exists() && !f.isDirectory()) return true;
+			else return false;
+		}else {
+			return false;
+		}
 	}
 	
 }

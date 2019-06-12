@@ -57,7 +57,7 @@ public class FileWriter {
 	
 	public void fileCreater(String file_nm) throws IOException {
 		File file = new File(file_nm);
-		if(ConfigInfo.SRC_FILE_APPEND && file.isFile()) {
+		if(ConfigInfo.TAR_FILE_APPEND && file.isFile()) {
 			fileChannels = FileChannel.open(file.toPath(), StandardOpenOption.APPEND);
 		} else {
 			fileChannels = FileChannel.open(file.toPath(), StandardOpenOption.CREATE, StandardOpenOption.WRITE, StandardOpenOption.TRUNCATE_EXISTING);
@@ -66,7 +66,7 @@ public class FileWriter {
 
 	public void badFileCreater(String file_nm) throws IOException {
 		File file = new File(file_nm);
-		if(ConfigInfo.SRC_FILE_APPEND && file.isFile()) {
+		if(ConfigInfo.TAR_FILE_APPEND && file.isFile()) {
 			badFileChannels = FileChannel.open(file.toPath(), StandardOpenOption.APPEND);
 		} else {
 			badFileChannels = FileChannel.open(file.toPath(), StandardOpenOption.CREATE, StandardOpenOption.WRITE, StandardOpenOption.TRUNCATE_EXISTING);
