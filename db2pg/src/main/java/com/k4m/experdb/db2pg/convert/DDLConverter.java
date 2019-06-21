@@ -37,7 +37,7 @@ public class DDLConverter {
 			viewQueue = new PriorityBlockingQueue<DDLString>(5, DDLString.getComparator()),
 			constraintsQueue = new PriorityBlockingQueue<DDLString>(5, DDLString.getComparator());
 	protected DBConfigInfo dbConfigInfo;
-	protected String outputDirectory = ConfigInfo.OUTPUT_DIRECTORY + "ddl/";
+	protected String outputDirectory = ConfigInfo.SRC_FILE_OUTPUT_PATH + "ddl/";
 	protected List<String> tableNameList = null, excludes = null;
 	protected String tableSchema = ConfigInfo.SRC_DB_CONFIG.SCHEMA_NAME;
 
@@ -66,9 +66,9 @@ public class DDLConverter {
 		if (dbConfigInfo.SCHEMA_NAME == null && dbConfigInfo.SCHEMA_NAME.trim().equals(""))
 			dbConfigInfo.SCHEMA_NAME = dbConfigInfo.USERID;
 		//DBCPPoolManager.setupDriver(dbConfigInfo, Constant.POOLNAME.SOURCE_DDL.name(), 1);
-		tableNameList = ConfigInfo.SRC_ALLOW_TABLES;
+		tableNameList = ConfigInfo.SRC_INCLUDE_TABLES;
 		if (tableNameList == null) {
-			tableNameList = DBUtils.getTableNames(ConfigInfo.TABLE_ONLY, Constant.POOLNAME.SOURCE.name(),
+			tableNameList = DBUtils.getTableNames(ConfigInfo.SRC_TABLE_DDL, Constant.POOLNAME.SOURCE.name(),
 					dbConfigInfo);
 		}
 		if (excludes != null) {
@@ -88,6 +88,7 @@ public class DDLConverter {
 		DDLString ddlStrVO = null;
 		List<Table> tables = ConvertDBUtils.getTableInform(tableNameList, true, Constant.POOLNAME.SOURCE.name(),dbConfigInfo);
 		
+		// DDL 추출시 view 제외 여부
 		if(ConfigInfo.SRC_CONVERT_VIEW) {
 			List<View> views = ConvertDBUtils.setViewInform(tableSchema, Constant.POOLNAME.SOURCE.name(),dbConfigInfo);
 			viewFileCreate(views);
@@ -139,7 +140,7 @@ public class DDLConverter {
 	}
 
 	private void viewFileCreate(List<View> views) throws IOException {
-		ByteBuffer fileBuffer = ByteBuffer.allocateDirect(ConfigInfo.BUFFER_SIZE);
+		ByteBuffer fileBuffer = ByteBuffer.allocateDirect(ConfigInfo.SRC_BUFFER_SIZE);
 		FileChannel fch = null;
 			
 		File viewSqlFile = new File(outputDirectory + "/" + dbConfigInfo.DBNAME + "_view.sql");
@@ -176,7 +177,7 @@ public class DDLConverter {
 		List<String> alertComments = new LinkedList<String>();
 		DDLString ddlStrVO = null;
 		
-		ByteBuffer fileBuffer = ByteBuffer.allocateDirect(ConfigInfo.BUFFER_SIZE);
+		ByteBuffer fileBuffer = ByteBuffer.allocateDirect(ConfigInfo.SRC_BUFFER_SIZE);
 		FileChannel fch = null;
 		
 		

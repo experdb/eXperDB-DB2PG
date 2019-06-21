@@ -74,6 +74,9 @@ public final class MetaExtractWorker extends DBWorker {
 			case GET_PG_IDX_DDL:
 				result = mapper.getPgIdxDdl();
 				break;
+			case GET_SOURCE_TABLE_DATA:
+				result = mapper.getSourceTableData(work.params);
+				break;
 			}
 			stop();
 		} catch (Exception e) {

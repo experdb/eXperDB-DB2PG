@@ -24,6 +24,7 @@ public class Main {
 		LogUtils.setVerbose(ConfigInfo.VERBOSE);
 		LogManager.getRootLogger().setLevel(ConfigInfo.LOG_LEVEL);
 		
+		// 디버깅 모드 동작시 mybatis의 디버깅을 위하여 logger 추가
 		if ( ConfigInfo.LOG_LEVEL == org.apache.log4j.Level.DEBUG ) {
 			org.apache.log4j.ConsoleAppender appender = new org.apache.log4j.ConsoleAppender();
 			appender.setName("sqlAppender");
@@ -48,17 +49,21 @@ public class Main {
 				logger.addAppender(appender);
 			}
 		}
-		
-		
-		checkConfigInfo();
-		
-		//pool 생성
+
+		// Target DBMS's Character SET Check
+		if(ConfigInfo.SRC_DDL_EXPORT) {
+			if(ConfigInfo.TAR_DB_CONFIG.CHARSET == null || ConfigInfo.TAR_DB_CONFIG.CHARSET.equals("")) {
+				System.exit(Constant.ERR_CD.CONFIG_NOT_FOUND);
+			}
+		}
+
+		// create pool
 		createPool();
 		
 		LogUtils.info("[DB2PG_START]",Main.class);
 		
-		//check output directory 
-		//checkDirectory(ConfigInfo.OUTPUT_DIRECTORY);
+		// check output directory 
+		// checkDirectory(ConfigInfo.SRC_FILE_OUTPUT_PATH);
 		makeDirectory();
 		
 		if(ConfigInfo.SRC_DDL_EXPORT) {
@@ -68,12 +73,12 @@ public class Main {
 			LogUtils.debug("[SRC_DDL_EXPORT_END]",Main.class);
 		}
 		
-		if(ConfigInfo.TAR_CONSTRAINT_EXTRACT) {
+		if(ConfigInfo.TAR_CONSTRAINT_DDL) {
 			TargetPgDDL targetPgDDL = new TargetPgDDL();
 			makeSqlFile(targetPgDDL);
 		}
 		
-		if(ConfigInfo.SRC_EXPORT) {
+		if( (ConfigInfo.SRC_INCLUDE_DATA_EXPORT || checkQueryXml()) && (ConfigInfo.DB_WRITER_MODE || ConfigInfo.FILE_WRITER_MODE)) {
 			TargetPgDDL dbInform = null ;
 			if(ConfigInfo.DB_WRITER_MODE ) dbInform = new TargetPgDDL();
 			
@@ -84,34 +89,30 @@ public class Main {
 				makeSqlFile(dbInform);
 				LogUtils.debug("[PG_CONSTRAINT_EXTRACT_END]",Main.class);
 			}
-						
-			if(ConfigInfo.DB_WRITER_MODE ){
-				if(ConfigInfo.TAR_DROP_CREATE_CONSTRAINT) {
-					LogUtils.debug("[DROP_FK_START]",Main.class);
-					managementConstraint.dropFk(dbInform);
-					LogUtils.debug("[DROP_FK_END]",Main.class);
-					
-					LogUtils.debug("[DROP_INDEX_START]",Main.class);
-					managementConstraint.dropIndex(dbInform);
-					LogUtils.debug("[DROP_INDEX_END]",Main.class);
-				}
+
+			if(ConfigInfo.DB_WRITER_MODE && ConfigInfo.TAR_CONSTRAINT_REBUILD) {
+				LogUtils.debug("[DROP_FK_START]",Main.class);
+				managementConstraint.dropFk(dbInform);
+				LogUtils.debug("[DROP_FK_END]",Main.class);
+				
+				LogUtils.debug("[DROP_INDEX_START]",Main.class);
+				managementConstraint.dropIndex(dbInform);
+				LogUtils.debug("[DROP_INDEX_END]",Main.class);
 			}
-		
-			LogUtils.debug("[SRC_EXPORT_START]",Main.class);
+
+			LogUtils.debug("[SRC_INCLUDE_DATA_EXPORT_START]",Main.class);
 			Unloader loader = new Unloader();
 			loader.start();	
-			LogUtils.debug("[SRC_EXPORT_END]",Main.class);
-			
-			if(ConfigInfo.DB_WRITER_MODE ){
-				if(ConfigInfo.TAR_DROP_CREATE_CONSTRAINT) {					
-					LogUtils.debug("[CREATE_INDEX_START]",Main.class);
-					managementConstraint.createIndex(dbInform);
-					LogUtils.debug("[CREATE_INDEX_END]",Main.class);
-					
-					LogUtils.debug("[CREATE_FK_START]",Main.class);
-					managementConstraint.createFk(dbInform);
-					LogUtils.debug("[CREATE_FK_END]",Main.class);
-				}
+			LogUtils.debug("[SRC_INCLUDE_DATA_EXPORT_END]",Main.class);
+
+			if(ConfigInfo.DB_WRITER_MODE && ConfigInfo.TAR_CONSTRAINT_REBUILD) {					
+				LogUtils.debug("[CREATE_INDEX_START]",Main.class);
+				managementConstraint.createIndex(dbInform);
+				LogUtils.debug("[CREATE_INDEX_END]",Main.class);
+				
+				LogUtils.debug("[CREATE_FK_START]",Main.class);
+				managementConstraint.createFk(dbInform);
+				LogUtils.debug("[CREATE_FK_END]",Main.class);
 			}	
 		}
 		
@@ -124,56 +125,44 @@ public class Main {
 	//pool 생성
 	private static void createPool() throws Exception {
 		//DBCPPoolManager.setupDriver(ConfigInfo.SRC_DB_CONFIG, Constant.POOLNAME.SOURCE_DDL.name(), 1);
-//		DBCPPoolManager.setupDriver(ConfigInfo.SRC_DB_CONFIG, Constant.POOLNAME.SOURCE.name(), ConfigInfo.SRC_TABLE_SELECT_PARALLEL);
+//		DBCPPoolManager.setupDriver(ConfigInfo.SRC_DB_CONFIG, Constant.POOLNAME.SOURCE.name(), ConfigInfo.SRC_SELECT_ON_PARALLEL);
 //		
-//		if(ConfigInfo.TAR_CONSTRAINT_EXTRACT || ConfigInfo.SRC_EXPORT) {
+//		if(ConfigInfo.TAR_CONSTRAINT_DDL || ConfigInfo.SRC_INCLUDE_DATA_EXPORT) {
 //			
 //			int intTarConnCount = ConfigInfo.TAR_CONN_COUNT;
-//			if(ConfigInfo.SRC_TABLE_SELECT_PARALLEL > intTarConnCount) {
-//				intTarConnCount = ConfigInfo.SRC_TABLE_SELECT_PARALLEL;
+//			if(ConfigInfo.SRC_SELECT_ON_PARALLEL > intTarConnCount) {
+//				intTarConnCount = ConfigInfo.SRC_SELECT_ON_PARALLEL;
 //			}
 //			DBCPPoolManager.setupDriver(ConfigInfo.TAR_DB_CONFIG, Constant.POOLNAME.TARGET.name(), intTarConnCount);
 //		}
-		if(ConfigInfo.SRC_EXPORT || ConfigInfo.SRC_DDL_EXPORT) {
+		if(ConfigInfo.SRC_INCLUDE_DATA_EXPORT || ConfigInfo.SRC_DDL_EXPORT || checkQueryXml()) {
 			DBCPPoolManager.setupDriver(ConfigInfo.SRC_DB_CONFIG
 					, Constant.POOLNAME.SOURCE.name()
-					, ConfigInfo.SRC_TABLE_SELECT_PARALLEL
+					, ConfigInfo.SRC_SELECT_ON_PARALLEL
 			);
 		}
-		if(ConfigInfo.TAR_CONSTRAINT_EXTRACT || ConfigInfo.DB_WRITER_MODE) {
+		if(ConfigInfo.TAR_CONSTRAINT_DDL || ConfigInfo.DB_WRITER_MODE) {
 			DBCPPoolManager.setupDriver(ConfigInfo.TAR_DB_CONFIG
 					, Constant.POOLNAME.TARGET.name()
-					, ConfigInfo.SRC_TABLE_SELECT_PARALLEL > ConfigInfo.TAR_CONN_COUNT 
-					  ? ConfigInfo.SRC_TABLE_SELECT_PARALLEL
+					, ConfigInfo.SRC_SELECT_ON_PARALLEL > ConfigInfo.TAR_CONN_COUNT 
+					  ? ConfigInfo.SRC_SELECT_ON_PARALLEL
 					  : ConfigInfo.TAR_CONN_COUNT
 		    );
 		}
 	}
 	
-	//pool 삭제
+	// shutdown pool
 	private static void shutDownPool() throws Exception {
 		DBCPPoolManager.shutdownDriver(Constant.POOLNAME.SOURCE.name());
 		DBCPPoolManager.shutdownDriver(Constant.POOLNAME.TARGET.name());
-		
-	}
-	
-	private static void checkConfigInfo() throws Exception {
-		if(ConfigInfo.SRC_DDL_EXPORT) {
-			if(ConfigInfo.TAR_DB_CONFIG.CHARSET == null || ConfigInfo.TAR_DB_CONFIG.CHARSET.equals("")) {
-				System.exit(Constant.ERR_CD.CONFIG_NOT_FOUND);
-			}
-		}
-		
-		
 	}
 	
 	private static void makeDirectory() throws Exception {
-		
-		checkDirectory(ConfigInfo.OUTPUT_DIRECTORY);
-		checkDirectory(ConfigInfo.OUTPUT_DIRECTORY+"data/");
-		checkDirectory(ConfigInfo.OUTPUT_DIRECTORY+"ddl/");
-		checkDirectory(ConfigInfo.OUTPUT_DIRECTORY+"rebuild/");
-		checkDirectory(ConfigInfo.OUTPUT_DIRECTORY+"result/");		
+		checkDirectory(ConfigInfo.SRC_FILE_OUTPUT_PATH);
+		checkDirectory(ConfigInfo.SRC_FILE_OUTPUT_PATH+"data/");
+		checkDirectory(ConfigInfo.SRC_FILE_OUTPUT_PATH+"ddl/");
+		checkDirectory(ConfigInfo.SRC_FILE_OUTPUT_PATH+"rebuild/");
+		checkDirectory(ConfigInfo.SRC_FILE_OUTPUT_PATH+"result/");		
 	}
 	
 	private static File checkDirectory(String strDirectory) throws Exception {
@@ -193,14 +182,24 @@ public class Main {
 	
 	private static void makeSqlFile(TargetPgDDL dbInform) throws Exception {
 		
-		checkDirectory(ConfigInfo.OUTPUT_DIRECTORY+"rebuild/");
+		checkDirectory(ConfigInfo.SRC_FILE_OUTPUT_PATH+"rebuild/");
 		
 		//TargetPgDDL dbInform = new TargetPgDDL();
 		
-		MakeSqlFile.listToSqlFile(ConfigInfo.OUTPUT_DIRECTORY + "rebuild/fk_drop.sql", dbInform.getFkDropList());
-		MakeSqlFile.listToSqlFile(ConfigInfo.OUTPUT_DIRECTORY + "rebuild/idx_drop.sql", dbInform.getIdxDropList());
-		MakeSqlFile.listToSqlFile(ConfigInfo.OUTPUT_DIRECTORY + "rebuild/idx_create.sql", dbInform.getIdxCreateList());
-		MakeSqlFile.listToSqlFile(ConfigInfo.OUTPUT_DIRECTORY + "rebuild/fk_create.sql", dbInform.getFkCreateList());
+		MakeSqlFile.listToSqlFile(ConfigInfo.SRC_FILE_OUTPUT_PATH + "rebuild/fk_drop.sql", dbInform.getFkDropList());
+		MakeSqlFile.listToSqlFile(ConfigInfo.SRC_FILE_OUTPUT_PATH + "rebuild/idx_drop.sql", dbInform.getIdxDropList());
+		MakeSqlFile.listToSqlFile(ConfigInfo.SRC_FILE_OUTPUT_PATH + "rebuild/idx_create.sql", dbInform.getIdxCreateList());
+		MakeSqlFile.listToSqlFile(ConfigInfo.SRC_FILE_OUTPUT_PATH + "rebuild/fk_create.sql", dbInform.getFkCreateList());
+	}
+	
+	private static Boolean checkQueryXml() throws Exception {
+		if(!ConfigInfo.SRC_FILE_QUERY_DIR_PATH.equals("")) {
+			File f = new File(ConfigInfo.SRC_FILE_QUERY_DIR_PATH);
+			if(f.exists() && !f.isDirectory()) return true;
+			else return false;
+		}else {
+			return false;
+		}
 	}
 	
 }

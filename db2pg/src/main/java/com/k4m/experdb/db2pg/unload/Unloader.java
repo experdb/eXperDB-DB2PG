@@ -45,10 +45,10 @@ public class Unloader {
 	private List<String> makeTableList() throws Exception {
 		List<String> excludes = ConfigInfo.SRC_EXCLUDE_TABLES;
 		
-		List<String>  tableNameList = ConfigInfo.SRC_ALLOW_TABLES;
+		List<String>  tableNameList = ConfigInfo.SRC_INCLUDE_TABLES;
 		
 		if(tableNameList == null){
-			tableNameList = DBUtils.getTableNames(ConfigInfo.TABLE_ONLY,Constant.POOLNAME.SOURCE.name(), ConfigInfo.SRC_DB_CONFIG);
+			tableNameList = DBUtils.getTableNames(ConfigInfo.SRC_TABLE_DDL,Constant.POOLNAME.SOURCE.name(), ConfigInfo.SRC_DB_CONFIG);
 		}
 		
 		if(excludes!= null)
@@ -65,6 +65,7 @@ public class Unloader {
 		return tableNameList;
 	}
 	
+	// getConvertReplaceTableName에서 getConvertObjectName로 메소드명 변경
 	private String getConvertObjectName(String objName) throws Exception {
 		String strReplaceTableName = "";
 		
@@ -80,8 +81,8 @@ public class Unloader {
 	private String getWhere() throws Exception {
 		String strWhere ="";
 		
-		if(ConfigInfo.SRC_WHERE!=null && !ConfigInfo.SRC_WHERE.equals("")) {
-			strWhere = "WHERE "+ConfigInfo.SRC_WHERE;
+		if(ConfigInfo.SRC_WHERE_CONDITION!=null && !ConfigInfo.SRC_WHERE_CONDITION.equals("")) {
+			strWhere = "WHERE "+ConfigInfo.SRC_WHERE_CONDITION;
 		}
 		return strWhere;
 	}
@@ -94,7 +95,7 @@ public class Unloader {
 	
 	public void start() {
 		
-		ExecutorService executorService = Executors.newFixedThreadPool(ConfigInfo.SRC_TABLE_SELECT_PARALLEL);
+		ExecutorService executorService = Executors.newFixedThreadPool(ConfigInfo.SRC_SELECT_ON_PARALLEL);
 		
 		try {
 
@@ -111,40 +112,43 @@ public class Unloader {
 			
 			
 			
-			//DBCPPoolManager.setupDriver(ConfigInfo.SRC_DB_CONFIG, Constant.POOLNAME.SOURCE.name(), ConfigInfo.SRC_TABLE_SELECT_PARALLEL);
+			//DBCPPoolManager.setupDriver(ConfigInfo.SRC_DB_CONFIG, Constant.POOLNAME.SOURCE.name(), ConfigInfo.SRC_SELECT_ON_PARALLEL);
 
 			List<String> selSqlList = new ArrayList<String>();
-
 			List<String> tableNameList =  null;
+			int jobSize = 0;
 			
-			if(!ConfigInfo.SELECT_QUERIES_FILE.equals("")) {
-				loadSelectQuery(ConfigInfo.SELECT_QUERIES_FILE);
-			} 
-
-				
-			//Table Select
-			tableNameList = makeTableList();
-			for (String tableName : tableNameList) {
-				String schema = ConfigInfo.SRC_DB_CONFIG.SCHEMA_NAME!=null && !ConfigInfo.SRC_DB_CONFIG.SCHEMA_NAME.equals("") 
-									? getConvertObjectName(ConfigInfo.SRC_DB_CONFIG.SCHEMA_NAME)+"." 
-									: "" ;
-				String replaceTableName = getConvertObjectName(tableName);
-				String where = getWhere();
-
-				selSqlList.add(String.format("SELECT * FROM %s%s %s", schema, replaceTableName, where));
+			// Query XML file Check
+			if(!ConfigInfo.SRC_FILE_QUERY_DIR_PATH.equals("")) {
+				File f = new File(ConfigInfo.SRC_FILE_QUERY_DIR_PATH);
+				if(f.exists() && !f.isDirectory())
+					loadSelectQuery(ConfigInfo.SRC_FILE_QUERY_DIR_PATH);
 			}
 
+			// ASIS Data Export
+			if(ConfigInfo.SRC_INCLUDE_DATA_EXPORT) {
+				
+				//Table Select
+				tableNameList = makeTableList();
+				for (String tableName : tableNameList) {
+					String schema = ConfigInfo.SRC_DB_CONFIG.SCHEMA_NAME!=null && !ConfigInfo.SRC_DB_CONFIG.SCHEMA_NAME.equals("") 
+										? getConvertObjectName(ConfigInfo.SRC_DB_CONFIG.SCHEMA_NAME)+"." 
+										: "" ;
+					String replaceTableName = getConvertObjectName(tableName);
+					String where = getWhere();
+	
+					selSqlList.add(String.format("SELECT * FROM %s%s %s", schema, replaceTableName, where));
+				}
 
-			int jobSize = 0;
-			if(selSqlList != null) {
-				jobSize += selSqlList.size();
+				if(selSqlList != null) {
+					jobSize += selSqlList.size();
+				}
 			}
 			
 			if(selectQuerys != null) {
 				jobSize += selectQuerys.size();
 			}
 			List<ExecuteDataTransfer> jobList = new ArrayList<ExecuteDataTransfer>(jobSize);
-			
 			
 			if(selSqlList != null) {
 				for(int i=0; i<selSqlList.size(); i++){
@@ -172,7 +176,8 @@ public class Unloader {
         	LogUtils.debug("\n",Unloader.class);
         	LogUtils.info("[SUMMARY_INFO]",Unloader.class);
         	
-        	impSql = new File(ConfigInfo.OUTPUT_DIRECTORY + "data/import.sql");
+        	// import.sql을 생성
+        	impSql = new File(ConfigInfo.SRC_FILE_OUTPUT_PATH + "data/import.sql");
         	PrintWriter pw = new PrintWriter(impSql);
         	
         	
@@ -187,19 +192,21 @@ public class Unloader {
     			sb.append(", STATE : ");
     			if(jobList.get(i).isSuccess()){
     				sb.append("SUCCESS");
+    				// 파일로 데이터 추출시 import.sql 파일에 psql을 이용한 데이터 적재가 가능하도록 구문 생성
+    				// linux-ex) nohup psql -d testdb -U test -f import.sql > import.log 2>&1 &
     				impsb.append("\\copy \"");
-    				impsb.append(DevUtils.classifyString(jobList.get(i).getTableName(),ConfigInfo.CLASSIFY_STRING));
+    				impsb.append(DevUtils.classifyString(jobList.get(i).getTableName(),ConfigInfo.SRC_CLASSIFY_STRING));
     				impsb.append("\" (");
     				for(int cnmIdx=0; cnmIdx < jobList.get(i).columnNames.size(); cnmIdx++ ) {
     					impsb.append("\"");
-    					impsb.append(DevUtils.classifyString(jobList.get(i).columnNames.get(cnmIdx),ConfigInfo.CLASSIFY_STRING));
+    					impsb.append(DevUtils.classifyString(jobList.get(i).columnNames.get(cnmIdx),ConfigInfo.SRC_CLASSIFY_STRING));
     					impsb.append("\"");
     					if(cnmIdx != jobList.get(i).columnNames.size()-1) {
     						impsb.append(", ");
     					}
     				}
     				impsb.append(") from '");
-    				impsb.append(DevUtils.classifyString(jobList.get(i).getTableName(),ConfigInfo.CLASSIFY_STRING));
+    				impsb.append(DevUtils.classifyString(jobList.get(i).getTableName(),ConfigInfo.SRC_CLASSIFY_STRING));
     				impsb.append(".out'\n");
     			} else {
     				sb.append("FAILURE");
@@ -241,10 +248,10 @@ public class Unloader {
         String today = (new SimpleDateFormat("yyyyMMddHHmmss").format(date));
 
 		try {
-			ByteBuffer fileBuffer = ByteBuffer.allocateDirect(ConfigInfo.BUFFER_SIZE);
+			ByteBuffer fileBuffer = ByteBuffer.allocateDirect(ConfigInfo.SRC_BUFFER_SIZE);
 			FileChannel fch = null;
 				
-			File file = new File(ConfigInfo.OUTPUT_DIRECTORY+"result/summary_"+today+".out");
+			File file = new File(ConfigInfo.SRC_FILE_OUTPUT_PATH+"result/summary_"+today+".out");
 			
 			FileOutputStream fos = new FileOutputStream( file);
 			fch = fos.getChannel();

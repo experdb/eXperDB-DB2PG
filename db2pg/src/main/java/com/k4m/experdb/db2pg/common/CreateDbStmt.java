@@ -10,7 +10,7 @@ public class CreateDbStmt {
 		case Constant.DB_TYPE.POG: case Constant.DB_TYPE.MYSQL:
 			sql = "SELECT * FROM ( " + sql + ") T1 LIMIT " + rowcnt;
 			break;
-		case Constant.DB_TYPE.MSS: case Constant.DB_TYPE.ASE: case Constant.DB_TYPE.IQ:
+		case Constant.DB_TYPE.MSS: case Constant.DB_TYPE.ASE:
 			if (sql.toUpperCase().contains("OPTION")){
 				sql = sql.substring(0, 6) + " TOP " +  + rowcnt + sql.substring(6);
 			}else{

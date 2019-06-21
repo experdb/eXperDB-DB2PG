@@ -11,7 +11,7 @@ import com.k4m.experdb.db2pg.common.Constant;
 import com.k4m.experdb.db2pg.config.ConfigInfo;
 
 public class FileWriter {
-	protected String outputDirectory = ConfigInfo.OUTPUT_DIRECTORY + "data/";
+	protected String outputDirectory = ConfigInfo.SRC_FILE_OUTPUT_PATH + "data/";
 	private  FileChannel fileChannels;
 	private  FileChannel badFileChannels ;
 	private static long successByteCount; // Writer가 처리한 총 Byte 수
@@ -44,6 +44,7 @@ public class FileWriter {
 	
 
 	public void badFileWrite(String lineStr) throws IOException {
+		// Constant.R : LINUX = '\n', WINDOWS = '\r\n'
 		byte[] inputBytes = (lineStr + Constant.R).getBytes();
 		ByteBuffer byteBuffer = ByteBuffer.wrap(inputBytes);
 		try {
@@ -56,8 +57,7 @@ public class FileWriter {
 	
 	public void fileCreater(String file_nm) throws IOException {
 		File file = new File(file_nm);
-		boolean b = ConfigInfo.FILE_APPEND_OPT;
-		if(ConfigInfo.FILE_APPEND_OPT && file.isFile()) {
+		if(ConfigInfo.TAR_FILE_APPEND && file.isFile()) {
 			fileChannels = FileChannel.open(file.toPath(), StandardOpenOption.APPEND);
 		} else {
 			fileChannels = FileChannel.open(file.toPath(), StandardOpenOption.CREATE, StandardOpenOption.WRITE, StandardOpenOption.TRUNCATE_EXISTING);
@@ -66,7 +66,7 @@ public class FileWriter {
 
 	public void badFileCreater(String file_nm) throws IOException {
 		File file = new File(file_nm);
-		if(ConfigInfo.FILE_APPEND_OPT && file.isFile()) {
+		if(ConfigInfo.TAR_FILE_APPEND && file.isFile()) {
 			badFileChannels = FileChannel.open(file.toPath(), StandardOpenOption.APPEND);
 		} else {
 			badFileChannels = FileChannel.open(file.toPath(), StandardOpenOption.CREATE, StandardOpenOption.WRITE, StandardOpenOption.TRUNCATE_EXISTING);

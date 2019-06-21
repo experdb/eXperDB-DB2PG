@@ -39,25 +39,32 @@ public class ArgsParser {
 		option = new Option("c", "config", true, "config file path");
 		option.setRequired(false);
 		options.addOption(option);
+
+		option = new Option("x", "query-file", true, "Query XML file path");
+		option.setRequired(false);
+		options.addOption(option);
+		
 		option = new Option("h", "help", false, "db2pg help");
 		option.setRequired(false);
 		options.addOption(option);
-		option = new Option("M", "make-templates", false, "make template files");
+		
+		option = new Option("M", "make-templates", false, "make configuration sample file");
 		option.setRequired(false);
 		options.addOption(option);
+		
 		option = new Option(null, "rebuild-summary", true, "rebuild log files summary");
 		option.setRequired(false);
 		options.addOption(option);
 		option = new Option(null, "unload-summary", true, "unload log file summary");
 		option.setRequired(false);
 		options.addOption(option);
-		option = new Option(null, "src-export", true, "data export from source database");
+		option = new Option(null, "src-include-data-export", false, "data export from source database");
 		option.setRequired(false);
 		options.addOption(option);
-		option = new Option(null, "src-ddl-export", true, "ddl export from source database");
+		option = new Option(null, "src-ddl-export", false, "ddl export from source database");
 		option.setRequired(false);
 		options.addOption(option);
-		option = new Option(null, "tar-constraint-extract", true, "constraint export from target database");
+		option = new Option(null, "tar-constraint-ddl", false, "constraint export from target database");
 		option.setRequired(false);
 		options.addOption(option);
 		option = new Option(null, "iot-start", false, "Fluentd Service Start");
@@ -137,18 +144,22 @@ public class ArgsParser {
 				ConfigInfo.Loader.load(defaultConfig.getAbsolutePath());
 			}else{
 				System.out.println("Cannot Find db2pg.config File !!!");
+				System.out.println(System.getProperty("user.dir"));
 				System.exit(Constant.ERR_CD.METHOD_NOT_ALLOWD_ERR);
 			}
 		}
-
-		if (cmd.hasOption("src-export")) {
-			ConfigInfo.SRC_EXPORT = true;
+		
+		if (cmd.hasOption("query-file")) {
+			ConfigInfo.SRC_FILE_QUERY_DIR_PATH = cmd.getOptionValue("query-file");
+		}
+		if (cmd.hasOption("src-include-data-export")) {
+			ConfigInfo.SRC_INCLUDE_DATA_EXPORT = true;
 		}
 		if (cmd.hasOption("src-ddl-export")) {
 			ConfigInfo.SRC_DDL_EXPORT = true;
 		}
-		if (cmd.hasOption("tar-constraint-extract")) {
-			ConfigInfo.TAR_CONSTRAINT_EXTRACT = true;
+		if (cmd.hasOption("tar-constraint-ddl")) {
+			ConfigInfo.TAR_CONSTRAINT_DDL = true;
 		}
 		if (cmd.hasOption("help")) {			
 			formatter.printHelp("DB2PG", options);
