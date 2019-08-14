@@ -90,7 +90,7 @@ public class DBCPPoolManager {
 					connectURI = "jdbc:db2://"+configInfo.SERVERIP+":"+configInfo.PORT+"/"+configInfo.DBNAME;
 					System.setProperty("db2.jcc.charsetDecoderEncoder", "3");
 					break;
-				case Constant.DB_TYPE.MYSQL :
+				case Constant.DB_TYPE.MYS :
 					driver = "com.mysql.jdbc.Driver" ;
 					// mysql jdbc의 ResultSet fetch size 설정을 활성화 하려면 아래의 useCursorFetch 설정을 true로 변경하여야 한다.
 					connectURI = "jdbc:mysql://"+configInfo.SERVERIP+":"+configInfo.PORT+"/"+configInfo.DBNAME+"?useCursorFetch=true";

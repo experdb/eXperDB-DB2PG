@@ -7,7 +7,7 @@ public class CreateDbStmt {
 		case Constant.DB_TYPE.ORA: case Constant.DB_TYPE.TBR:
 			sql = "SELECT * FROM ( " + sql + ") T1 WHERE ROWNUM <= " + rowcnt;
 			break;
-		case Constant.DB_TYPE.POG: case Constant.DB_TYPE.MYSQL:
+		case Constant.DB_TYPE.POG: case Constant.DB_TYPE.MYS:
 			sql = "SELECT * FROM ( " + sql + ") T1 LIMIT " + rowcnt;
 			break;
 		case Constant.DB_TYPE.MSS: case Constant.DB_TYPE.ASE:

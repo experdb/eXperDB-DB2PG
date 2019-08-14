@@ -43,7 +43,7 @@ public class DDLConvertTest {
 			dbConfigInfo.DB_PW = "1q2w#E$R";
 			dbConfigInfo.DBNAME = "employees";
 			dbConfigInfo.SCHEMA_NAME="employees";
-			dbConfigInfo.DB_TYPE= Constant.DB_TYPE.MYSQL;
+			dbConfigInfo.DB_TYPE= Constant.DB_TYPE.MYS;
 			dbConfigInfo.CHARSET = "UTF-8";
 			LogUtils.setVerbose(false);
 			DBCPPoolManager.setupDriver(dbConfigInfo, Constant.POOLNAME.SOURCE.name(), 1);

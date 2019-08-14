@@ -40,7 +40,7 @@ public class MySQLConvertDBUtils {
 			Map<String,Object> params = new HashMap<String,Object>();
 			params.put("TABLE_SCHEMA", dbConfigInfo.SCHEMA_NAME);
 //			String columnName = null;
-//			if(dbConfigInfo.DB_TYPE.equals(Constant.DB_TYPE.MYSQL)) {
+//			if(dbConfigInfo.DB_TYPE.equals(Constant.DB_TYPE.MYS)) {
 //				columnName = "table_name";
 //			} else if(dbConfigInfo.DB_TYPE.equals(Constant.DB_TYPE.MSS)) {
 //				columnName = "o.name";
@@ -186,7 +186,7 @@ public class MySQLConvertDBUtils {
 		try {
 			LogUtils.info("[START_SET_CONSTRAINT_INFORM]",MySQLConvertDBUtils.class);
 			Map<String,Object> params = new HashMap<String,Object>();
-			if(dbConfigInfo.DB_TYPE.equals(Constant.DB_TYPE.MYSQL)) {
+			if(dbConfigInfo.DB_TYPE.equals(Constant.DB_TYPE.MYS)) {
 				params.put("TABLE_SCHEMA", table.getSchemaName());
 				params.put("TABLE_NAME", table.getName());
 			}
@@ -429,7 +429,7 @@ public class MySQLConvertDBUtils {
 		try {
 			LogUtils.info("[START_SET_KEY_INFORM]",MySQLConvertDBUtils.class);
 			Map<String,Object> params = new HashMap<String,Object>();
-			if(dbConfigInfo.DB_TYPE.equals(Constant.DB_TYPE.MYSQL)) {
+			if(dbConfigInfo.DB_TYPE.equals(Constant.DB_TYPE.MYS)) {
 				params.put("TABLE_SCHEMA", table.getSchemaName());
 				params.put("TABLE_NAME", table.getName());
 			}

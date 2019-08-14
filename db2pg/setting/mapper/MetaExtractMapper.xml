@@ -167,6 +167,152 @@
 	 SELECT SEQUENCE_NAME as EXTRA, MIN_VALUE AS SEQ_MIN_VALUE, MAX_VALUE, INCREMENT_BY AS SEQ_INC_VALUE, LAST_NUMBER AS SEQ_START FROM USER_SEQUENCES
 	</select>
 	
+		<select id="getTableNames" parameterType="map" resultType="java.lang.String" databaseId="TBR">
+		SELECT OBJECT_NAME as TABLE_NAME FROM ALL_OBJECTS 
+		WHERE OWNER=#{TABLE_SCHEMA} 
+			AND OBJECT_NAME NOT IN ('TOAD_PLAN_TABLE','PLAN_TABLE') 
+			AND OBJECT_NAME NOT LIKE 'MDRT%'
+			AND OBJECT_NAME NOT LIKE 'MDXT%'
+		<choose>
+			<when test="SRC_TABLE_DDL == true">
+				AND OBJECT_TYPE IN ('TABLE')
+			</when>
+			<otherwise>
+				AND OBJECT_TYPE IN ('TABLE','VIEW')
+			</otherwise>
+		</choose>
+	</select>
+	<select id="getTableInform" parameterType="map" resultType="com.k4m.experdb.db2pg.common.LowerKeyMap" databaseId="TBR">
+		SELECT UT.OBJECT_NAME AS TABLE_NAME,
+               NVL(SUBSTRB(UTC.COMMENTS,1,500),'') AS TABLE_COMMENT,
+               UT.OWNER AS SCHEMA_NAME
+        FROM   ALL_OBJECTS UT, 
+               ALL_TAB_COMMENTS UTC
+         WHERE UT.OBJECT_NAME = UTC.TABLE_NAME
+         AND UT.OWNER = UTC.OWNER
+         AND UT.OBJECT_TYPE IN ('TABLE')
+         AND UT.OWNER =#{TABLE_SCHEMA}
+         <if test="TABLE_LIST != '' and TABLE_LIST != null">
+         	AND UT.OBJECT_NAME IN ( ${TABLE_LIST} )
+         </if>
+         AND UT.OBJECT_NAME NOT LIKE 'BIN$%'
+		ORDER BY SCHEMA_NAME, TABLE_NAME
+	</select>
+	<select id="getColumnInform" parameterType="map" resultType="com.k4m.experdb.db2pg.common.LowerKeyMap" resultMap="getColumnListResult" databaseId="TBR"> 
+  			SELECT
+  			A.ORDINAL_POSITION AS ORDINAL_POSITION,
+  			A.COLUMN_NAME AS COLUMN_NAME,
+  			CASE WHEN A.EXTRA IS NULL  THEN A.COLUMN_TYPE ELSE A.COLUMN_TYPE || '('|| EXTRA || ')' END AS COLUMN_TYPE,
+  			A.EXTRA AS TYPE_LENGTH,
+  			A.COLUMN_DEFAULT AS COLUMN_DEFAULT,
+  			A.IS_NULL AS IS_NULL, 			
+  			A.COLUMN_COMMENT AS COLUMN_COMMENT,
+  			A.NUMERIC_PRECISION AS NUMERIC_PRECISION,
+	        A.NUMERIC_SCALE AS NUMERIC_SCALE
+  			FROM( 
+  				SELECT 
+	                   UTC.COLUMN_ID AS ORDINAL_POSITION,
+	                   NVL(UTC.COLUMN_NAME,'') AS COLUMN_NAME,
+	                   UTC.DATA_TYPE AS COLUMN_TYPE,  
+	                   UTC.DATA_LENGTH AS DATA_LENGTH,
+	                   UTC.DATA_DEFAULT AS COLUMN_DEFAULT,
+	                   CASE WHEN UTC.NULLABLE ='Y' THEN 'TRUE' ELSE 'FALSE'END AS IS_NULL,
+	                   NVL(SUBSTRB(UCT.COMMENTS,1,500),'') AS COLUMN_COMMENT,     
+	                   CASE WHEN UTC.DATA_TYPE='VARCHAR2' OR UTC.DATA_TYPE='VARCHAR' OR UTC.DATA_TYPE='CHAR'
+	                           THEN UTC.DATA_LENGTH
+	                        WHEN UTC.DATA_TYPE = 'NUMBER' AND UTC.DATA_PRECISION > 0 AND UTC.DATA_SCALE >= 0
+	                           THEN UTC.DATA_PRECISION
+	                        WHEN UTC.DATA_TYPE = 'NUMBER'
+	                           THEN NULL
+	                        WHEN UTC.DATA_TYPE='CLOB' OR UTC.DATA_TYPE='BLOB' OR UTC.DATA_TYPE='LONG' OR UTC.DATA_TYPE LIKE '%ROW%'
+	                           THEN NULL
+	                        WHEN UTC.DATA_TYPE='TIMESTAMP(6)' OR UTC.DATA_TYPE='TIMESTAMP(6) WITH LOCAL TIME ZONE'
+	                       	   THEN NULL   
+	                        ELSE DATA_LENGTH
+	                    END AS EXTRA,	                   
+	                   UTC.DATA_PRECISION AS NUMERIC_PRECISION,
+	                   UTC.DATA_SCALE AS NUMERIC_SCALE              
+	              FROM ALL_TAB_COLUMNS UTC, 
+	                   ALL_COL_COMMENTS UCT
+	             WHERE UTC.TABLE_NAME = UCT.TABLE_NAME
+	               AND UTC.TABLE_NAME NOT LIKE 'BIN$%'
+	               AND UTC.COLUMN_NAME = UCT.COLUMN_NAME(+)
+	               AND UTC.OWNER = UCT.OWNER
+	               AND UTC.OWNER = #{TABLE_SCHEMA}
+	               AND UTC.TABLE_NAME = #{TABLE_NAME}
+	             ORDER BY ORDINAL_POSITION
+  			) A                      
+	</select>
+	<select id="getConstraintInform" parameterType="map" resultType="com.k4m.experdb.db2pg.common.LowerKeyMap" databaseId="TBR">				       
+				SELECT  
+					UC.OWNER AS CONSTRAINT_SCHEMA,
+					UC.CONSTRAINT_NAME AS CONSTRAINT_NAME,
+					UC.OWNER AS TABLE_SCHEMA,
+					UC.TABLE_NAME AS TABLE_NAME,
+	       			UC.R_CONSTRAINT_NAME AS R_CONSTRAINT_NAME, 
+	        		UIC.COLUMN_NAME AS COLUMN_NAME,
+					UIC.COLUMN_POSITION AS ORDINAL_POSITION,
+					UC.R_OWNER AS REF_TABLE_SCHEMA,
+          			C.TABLE_NAME AS REF_TABLE_NAME,
+					C.COLUMN_NAME AS REF_COLUMN_NAME,
+					CASE WHEN UC.CONSTRAINT_TYPE='P' THEN 'P'
+					WHEN UC.CONSTRAINT_TYPE='R' THEN 'F'
+					WHEN UC.CONSTRAINT_TYPE='U' THEN 'U'
+					WHEN UC.CONSTRAINT_TYPE='C' THEN 'C'
+					ELSE NULL	END AS CONSTRAINT_TYPE,
+					CASE WHEN (SELECT INDEX_TYPE FROM ALL_INDEXES WHERE  INDEX_NAME = UC.INDEX_NAME)='NORMAL' THEN 'NORMAL'
+					WHEN (SELECT INDEX_TYPE FROM ALL_INDEXES WHERE  INDEX_NAME = UC.INDEX_NAME)='BITMAP' THEN 'BITMAP'
+					WHEN (SELECT INDEX_TYPE FROM ALL_INDEXES WHERE  INDEX_NAME = UC.INDEX_NAME)='FUNCTION-BASED NORMAL' THEN 'FUNCTION_BASED_NORMAL'
+					WHEN (SELECT INDEX_TYPE FROM ALL_INDEXES WHERE  INDEX_NAME = UC.INDEX_NAME)='FUNCTION-BASED BITMAP' THEN 'FUNCTION_BASED_BITMAP'
+					WHEN (SELECT INDEX_TYPE FROM ALL_INDEXES WHERE  INDEX_NAME = UC.INDEX_NAME)='DOMAIN' THEN 'NORMAL'
+					ELSE NULL END AS INDEX_TYPE,
+					UC.DELETE_RULE AS DELETE_RULE,
+					NULL AS DEFERRABLE,
+					NULL AS DEFERRED
+					FROM ALL_CONSTRAINTS UC, USER_IND_COLUMNS UIC ,USER_IND_COLUMNS C
+					WHERE UC.TABLE_NAME =  #{TABLE_NAME}
+					AND UC.OWNER = #{TABLE_SCHEMA}
+					AND UC.INDEX_NAME = UIC.INDEX_NAME(+)
+          			AND UC.R_CONSTRAINT_NAME=C.INDEX_NAME(+)
+					AND UC.CONSTRAINT_TYPE IN ('P', 'R', 'U')
+	</select>
+	<select id="getKeyInform" parameterType="map" resultType="com.k4m.experdb.db2pg.common.LowerKeyMap" databaseId="TBR"> 	
+		        SELECT        
+			        A.INDEX_SCHEMA,
+			        A.INDEX_NAME,
+			        A.TABLE_SCHEMA,
+			        A.TABLE_NAME,
+			        A.INDEX_TYPE,
+			        A.UNIQUENESS,
+			        C.COLUMN_NAME  AS COLUMN_NAME,
+					C.COLUMN_POSITION AS ORDINAL_POSITION
+			        FROM(
+				        SELECT 					
+				          A.OWNER AS INDEX_SCHEMA,
+									A.INDEX_NAME AS INDEX_NAME,   
+									A.TABLE_OWNER AS TABLE_SCHEMA,
+									A.TABLE_NAME AS TABLE_NAME,
+				          CASE WHEN A.INDEX_TYPE='NORMAL' THEN 'NORMAL'
+									WHEN A.INDEX_TYPE='BITMAP' THEN 'BITMAP'
+									WHEN A.INDEX_TYPE='FUNCTION-BASED NORMAL' THEN 'FUNCTION_BASED_NORMAL'
+									WHEN A.INDEX_TYPE='FUNCTION-BASED BITMAP' THEN 'FUNCTION_BASED_BITMAP'
+									WHEN A.INDEX_TYPE='DOMAIN' THEN 'NORMAL'
+									ELSE NULL END AS INDEX_TYPE,
+									A.UNIQUENESS AS UNIQUENESS   
+				          FROM ALL_INDEXES A LEFT  OUTER JOIN ALL_CONSTRAINTS B ON A.INDEX_NAME=B.INDEX_NAME
+				          WHERE A.TABLE_NAME = #{TABLE_NAME} AND A.TABLE_OWNER = #{TABLE_SCHEMA}
+				          AND B.INDEX_NAME IS NULL
+			          )A, USER_IND_COLUMNS C
+			          WHERE A.INDEX_NAME= C.INDEX_NAME
+                      ORDER BY C.COLUMN_POSITION ASC
+	</select>
+	<select id="getViewInform" parameterType="map" resultMap="getViewInformResult" resultType="com.k4m.experdb.db2pg.common.LowerKeyMap"  databaseId="TBR">
+			SELECT VIEW_NAME, TEXT
+			FROM USER_VIEWS
+	</select>
+	<select id="getSequencesInform" parameterType="map" resultType="com.k4m.experdb.db2pg.common.LowerKeyMap"  databaseId="TBR">
+	 SELECT SEQUENCE_NAME as EXTRA, MIN_VALUE AS SEQ_MIN_VALUE, MAX_VALUE, INCREMENT_BY AS SEQ_INC_VALUE, LAST_NUMBER AS SEQ_START FROM USER_SEQUENCES
+	</select>
 	
 	<select id="getTableNames" parameterType="map" resultType="java.lang.String" databaseId="MSS">
 		SELECT 
@@ -468,7 +614,7 @@
 		</choose>
 	</select>
 	
-	<select id="getTableNames" parameterType="map" resultType="java.lang.String" databaseId="MYSQL">
+	<select id="getTableNames" parameterType="map" resultType="java.lang.String" databaseId="MYS">
 		SELECT table_name
 		 FROM information_schema.tables
 		WHERE table_schema=#{TABLE_SCHEMA} 
@@ -481,7 +627,7 @@
 			</otherwise>
 		</choose>
 	</select>
-	<select id="getTableInform" parameterType="map" resultType="map" databaseId="MYSQL">
+	<select id="getTableInform" parameterType="map" resultType="map" databaseId="MYS">
 		SELECT table_schema AS schema_name, table_name AS table_name, table_comment AS table_comment
 		 FROM information_schema.tables
 		WHERE table_schema=#{TABLE_SCHEMA} AND table_type IN ('BASE TABLE') 
@@ -489,7 +635,7 @@
 				AND table_name IN ( ${TABLE_LIST} )
 			</if>
 	</select>
-	<select id="getColumnInform" parameterType="map" resultType="map" databaseId="MYSQL">
+	<select id="getColumnInform" parameterType="map" resultType="map" databaseId="MYS">
 		SELECT
 			c.column_name AS column_name,
 			c.ordinal_position AS ordinal_position,
@@ -522,7 +668,7 @@
 		WHERE c.table_schema=#{TABLE_SCHEMA}
 		    AND c.table_name=#{TABLE_NAME}
 	</select>
-	<select id="getConstraintInform" parameterType="map" resultType="map" databaseId="MYSQL">
+	<select id="getConstraintInform" parameterType="map" resultType="map" databaseId="MYS">
 		SELECT
 			con.constraint_schema AS constraint_schema,
 			con.constraint_name AS constraint_name,
@@ -625,7 +771,7 @@
 			con.table_name=#{TABLE_NAME}
 			;
 	</select>
-	<select id="getKeyInform" parameterType="map" resultType="map" databaseId="MYSQL">
+	<select id="getKeyInform" parameterType="map" resultType="map" databaseId="MYS">
 		SELECT	
 			  index_schema,
 			  index_name,
@@ -646,7 +792,7 @@
 		      AND s.table_name=#{TABLE_NAME}
 	</select>
 	
-	<select id="getViewInform" parameterType="map" resultType="map" databaseId="MYSQL">
+	<select id="getViewInform" parameterType="map" resultType="map" databaseId="MYS">
 			SELECT 
 					TABLE_CATALOG
 					,TABLE_SCHEMA

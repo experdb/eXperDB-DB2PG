@@ -69,7 +69,7 @@ public class Unloader {
 	private String getConvertObjectName(String objName) throws Exception {
 		String strReplaceTableName = "";
 		
-		if(ConfigInfo.SRC_DB_CONFIG.DB_TYPE.equals(Constant.DB_TYPE.MYSQL)) {
+		if(ConfigInfo.SRC_DB_CONFIG.DB_TYPE.equals(Constant.DB_TYPE.MYS)) {
 			strReplaceTableName = "`" + objName + "`";
 		} else {
 			strReplaceTableName =  "\"" + objName + "\"";

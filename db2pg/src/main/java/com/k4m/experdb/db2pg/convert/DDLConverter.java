@@ -43,7 +43,7 @@ public class DDLConverter {
 
 	public static DDLConverter getInstance() throws Exception {
 		DDLConverter ddlConverter = new DDLConverter();
-		if(ConfigInfo.SRC_DB_CONFIG.DB_TYPE.equals(Constant.DB_TYPE.MYSQL) || ConfigInfo.SRC_DB_CONFIG.DB_TYPE.equals(Constant.DB_TYPE.ORA) || ConfigInfo.SRC_DB_CONFIG.DB_TYPE.equals(Constant.DB_TYPE.MSS)){
+		if(ConfigInfo.SRC_DB_CONFIG.DB_TYPE.equals(Constant.DB_TYPE.MYS) || ConfigInfo.SRC_DB_CONFIG.DB_TYPE.equals(Constant.DB_TYPE.ORA) || ConfigInfo.SRC_DB_CONFIG.DB_TYPE.equals(Constant.DB_TYPE.MSS)){
 			ddlConverter.convertMapper = ConvertMapper.makeConvertMapper(SqlConvertMapper.class);
 		}else{
 			throw new NotSupportDatabaseTypeException(ConfigInfo.SRC_DB_CONFIG.DB_TYPE);
@@ -147,7 +147,7 @@ public class DDLConverter {
 		FileOutputStream fos = new FileOutputStream(viewSqlFile);
 		fch = fos.getChannel();
 
-		if(ConfigInfo.SRC_DB_CONFIG.DB_TYPE.equals(Constant.DB_TYPE.MYSQL)){
+		if(ConfigInfo.SRC_DB_CONFIG.DB_TYPE.equals(Constant.DB_TYPE.MYS)){
 			for(int i=0; i<views.size(); i++){
 				fileBuffer.put("CREATE VIEW ".getBytes(ConfigInfo.TAR_DB_CONFIG.CHARSET));
 				fileBuffer.put(views.get(i).getTableName().getBytes(ConfigInfo.TAR_DB_CONFIG.CHARSET));
@@ -265,7 +265,7 @@ public class DDLConverter {
 	private void tableConvert(Table table) throws NotSupportDatabaseTypeException {
 		if (convertMapper != null) {
 			switch (ConfigInfo.SRC_DB_CONFIG.DB_TYPE) {
-			case Constant.DB_TYPE.MYSQL:
+			case Constant.DB_TYPE.MYS:
 				mysqlTableConvert(table);
 				break;
 			case Constant.DB_TYPE.ORA:

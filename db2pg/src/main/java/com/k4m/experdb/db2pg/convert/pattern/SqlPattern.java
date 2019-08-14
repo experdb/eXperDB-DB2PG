@@ -3,7 +3,7 @@ package com.k4m.experdb.db2pg.convert.pattern;
 import java.util.regex.Pattern;
 
 public abstract class SqlPattern {
-	public interface MYSQL {
+	public interface MYS {
 		Pattern CREATE_TABLE = Pattern.compile("^*(?i)CREATE TABLE$*");
 		Pattern PRIMARY_KEY = Pattern.compile("^*(?i)PRIMARY KEY$*");
 		Pattern UNIQUE_KEY = Pattern.compile("^*(?i)UNIQUE KEY$*");

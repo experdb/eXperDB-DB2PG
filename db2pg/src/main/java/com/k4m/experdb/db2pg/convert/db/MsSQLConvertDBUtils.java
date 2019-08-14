@@ -40,7 +40,7 @@ public class MsSQLConvertDBUtils {
 			Map<String,Object> params = new HashMap<String,Object>();
 			params.put("TABLE_SCHEMA", dbConfigInfo.SCHEMA_NAME);
 //			String columnName = null;
-//			if(dbConfigInfo.DB_TYPE.equals(Constant.DB_TYPE.MYSQL)) {
+//			if(dbConfigInfo.DB_TYPE.equals(Constant.DB_TYPE.MYS)) {
 //				columnName = "table_name";
 //			} else if(dbConfigInfo.DB_TYPE.equals(Constant.DB_TYPE.MSS)) {
 //				columnName = "o.name";

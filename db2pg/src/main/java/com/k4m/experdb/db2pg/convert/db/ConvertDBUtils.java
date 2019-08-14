@@ -26,7 +26,7 @@ public class ConvertDBUtils {
 				tables = OracleConvertDBUtils.getTableInform(tableNames, tableOnly, srcPoolName, dbConfigInfo);
 			} else if (dbtype.equals(Constant.DB_TYPE.MSS)) {
 				tables = MsSQLConvertDBUtils.getTableInform(tableNames, tableOnly, srcPoolName, dbConfigInfo);
-			} else if (dbtype.equals(Constant.DB_TYPE.MYSQL)) {
+			} else if (dbtype.equals(Constant.DB_TYPE.MYS)) {
 				tables = MySQLConvertDBUtils.getTableInform(tableNames, tableOnly, srcPoolName, dbConfigInfo);
 			} else {
 
@@ -62,7 +62,7 @@ public class ConvertDBUtils {
 				table = OracleConvertDBUtils.setColumnInform(table, srcPoolName, dbConfigInfo);
 			} else if (dbtype.equals(Constant.DB_TYPE.MSS)) {
 				table = MsSQLConvertDBUtils.setColumnInform(table, srcPoolName, dbConfigInfo);
-			} else if (dbtype.equals(Constant.DB_TYPE.MYSQL)) {
+			} else if (dbtype.equals(Constant.DB_TYPE.MYS)) {
 				table = MySQLConvertDBUtils.setColumnInform(table, srcPoolName, dbConfigInfo);
 			} else {
 
@@ -118,7 +118,7 @@ public class ConvertDBUtils {
 				table = OracleConvertDBUtils.setConstraintInform(table, srcPoolName, dbConfigInfo);
 			} else if (dbtype.equals(Constant.DB_TYPE.MSS)) {
 				table = MsSQLConvertDBUtils.setConstraintInform(table, srcPoolName, dbConfigInfo);
-			} else if (dbtype.equals(Constant.DB_TYPE.MYSQL)) {
+			} else if (dbtype.equals(Constant.DB_TYPE.MYS)) {
 				table = MySQLConvertDBUtils.setConstraintInform(table, srcPoolName, dbConfigInfo);
 			} else {
 
@@ -148,7 +148,7 @@ public class ConvertDBUtils {
 				table = OracleConvertDBUtils.setKeyInform(table, srcPoolName, dbConfigInfo);
 			} else if (dbtype.equals(Constant.DB_TYPE.MSS)) {
 				table = MsSQLConvertDBUtils.setKeyInform(table, srcPoolName, dbConfigInfo);
-			} else if (dbtype.equals(Constant.DB_TYPE.MYSQL)) {
+			} else if (dbtype.equals(Constant.DB_TYPE.MYS)) {
 				table = MySQLConvertDBUtils.setKeyInform(table, srcPoolName, dbConfigInfo);
 			} else {
 
@@ -168,7 +168,7 @@ public class ConvertDBUtils {
 				views = OracleConvertDBUtils.setViewInform(tableSchema, srcPoolName, dbConfigInfo);
 			} else if (dbtype.equals(Constant.DB_TYPE.MSS)) {
 				views = MsSQLConvertDBUtils.setViewInform(tableSchema, srcPoolName, dbConfigInfo);
-			} else if (dbtype.equals(Constant.DB_TYPE.MYSQL)) {
+			} else if (dbtype.equals(Constant.DB_TYPE.MYS)) {
 				views = MySQLConvertDBUtils.setViewInform(tableSchema, srcPoolName, dbConfigInfo);
 			} else {
 
@@ -186,7 +186,7 @@ public class ConvertDBUtils {
 				table = OracleConvertDBUtils.setsetSequencesInform(table, srcPoolName, dbConfigInfo);
 			} else if (dbtype.equals(Constant.DB_TYPE.MSS)) {
 //				table = MsSQLConvertDBUtils.setColumnInform(table, srcPoolName, dbConfigInfo);
-			} else if (dbtype.equals(Constant.DB_TYPE.MYSQL)) {
+			} else if (dbtype.equals(Constant.DB_TYPE.MYS)) {
 				table = MySQLConvertDBUtils.setColumnInform(table, srcPoolName, dbConfigInfo);
 			} else {
 

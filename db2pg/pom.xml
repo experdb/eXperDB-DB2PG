@@ -272,6 +272,13 @@
 				</includes>
 				<targetPath>com/k4m/experdb/db2pg/sample/</targetPath>
 			</resource>
+			<resource>
+				<directory>${basedir}/src/main/java/com/k4m/experdb/db2pg/config</directory>
+				<includes>
+					<include>MsgCode.config</include>
+				</includes>
+				<targetPath>com/k4m/experdb/db2pg/config/</targetPath>
+			</resource>			
 		</resources>
 		<plugins>
 			<plugin>
