@@ -34,6 +34,7 @@ import com.k4m.experdb.db2pg.common.CreateDbStmt;
 import com.k4m.experdb.db2pg.common.DevUtils;
 import com.k4m.experdb.db2pg.common.LogUtils;
 import com.k4m.experdb.db2pg.config.ConfigInfo;
+import com.k4m.experdb.db2pg.config.MsgCode;
 import com.k4m.experdb.db2pg.db.DBCPPoolManager;
 import com.k4m.experdb.db2pg.db.datastructure.DBConfigInfo;
 import com.k4m.experdb.db2pg.db.oracle.spatial.geometry.Process;
@@ -45,6 +46,7 @@ import oracle.jdbc.internal.OracleTypes;
 import oracle.spatial.geometry.JGeometry;
 
 public class ExecuteDataTransfer implements Runnable{
+	static MsgCode msgCode = new MsgCode();
 	private String srcPoolName, selectQuery, outputFileName, tableName;
 	private int status=1;
 	long  rowCnt = 0;
@@ -163,8 +165,8 @@ public class ExecuteDataTransfer implements Runnable{
         		columnNames.add(rsmd.getColumnName(i));
         	}
         	
-        	LogUtils.debug(String.format("[%s-CREATE_PIPE_LINE]",this.tableName),ExecuteQuery.class);
-        	LogUtils.debug(String.format("[%s-CREATE_BUFFEREDOUTPUTSTREAM]",this.tableName),ExecuteQuery.class);
+        	LogUtils.debug(String.format(msgCode.getCode("C0131"),this.tableName),ExecuteQuery.class);
+        	LogUtils.debug(String.format(msgCode.getCode("C0132"),this.tableName),ExecuteQuery.class);
         	
         	
 			if(ConfigInfo.DB_WRITER_MODE) {
@@ -174,7 +176,7 @@ public class ExecuteDataTransfer implements Runnable{
 				dbWriter = new DBWriter(Constant.POOLNAME.TARGET.name());
 			}
 			if(ConfigInfo.FILE_WRITER_MODE) {
-				LogUtils.debug("[START_FETCH_DATA]" + outputFileName,ExecuteQuery.class);
+				LogUtils.debug(String.format(msgCode.getCode("C0133"),outputFileName),ExecuteQuery.class);
 				fileWriter = new FileWriter(this.tableName);
 			}
 			
@@ -237,7 +239,7 @@ public class ExecuteDataTransfer implements Runnable{
         	
 
         	stopWatch.stop();
-        	LogUtils.debug("[ELAPSED_TIME] "+tableName+" " + stopWatch.getTime()+"ms",ExecuteQuery.class);
+        	LogUtils.debug(String.format(msgCode.getCode("C0134"),tableName,stopWatch.getTime()),ExecuteQuery.class);
         	
 		} catch(Exception e) {
 			this.success = false;
@@ -252,7 +254,7 @@ public class ExecuteDataTransfer implements Runnable{
 				if(ConfigInfo.FILE_WRITER_MODE) fileWriter.closeFileChannels(this.tableName);
 				
 				if(ConfigInfo.DB_WRITER_MODE) {
-					LogUtils.info("COMPLETE UNLOAD (TABLE_NAME : " +tableName + ", getProcessLines : " + dbWriter.getProcessLines() + ", getProcessBytes : " + dbWriter.getProcessBytes() + " , getProcessErrorLInes : " + dbWriter.getProcessErrorLInes() + ") !!!",ExecuteQuery.class);
+					LogUtils.info(String.format(msgCode.getCode("C0135"),tableName, dbWriter.getProcessLines(), dbWriter.getProcessBytes(), dbWriter.getProcessErrorLInes(),stopWatch.getTime()),ExecuteQuery.class);
 					if(dbWriter.getProcessErrorLInes() > 0) {
 						this.success = false;
 					}
@@ -267,9 +269,9 @@ public class ExecuteDataTransfer implements Runnable{
 			CloseConn(SrcConn, preSrcStmt);
 			status = 0;
 			if(ConfigInfo.FILE_WRITER_MODE) {
-				LogUtils.debug("[END_FETCH_DATA]" + outputFileName,ExecuteQuery.class);
+				LogUtils.debug(String.format(msgCode.getCode("C0136"),outputFileName),ExecuteQuery.class);
 			}
-			LogUtils.info("COMPLETE UNLOAD (TABLE_NAME : " +tableName + ", ROWNUM : " + rowCnt + ") !!!",ExecuteQuery.class);
+			LogUtils.info(String.format(msgCode.getCode("C0137"),tableName,rowCnt),ExecuteQuery.class);
 		}
 	}
 	

@@ -18,10 +18,13 @@ import com.k4m.experdb.db2pg.common.DevUtils;
 import com.k4m.experdb.db2pg.common.LogUtils;
 import com.k4m.experdb.db2pg.common.StrUtil;
 import com.k4m.experdb.db2pg.config.ConfigInfo;
+import com.k4m.experdb.db2pg.config.MsgCode;
 import com.k4m.experdb.db2pg.db.DBCPPoolManager;
 import com.k4m.experdb.db2pg.unload.ExecuteQuery;
+import com.k4m.experdb.db2pg.unload.UnloadSummary;
 
 public class DBWriter {
+	static MsgCode msgCode = new MsgCode();
 	//public static DBConfigInfo TAR_DB_CONFIG = new DBConfigInfo();
 	
 	private CopyIn copyIn = null;
@@ -138,7 +141,7 @@ public class DBWriter {
 	
 			}catch(Exception ee){
 				//throw ee;
-				System.out.println(ee.toString());
+				LogUtils.error(ee.toString(),DBWriter.class);
 			}
 			
 
@@ -152,8 +155,8 @@ public class DBWriter {
 //				}
 //			}catch(Exception e){
 //			}
-			System.out.println("[" + table_nm + "] successByteCnt : " + processBytes);
-			System.out.println("[" + table_nm + "] InsertCnt : " + processLines);
+			LogUtils.debug(String.format(msgCode.getCode("C0201"),table_nm,processBytes),DBWriter.class);
+			LogUtils.debug(String.format(msgCode.getCode("C0202"),table_nm,processLines),DBWriter.class);
 		}
 				
 	}
@@ -222,7 +225,7 @@ public class DBWriter {
 			FileWriter fileWriter = new FileWriter(tableName);
 			fileWriter.badFileCreater(ConfigInfo.SRC_FILE_OUTPUT_PATH + tableName + ".bad");
 			fileWriter.badFileWrite(strErrLine);
-			LogUtils.debug("[Err Line Skip] ErrLine : " + intErrLine + " ErrData : " + strErrLine, DBWriter.class);
+			LogUtils.debug(String.format(msgCode.getCode("C0203"),intErrLine,strErrLine), DBWriter.class);
 		}
 	}
 	

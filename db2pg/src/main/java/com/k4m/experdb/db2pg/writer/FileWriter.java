@@ -8,9 +8,12 @@ import java.nio.file.StandardOpenOption;
 import java.util.concurrent.ConcurrentHashMap;
 
 import com.k4m.experdb.db2pg.common.Constant;
+import com.k4m.experdb.db2pg.common.LogUtils;
 import com.k4m.experdb.db2pg.config.ConfigInfo;
+import com.k4m.experdb.db2pg.config.MsgCode;
 
 public class FileWriter {
+	static MsgCode msgCode = new MsgCode();
 	protected String outputDirectory = ConfigInfo.SRC_FILE_OUTPUT_PATH + "data/";
 	private  FileChannel fileChannels;
 	private  FileChannel badFileChannels ;
@@ -79,8 +82,9 @@ public class FileWriter {
 			try {
 				WriterVO wv = new WriterVO();
 
-				System.out.println("[" + table_nm + "] succeeded bytes : " + successByteCount);
-				System.out.println("[" + table_nm + "] failed bytes : " + errByteCount);
+				LogUtils.debug(String.format(msgCode.getCode("C0204"),table_nm,successByteCount),FileWriter.class);
+				LogUtils.debug(String.format(msgCode.getCode("C0205"),table_nm,errByteCount),FileWriter.class);
+
 				wv.setProcessLines(0);
 				wv.setProcessBytes(successByteCount);
 				wv.setPorcessErrorLines(errByteCount);
