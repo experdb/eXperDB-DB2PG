@@ -48,6 +48,7 @@ import oracle.spatial.geometry.JGeometry;
 public class ExecuteDataTransfer implements Runnable{
 	static MsgCode msgCode = new MsgCode();
 	private String srcPoolName, selectQuery, outputFileName, tableName;
+	private Long migTime;
 	private int status=1;
 	long  rowCnt = 0;
 	private boolean success;
@@ -95,6 +96,10 @@ public class ExecuteDataTransfer implements Runnable{
 
 	public int getStatus() {
 		return status;
+	}
+	
+	public Long getMigTime() {
+		return migTime;
 	}
 
 	public boolean isSuccess() {
@@ -239,7 +244,8 @@ public class ExecuteDataTransfer implements Runnable{
         	
 
         	stopWatch.stop();
-        	LogUtils.debug(String.format(msgCode.getCode("C0134"),tableName,stopWatch.getTime()),ExecuteQuery.class);
+        	this.migTime = stopWatch.getTime();
+        	LogUtils.debug(String.format(msgCode.getCode("C0134"),tableName,this.migTime),ExecuteQuery.class);
         	
 		} catch(Exception e) {
 			this.success = false;
