@@ -26,10 +26,12 @@ import org.apache.ibatis.transaction.managed.ManagedTransactionFactory;
 import com.k4m.experdb.db2pg.common.CommonUtil;
 import com.k4m.experdb.db2pg.common.Constant;
 import com.k4m.experdb.db2pg.common.LogUtils;
+import com.k4m.experdb.db2pg.config.MsgCode;
 import com.k4m.experdb.db2pg.db.datastructure.DBConfigInfo;
 import com.k4m.experdb.db2pg.mapper.TestMapper;
 
 public class DBCPPoolManager {
+	static MsgCode msgCode = new MsgCode();
 	private DBCPPoolManager(){}
 	public static ConcurrentHashMap<String, PoolInfo> connInfoList = new ConcurrentHashMap<String, PoolInfo>();
 	
@@ -45,8 +47,8 @@ public class DBCPPoolManager {
 	}
 	
 	public static void setupDriver(DBConfigInfo configInfo, String poolName, int maxActive) throws Exception {
-		LogUtils.info("************************************************************",DBCPPoolManager.class);
-		LogUtils.info("Create DBCPPOOL ["+poolName+"]",DBCPPoolManager.class);
+		LogUtils.info(msgCode.getCode("C0081"),DBCPPoolManager.class);
+		LogUtils.info(String.format(msgCode.getCode("C0082"),poolName),DBCPPoolManager.class);
 		
 		// JDBC 클래스 로딩
 		try {
@@ -161,13 +163,13 @@ public class DBCPPoolManager {
             connInfoList.put(poolName, new PoolInfo(configInfo,sqlSessionFactory));
             
             setDBConnInfo(poolName, configInfo);
-            
+			LogUtils.info(String.format(msgCode.getCode("C0085"),poolName),DBCPPoolManager.class);
 		} catch (Exception e) {
 			shutdownDriver(poolName);
+			LogUtils.info(msgCode.getCode("C0086"),DBCPPoolManager.class);
 			throw e;
 		} finally {
-			LogUtils.info("Created DBCPPOOL ["+poolName+"]",DBCPPoolManager.class);
-			LogUtils.info("************************************************************",DBCPPoolManager.class);
+			LogUtils.info(msgCode.getCode("C0081"),DBCPPoolManager.class);
 		}
 	}
 	

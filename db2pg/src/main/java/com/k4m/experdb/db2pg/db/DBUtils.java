@@ -7,19 +7,21 @@ import java.util.Map;
 import org.apache.commons.lang3.time.StopWatch;
 
 import com.k4m.experdb.db2pg.common.LogUtils;
+import com.k4m.experdb.db2pg.config.MsgCode;
 import com.k4m.experdb.db2pg.db.datastructure.DBConfigInfo;
 import com.k4m.experdb.db2pg.work.db.impl.MetaExtractWork;
 import com.k4m.experdb.db2pg.work.db.impl.MetaExtractWorker;
 import com.k4m.experdb.db2pg.work.db.impl.WORK_TYPE;
 
 public class DBUtils {
+	static MsgCode msgCode = new MsgCode();
 	public static List<String> getTableNames(boolean tableDdlOnly, String srcPoolName, DBConfigInfo dbConfigInfo) {
 		List<String> tableNames = null;
 		try {
 			StopWatch stopWatch = new StopWatch();
 			stopWatch.start();
 			Map<String,Object> params = new HashMap<String,Object>();
-			LogUtils.info("[START_GET_TABLE_NAMES]",DBUtils.class);
+			LogUtils.info(msgCode.getCode("C0087"),DBUtils.class);
 			
 			params.put("TABLE_SCHEMA", dbConfigInfo.SCHEMA_NAME);
 			params.put("SRC_TABLE_DDL", tableDdlOnly);
@@ -29,13 +31,13 @@ public class DBUtils {
 			mew.run();
 			
 			tableNames = (List<String>)mew.getResult();
-			LogUtils.info("[GET_TABLE_NAMES]"+tableNames,DBUtils.class);
+			LogUtils.info(String.format(msgCode.getCode("C0088"),tableNames),DBUtils.class);
 			stopWatch.stop();
-			LogUtils.debug("[GET_TABLE_NAMES_ELAPSED_TIME] "+dbConfigInfo.DB_TYPE+" " + stopWatch.getTime()+"ms",DBUtils.class);
+			LogUtils.debug(String.format(msgCode.getCode("C0089"),dbConfigInfo.DB_TYPE,stopWatch.getTime()),DBUtils.class);
 		} catch(Exception e){
 			LogUtils.error(e.getMessage(),DBUtils.class);
 		} finally {
-			LogUtils.info("[END_GET_TABLE_NAMES]",DBUtils.class);
+			LogUtils.info(msgCode.getCode("C0090"),DBUtils.class);
 		}
 		return tableNames;
 	}

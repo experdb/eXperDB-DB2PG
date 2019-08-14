@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Map;
 
 import com.k4m.experdb.db2pg.common.LogUtils;
+import com.k4m.experdb.db2pg.config.MsgCode;
 import com.k4m.experdb.db2pg.convert.table.Column;
 import com.k4m.experdb.db2pg.convert.table.Table;
 import com.k4m.experdb.db2pg.convert.table.View;
@@ -27,6 +28,7 @@ import com.k4m.experdb.db2pg.work.db.impl.MetaExtractWorker;
 import com.k4m.experdb.db2pg.work.db.impl.WORK_TYPE;
 
 public class MsSQLConvertDBUtils {
+	static MsgCode msgCode = new MsgCode();
 	/** [Add] sequence extract function**/
 	/**
 	 * <br>schema's name : schema_name (string)
@@ -36,7 +38,7 @@ public class MsSQLConvertDBUtils {
 	public static List<Table> getTableInform(List<String> tableNames,boolean tableOnly, String srcPoolName, DBConfigInfo dbConfigInfo) {
 		List<Table> tables = new ArrayList<Table>();
 		try {
-			LogUtils.info("[START_GET_TABLE_INFORM]",MsSQLConvertDBUtils.class);
+			LogUtils.info(msgCode.getCode("C0031"),MsSQLConvertDBUtils.class);
 			Map<String,Object> params = new HashMap<String,Object>();
 			params.put("TABLE_SCHEMA", dbConfigInfo.SCHEMA_NAME);
 //			String columnName = null;
@@ -63,8 +65,8 @@ public class MsSQLConvertDBUtils {
 			MetaExtractWorker mew = new MetaExtractWorker(srcPoolName, new MetaExtractWork(WORK_TYPE.GET_TABLE_INFORM, params));
 			mew.run();
 			List<Map<String,Object>> results = (List<Map<String,Object>>)mew.getListResult();
-			LogUtils.info("[GET_SET_TABLE_INFORM]"+results,MsSQLConvertDBUtils.class);
-			LogUtils.info("[GET_TABLE_INFORM]"+results,MsSQLConvertDBUtils.class);
+			LogUtils.info(msgCode.getCode("C0032")+results,MsSQLConvertDBUtils.class);
+			LogUtils.info(msgCode.getCode("C0033")+results,MsSQLConvertDBUtils.class);
 			Object obj = null;
 			for (Map<String,Object> result : results) {
 				Table table = new Table();
@@ -79,7 +81,7 @@ public class MsSQLConvertDBUtils {
 		} catch(Exception e){
 			LogUtils.error(e.getMessage(),MsSQLConvertDBUtils.class);
 		} finally {
-			LogUtils.info("[END_GET_TABLE_INFORM]",MsSQLConvertDBUtils.class);
+			LogUtils.info(msgCode.getCode("C0034"),MsSQLConvertDBUtils.class);
 		}
 		
 		return tables;
@@ -102,7 +104,7 @@ public class MsSQLConvertDBUtils {
 	 * */
 	public static Table setColumnInform(Table table, String srcPoolName, DBConfigInfo dbConfigInfo) {
 		try {
-			LogUtils.info("[START_SET_COLUMN_INFORM]",MsSQLConvertDBUtils.class);
+			LogUtils.info(msgCode.getCode("C0035"),MsSQLConvertDBUtils.class);
 			Map<String,Object> params = new HashMap<String,Object>();
 			
 			params.put("TABLE_SCHEMA", table.getSchemaName());
@@ -111,7 +113,7 @@ public class MsSQLConvertDBUtils {
 			MetaExtractWorker mew = new MetaExtractWorker(srcPoolName, new MetaExtractWork(WORK_TYPE.GET_COLUMN_INFORM, params));
 			mew.run();
 			List<Map<String,Object>> results = (List<Map<String,Object>>)mew.getListResult();
-			LogUtils.info("[GET_SET_COLUMN_INFORM]"+results,MsSQLConvertDBUtils.class);
+			LogUtils.info(msgCode.getCode("C0036")+results,MsSQLConvertDBUtils.class);
 			
 			Object obj = null;
         	for (Map<String,Object> result : results) {
@@ -146,7 +148,7 @@ public class MsSQLConvertDBUtils {
         		
         	}
         	Collections.sort(table.getColumns(),Column.getComparator());
-			LogUtils.info("[END_SET_COLUMN_INFORM]",MsSQLConvertDBUtils.class);
+			LogUtils.info(msgCode.getCode("C0037"),MsSQLConvertDBUtils.class);
 		} catch(Exception e){
 			LogUtils.error(e.getMessage(),MsSQLConvertDBUtils.class);
 		}
@@ -195,7 +197,7 @@ public class MsSQLConvertDBUtils {
 	*/
 	public static Table setConstraintInform(Table table, String srcPoolName, DBConfigInfo dbConfigInfo) {
 		try {
-			LogUtils.info("[START_SET_CONSTRAINT_INFORM]",MsSQLConvertDBUtils.class);
+			LogUtils.info(msgCode.getCode("C0038"),MsSQLConvertDBUtils.class);
 			Map<String,Object> params = new HashMap<String,Object>();
 
 				params.put("TABLE_SCHEMA", table.getSchemaName());
@@ -205,7 +207,7 @@ public class MsSQLConvertDBUtils {
 			mew.run();
 			
 			List<Map<String,Object>> results = (List<Map<String,Object>>)mew.getListResult();
-			LogUtils.info("[GET_SET_CONSTRAINT_INFORM]" + results, ConvertDBUtils.class);
+			LogUtils.info(msgCode.getCode("C0039") + results, ConvertDBUtils.class);
 			Object obj = null;
         	for(Map<String,Object> result : results ) {
         		
@@ -434,7 +436,7 @@ public class MsSQLConvertDBUtils {
         		
         	}
         	Collections.sort(table.getColumns(),Column.getComparator());
-			LogUtils.info("[END_SET_CONSTRAINT_INFORM]",MsSQLConvertDBUtils.class);
+			LogUtils.info(msgCode.getCode("C0040"),MsSQLConvertDBUtils.class);
 		} catch(Exception e){
 			LogUtils.error(e.getMessage(),MsSQLConvertDBUtils.class);
 		}
@@ -461,7 +463,7 @@ public class MsSQLConvertDBUtils {
 	 * */
 	public static Table setKeyInform(Table table, String srcPoolName, DBConfigInfo dbConfigInfo) {
 		try {
-			LogUtils.info("[START_SET_KEY_INFORM]",MsSQLConvertDBUtils.class);
+			LogUtils.info(msgCode.getCode("C0041"),MsSQLConvertDBUtils.class);
 			Map<String,Object> params = new HashMap<String,Object>();
 
 				params.put("TABLE_SCHEMA", table.getSchemaName());
@@ -470,7 +472,7 @@ public class MsSQLConvertDBUtils {
 			MetaExtractWorker mew = new MetaExtractWorker(srcPoolName, new MetaExtractWork(WORK_TYPE.GET_KEY_INFORM, params));
 			mew.run();
 			List<Map<String,Object>> results = (List<Map<String,Object>>)mew.getListResult();
-			LogUtils.info("[GET_SET_KEY_INFORM]" + results, ConvertDBUtils.class);
+			LogUtils.info(msgCode.getCode("C0042") + results, ConvertDBUtils.class);
 			Object obj = null;
         	for (Map<String,Object> result : results) {
         		obj = result.get("index_schema");
@@ -539,7 +541,7 @@ public class MsSQLConvertDBUtils {
         	}
         	
         	Collections.sort(table.getColumns(),Column.getComparator());
-			LogUtils.info("[END_SET_KEY_INFORM]",MsSQLConvertDBUtils.class);
+			LogUtils.info(msgCode.getCode("C0043"),MsSQLConvertDBUtils.class);
 		} catch(Exception e){
 			LogUtils.error(e.getMessage(),MsSQLConvertDBUtils.class);
 		}
@@ -551,7 +553,7 @@ public class MsSQLConvertDBUtils {
 	public static List<View> setViewInform(String Schema, String srcPoolName, DBConfigInfo dbConfigInfo) {
 		List<View> views = new ArrayList<View>();
 		try {
-			LogUtils.info("[START_SET_VIEW_INFORM]",MsSQLConvertDBUtils.class);
+			LogUtils.info(msgCode.getCode("C0044"),MsSQLConvertDBUtils.class);
 			Map<String,Object> params = new HashMap<String,Object>();
 			
 			params.put("TABLE_SCHEMA", Schema);
@@ -559,7 +561,7 @@ public class MsSQLConvertDBUtils {
 			MetaExtractWorker mew = new MetaExtractWorker(srcPoolName, new MetaExtractWork(WORK_TYPE.GET_VIEW_INFORM, params));
 			mew.run();
 			List<Map<String,Object>> results = (List<Map<String,Object>>)mew.getListResult();
-			LogUtils.info("[GET_SET_VIEW_INFORM]"+results,MsSQLConvertDBUtils.class);
+			LogUtils.info(msgCode.getCode("C0045")+results,MsSQLConvertDBUtils.class);
 			
 			Object obj = null;
         	for (Map<String,Object> result : results) {
@@ -599,7 +601,7 @@ public class MsSQLConvertDBUtils {
     			
     			views.add(view);
         	}       	
-			LogUtils.info("[END_SET_VIEW_INFORM]",MsSQLConvertDBUtils.class);
+			LogUtils.info(msgCode.getCode("C0046"),MsSQLConvertDBUtils.class);
 		} catch(Exception e){
 			LogUtils.error(e.getMessage(),MsSQLConvertDBUtils.class);
 		}

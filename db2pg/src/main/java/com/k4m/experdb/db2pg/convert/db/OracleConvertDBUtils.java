@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Map;
 
 import com.k4m.experdb.db2pg.common.LogUtils;
+import com.k4m.experdb.db2pg.config.MsgCode;
 import com.k4m.experdb.db2pg.convert.table.Column;
 import com.k4m.experdb.db2pg.convert.table.Sequence;
 import com.k4m.experdb.db2pg.convert.table.Table;
@@ -25,6 +26,7 @@ import com.k4m.experdb.db2pg.work.db.impl.MetaExtractWorker;
 import com.k4m.experdb.db2pg.work.db.impl.WORK_TYPE;
 
 public class OracleConvertDBUtils {
+	static MsgCode msgCode = new MsgCode();
 	/** [Add] sequence extract function **/
 	/**
 	 * <br>
@@ -35,7 +37,7 @@ public class OracleConvertDBUtils {
 	public static List<Table> getTableInform(List<String> tableNames, boolean tableOnly, String srcPoolName, DBConfigInfo dbConfigInfo) {
 		List<Table> tables = new ArrayList<Table>();
 		try {
-			LogUtils.info("[START_GET_TABLE_INFORM]", OracleConvertDBUtils.class);
+			LogUtils.info(msgCode.getCode("C0031"), OracleConvertDBUtils.class);
 			Map<String, Object> params = new HashMap<String, Object>();
 			params.put("TABLE_SCHEMA", dbConfigInfo.SCHEMA_NAME);
 
@@ -55,8 +57,8 @@ public class OracleConvertDBUtils {
 					new MetaExtractWork(WORK_TYPE.GET_TABLE_INFORM, params));
 			mew.run();
 			List<Map<String, Object>> results = (List<Map<String, Object>>) mew.getListResult();
-			LogUtils.info("[GET_SET_TABLE_INFORM]" + results, OracleConvertDBUtils.class);
-			LogUtils.info("[GET_TABLE_INFORM]" + results, OracleConvertDBUtils.class);
+			LogUtils.info(msgCode.getCode("C0032") + results, OracleConvertDBUtils.class);
+			LogUtils.info(msgCode.getCode("C0033") + results, OracleConvertDBUtils.class);
 			Object obj = null;
 			for (Map<String, Object> result : results) {
 				Table table = new Table();
@@ -74,7 +76,7 @@ public class OracleConvertDBUtils {
 		} catch (Exception e) {
 			LogUtils.error(e.getMessage(), OracleConvertDBUtils.class);
 		} finally {
-			LogUtils.info("[END_GET_TABLE_INFORM]", OracleConvertDBUtils.class);
+			LogUtils.info(msgCode.getCode("C0034"), OracleConvertDBUtils.class);
 		}
 		return tables;
 	}
@@ -99,14 +101,14 @@ public class OracleConvertDBUtils {
 	 */
 	public static Table setColumnInform(Table table, String srcPoolName, DBConfigInfo dbConfigInfo) {
 		try {
-			LogUtils.info("[START_SET_COLUMN_INFORM]", OracleConvertDBUtils.class);
+			LogUtils.info(msgCode.getCode("C0035"), OracleConvertDBUtils.class);
 			Map<String, Object> params = new HashMap<String, Object>();
 			params.put("TABLE_SCHEMA", table.getSchemaName());
 			params.put("TABLE_NAME", table.getName());
 			MetaExtractWorker mew = new MetaExtractWorker(srcPoolName, new MetaExtractWork(WORK_TYPE.GET_COLUMN_INFORM, params));
 			mew.run();
 			List<Map<String, Object>> results = (List<Map<String, Object>>) mew.getListResult();
-			LogUtils.info("[GET_SET_COLUMN_INFORM]" + results, OracleConvertDBUtils.class);
+			LogUtils.info(msgCode.getCode("C0036") + results, OracleConvertDBUtils.class);
 			Object obj = null;
 			for (Map<String, Object> result : results) {
 				Column column = new Column();
@@ -146,7 +148,7 @@ public class OracleConvertDBUtils {
 				table.getColumns().add(column);
 			}
 			Collections.sort(table.getColumns(), Column.getComparator());
-			LogUtils.info("[END_SET_COLUMN_INFORM]", OracleConvertDBUtils.class);
+			LogUtils.info(msgCode.getCode("C0037"), OracleConvertDBUtils.class);
 		} catch (Exception e) {
 			LogUtils.error(e.getMessage(), OracleConvertDBUtils.class);
 		}
@@ -193,7 +195,7 @@ public class OracleConvertDBUtils {
 	 */
 	public static Table setConstraintInform(Table table, String srcPoolName, DBConfigInfo dbConfigInfo) {
 		try {
-			LogUtils.info("[START_SET_CONSTRAINT_INFORM]", OracleConvertDBUtils.class);
+			LogUtils.info(msgCode.getCode("C0038"), OracleConvertDBUtils.class);
 			Map<String, Object> params = new HashMap<String, Object>();
 			params.put("TABLE_SCHEMA", table.getSchemaName());	
 			params.put("TABLE_NAME", table.getName());
@@ -201,7 +203,7 @@ public class OracleConvertDBUtils {
 			MetaExtractWorker mew = new MetaExtractWorker(srcPoolName, new MetaExtractWork(WORK_TYPE.GET_CONSTRAINT_INFORM, params));
 			mew.run();
 			List<Map<String, Object>> results = (List<Map<String, Object>>) mew.getListResult();
-			LogUtils.info("[GET_SET_CONSTRAINT_INFORM]" + results, ConvertDBUtils.class);
+			LogUtils.info(msgCode.getCode("C0039") + results, ConvertDBUtils.class);
 			Object obj = null;
 			for (Map<String, Object> result : results) {
 				String constraintType = (obj = result.get("constraint_type")) != null ? obj.toString() : null;
@@ -421,7 +423,7 @@ public class OracleConvertDBUtils {
 
 			}
 			Collections.sort(table.getColumns(), Column.getComparator());
-			LogUtils.info("[END_SET_CONSTRAINT_INFORM]", OracleConvertDBUtils.class);
+			LogUtils.info(msgCode.getCode("C0040"), OracleConvertDBUtils.class);
 		} catch (Exception e) {
 			LogUtils.error(e.getMessage(), OracleConvertDBUtils.class);
 		}
@@ -442,7 +444,7 @@ public class OracleConvertDBUtils {
 	 */
 	public static Table setKeyInform(Table table, String srcPoolName, DBConfigInfo dbConfigInfo) {
 		try {
-			LogUtils.info("[START_SET_KEY_INFORM]", OracleConvertDBUtils.class);
+			LogUtils.info(msgCode.getCode("C0041"), OracleConvertDBUtils.class);
 			Map<String, Object> params = new HashMap<String, Object>();
 
 			params.put("TABLE_SCHEMA", table.getSchemaName());
@@ -451,7 +453,7 @@ public class OracleConvertDBUtils {
 			MetaExtractWorker mew = new MetaExtractWorker(srcPoolName, new MetaExtractWork(WORK_TYPE.GET_KEY_INFORM, params));
 			mew.run();
 			List<Map<String, Object>> results = (List<Map<String, Object>>) mew.getListResult();
-			LogUtils.info("[GET_SET_KEY_INFORM]" + results, ConvertDBUtils.class);
+			LogUtils.info(msgCode.getCode("C0042") + results, ConvertDBUtils.class);
 			Object obj = null;
 			for (Map<String, Object> result : results) {
 				obj = result.get("index_schema");
@@ -571,7 +573,7 @@ public class OracleConvertDBUtils {
 			}
 
 			Collections.sort(table.getColumns(), Column.getComparator());
-			LogUtils.info("[END_SET_KEY_INFORM]", OracleConvertDBUtils.class);
+			LogUtils.info(msgCode.getCode("C0043"), OracleConvertDBUtils.class);
 		} catch (Exception e) {
 			LogUtils.error(e.getMessage(), OracleConvertDBUtils.class);
 		}
@@ -581,7 +583,7 @@ public class OracleConvertDBUtils {
 	public static List<View> setViewInform(String Schema, String srcPoolName, DBConfigInfo dbConfigInfo) {
 		List<View> views = new ArrayList<View>();
 		try {
-			LogUtils.info("[START_SET_VIEW_INFORM]",OracleConvertDBUtils.class);
+			LogUtils.info(msgCode.getCode("C0044"),OracleConvertDBUtils.class);
 			Map<String,Object> params = new HashMap<String,Object>();
 			
 //			params.put("TABLE_SCHEMA", Schema);
@@ -589,7 +591,7 @@ public class OracleConvertDBUtils {
 			MetaExtractWorker mew = new MetaExtractWorker(srcPoolName, new MetaExtractWork(WORK_TYPE.GET_VIEW_INFORM, params));
 			mew.run();
 			List<Map<String,Object>> results = (List<Map<String,Object>>)mew.getListResult();
-//			LogUtils.info("[GET_SET_VIEW_INFORM]"+results,OracleConvertDBUtils.class);
+			LogUtils.info(msgCode.getCode("C0045")+results,OracleConvertDBUtils.class);
 			
 			Object obj = null;
         	for (Map<String,Object> result : results) {
@@ -622,7 +624,7 @@ public class OracleConvertDBUtils {
     			
     			views.add(view);
         	}       	
-			LogUtils.info("[END_SET_VIEW_INFORM]",OracleConvertDBUtils.class);
+			LogUtils.info(msgCode.getCode("C0046"),OracleConvertDBUtils.class);
 		} catch(Exception e){
 			LogUtils.error(e.getMessage(),OracleConvertDBUtils.class);
 		}
@@ -631,12 +633,12 @@ public class OracleConvertDBUtils {
 	
 	public static Table setsetSequencesInform(Table table, String srcPoolName, DBConfigInfo dbConfigInfo) {
 		try {
-			LogUtils.info("[START_SET_SEQUENCES_INFORM]", OracleConvertDBUtils.class);
+			LogUtils.info(msgCode.getCode("C0047"), OracleConvertDBUtils.class);
 			Map<String, Object> params = new HashMap<String, Object>();
 			MetaExtractWorker mew = new MetaExtractWorker(srcPoolName, new MetaExtractWork(WORK_TYPE.GET_SEQUENCE_INFORM, params));
 			mew.run();
 			List<Map<String, Object>> results = (List<Map<String, Object>>) mew.getListResult();
-			LogUtils.info("[GET_SET_SEQUENCES_INFORM]" + results, OracleConvertDBUtils.class);
+			LogUtils.info(msgCode.getCode("C0048") + results, OracleConvertDBUtils.class);
 			Object obj = null;
 			for (Map<String, Object> result : results) {
 				Sequence sequence = new Sequence();
@@ -654,7 +656,7 @@ public class OracleConvertDBUtils {
 				table.getSequence().add(sequence);
 			}
 			Collections.sort(table.getColumns(), Column.getComparator());
-			LogUtils.info("[END_SET_SEQUENCES_INFORM]", OracleConvertDBUtils.class);
+			LogUtils.info(msgCode.getCode("C0049"), OracleConvertDBUtils.class);
 		} catch (Exception e) {
 			LogUtils.error(e.getMessage(), OracleConvertDBUtils.class);
 		}

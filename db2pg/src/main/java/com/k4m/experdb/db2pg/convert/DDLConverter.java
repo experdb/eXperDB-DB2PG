@@ -16,6 +16,7 @@ import java.util.regex.Pattern;
 import com.k4m.experdb.db2pg.common.Constant;
 import com.k4m.experdb.db2pg.common.LogUtils;
 import com.k4m.experdb.db2pg.config.ConfigInfo;
+import com.k4m.experdb.db2pg.config.MsgCode;
 import com.k4m.experdb.db2pg.convert.db.ConvertDBUtils;
 import com.k4m.experdb.db2pg.convert.exception.NotSupportDatabaseTypeException;
 import com.k4m.experdb.db2pg.convert.make.PgDDLMaker;
@@ -30,6 +31,7 @@ import com.k4m.experdb.db2pg.db.datastructure.DBConfigInfo;
 import com.k4m.experdb.db2pg.db.datastructure.exception.DBTypeNotFoundException;
 
 public class DDLConverter {
+	static MsgCode msgCode = new MsgCode();
 	protected ConvertMapper<?> convertMapper;
 	protected PriorityBlockingQueue<DDLString> tableQueue = new PriorityBlockingQueue<DDLString>(5, DDLString.getComparator()),
 			sequenceQueue = new PriorityBlockingQueue<DDLString>(5, DDLString.getComparator()),
@@ -54,11 +56,11 @@ public class DDLConverter {
 	public DDLConverter() throws Exception {
 		File dir = new File(outputDirectory);
 		if (!dir.exists()) {
-			LogUtils.info(String.format("%s directory is not existed.", dir.getPath()), DDLConverter.class);
+			LogUtils.info(String.format(msgCode.getCode("C0025"), dir.getPath()), DDLConverter.class);
 			if (dir.mkdirs()) {
-				LogUtils.info(String.format("Success to create %s directory.", dir.getPath()), DDLConverter.class);
+				LogUtils.info(String.format(msgCode.getCode("C0026"), dir.getPath()), DDLConverter.class);
 			} else {
-				LogUtils.error(String.format("Failed to create %s directory.", dir.getPath()), DDLConverter.class);
+				LogUtils.error(String.format(msgCode.getCode("C0027"), dir.getPath()), DDLConverter.class);
 				System.exit(Constant.ERR_CD.FAILED_CREATE_DIR_ERR);
 			}
 		}
@@ -143,7 +145,7 @@ public class DDLConverter {
 		ByteBuffer fileBuffer = ByteBuffer.allocateDirect(ConfigInfo.SRC_BUFFER_SIZE);
 		FileChannel fch = null;
 			
-		File viewSqlFile = new File(outputDirectory + "/" + dbConfigInfo.DBNAME + "_view.sql");
+		File viewSqlFile = new File(outputDirectory + "/" + dbConfigInfo.DBNAME + "_" + dbConfigInfo.SCHEMA_NAME + "_view.sql");
 		FileOutputStream fos = new FileOutputStream(viewSqlFile);
 		fch = fos.getChannel();
 
@@ -181,7 +183,7 @@ public class DDLConverter {
 		FileChannel fch = null;
 		
 		
-		File tableSqlFile = new File(outputDirectory + "/" + dbConfigInfo.DBNAME + "_table.sql");
+		File tableSqlFile = new File(outputDirectory + "/" + dbConfigInfo.DBNAME + "_" + dbConfigInfo.SCHEMA_NAME + "_table.sql");
 		FileOutputStream fos = new FileOutputStream(tableSqlFile);
 		fch = fos.getChannel();
 
@@ -203,7 +205,7 @@ public class DDLConverter {
 		fos.close();
 		
 		
-		File sequenceSqlFile = new File(outputDirectory + "/" + dbConfigInfo.DBNAME + "_sequence.sql");
+		File sequenceSqlFile = new File(outputDirectory + "/" + dbConfigInfo.DBNAME + "_" + dbConfigInfo.SCHEMA_NAME + "_sequence.sql");
 		fos = new FileOutputStream(sequenceSqlFile);
 		fch = fos.getChannel();
 		while ((ddlStrVO = sequenceQueue.poll()) != null) {
@@ -217,7 +219,7 @@ public class DDLConverter {
 		fos.close();		
 		
 
-		File constraintsSqlFile = new File(outputDirectory + "/" + dbConfigInfo.DBNAME + "_constraints.sql");
+		File constraintsSqlFile = new File(outputDirectory + "/" + dbConfigInfo.DBNAME + "_" + dbConfigInfo.SCHEMA_NAME + "_constraints.sql");
 		fos = new FileOutputStream(constraintsSqlFile);
 		fch = fos.getChannel();
 		while ((ddlStrVO = constraintsQueue.poll()) != null) {
@@ -231,7 +233,7 @@ public class DDLConverter {
 		fos.close();
 
 		
-		File indexSqlFile = new File(outputDirectory + "/" + dbConfigInfo.DBNAME + "_index.sql");
+		File indexSqlFile = new File(outputDirectory + "/" + dbConfigInfo.DBNAME + "_" + dbConfigInfo.SCHEMA_NAME + "_index.sql");
 		fos = new FileOutputStream(indexSqlFile);
 		fch = fos.getChannel();
 		while ((ddlStrVO = indexQueue.poll()) != null) {
@@ -246,7 +248,7 @@ public class DDLConverter {
 		
 		
 		if (!alertComments.isEmpty()) {
-			File alertFile = new File(outputDirectory + "/" + dbConfigInfo.DBNAME + "_alert.log");
+			File alertFile = new File(outputDirectory + "/" + dbConfigInfo.DBNAME + "_" + dbConfigInfo.SCHEMA_NAME + "_alert.log");
 			fos = new FileOutputStream(alertFile);
 			fch = fos.getChannel();
 			for (String alertComment : alertComments) {

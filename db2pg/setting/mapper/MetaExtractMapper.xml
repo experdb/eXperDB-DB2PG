@@ -167,7 +167,7 @@
 	 SELECT SEQUENCE_NAME as EXTRA, MIN_VALUE AS SEQ_MIN_VALUE, MAX_VALUE, INCREMENT_BY AS SEQ_INC_VALUE, LAST_NUMBER AS SEQ_START FROM USER_SEQUENCES
 	</select>
 	
-		<select id="getTableNames" parameterType="map" resultType="java.lang.String" databaseId="TBR">
+	<select id="getTableNames" parameterType="map" resultType="java.lang.String" databaseId="TBR">
 		SELECT OBJECT_NAME as TABLE_NAME FROM ALL_OBJECTS 
 		WHERE OWNER=#{TABLE_SCHEMA} 
 			AND OBJECT_NAME NOT IN ('TOAD_PLAN_TABLE','PLAN_TABLE') 
