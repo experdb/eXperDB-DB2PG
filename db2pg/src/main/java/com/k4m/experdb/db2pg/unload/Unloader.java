@@ -250,29 +250,28 @@ public class Unloader {
 			ByteBuffer fileBuffer = ByteBuffer.allocateDirect(ConfigInfo.SRC_BUFFER_SIZE);
 			FileChannel fch = null;
 				
-			File file = new File(ConfigInfo.SRC_FILE_OUTPUT_PATH+"result/summary_"+today+".out");
+			File file = new File(ConfigInfo.SRC_FILE_OUTPUT_PATH+"result/summary_"+ConfigInfo.SRC_DB_CONFIG.SCHEMA_NAME+"_"+today+".txt");
 			
 			FileOutputStream fos = new FileOutputStream( file);
 			fch = fos.getChannel();
 			int failCnt = 0;
-			
+			fileBuffer.put("Schema:TableName:Rownum:Migtime:State\n".getBytes(ConfigInfo.TAR_DB_CONFIG.CHARSET));
 			for(int i=0;i<jobList.size();i++) {
-				fileBuffer.put(" TABLE_NAME : ".getBytes(ConfigInfo.TAR_DB_CONFIG.CHARSET));
+				fileBuffer.put(ConfigInfo.SRC_DB_CONFIG.SCHEMA_NAME.getBytes(ConfigInfo.TAR_DB_CONFIG.CHARSET));
+				fileBuffer.put(":".getBytes(ConfigInfo.TAR_DB_CONFIG.CHARSET));
 				fileBuffer.put(jobList.get(i).getTableName().getBytes(ConfigInfo.TAR_DB_CONFIG.CHARSET));
-				fileBuffer.put("\n".getBytes(ConfigInfo.TAR_DB_CONFIG.CHARSET));
-				fileBuffer.put(" ROWNUM : ".getBytes(ConfigInfo.TAR_DB_CONFIG.CHARSET));
+				fileBuffer.put(":".getBytes(ConfigInfo.TAR_DB_CONFIG.CHARSET));
 				fileBuffer.put(String.valueOf(jobList.get(i).getRowCnt()).getBytes(ConfigInfo.TAR_DB_CONFIG.CHARSET));
-				fileBuffer.put("\n".getBytes(ConfigInfo.TAR_DB_CONFIG.CHARSET));
-				fileBuffer.put(" STATE : ".getBytes(ConfigInfo.TAR_DB_CONFIG.CHARSET));
+				fileBuffer.put(":".getBytes(ConfigInfo.TAR_DB_CONFIG.CHARSET));
+				fileBuffer.put(String.valueOf(jobList.get(i).getMigTime()).getBytes(ConfigInfo.TAR_DB_CONFIG.CHARSET));
+				fileBuffer.put(":".getBytes(ConfigInfo.TAR_DB_CONFIG.CHARSET));
 				if(jobList.get(i).isSuccess()){
 					fileBuffer.put("SUCCESS".getBytes(ConfigInfo.TAR_DB_CONFIG.CHARSET));
     			} else {
     				fileBuffer.put("FAILURE".getBytes(ConfigInfo.TAR_DB_CONFIG.CHARSET));
     				failCnt++;
     			}
-				fileBuffer.put("\n".getBytes(ConfigInfo.TAR_DB_CONFIG.CHARSET));			
-				fileBuffer.put("\n".getBytes(ConfigInfo.TAR_DB_CONFIG.CHARSET));		
-				fileBuffer.put("\n".getBytes(ConfigInfo.TAR_DB_CONFIG.CHARSET));	
+				fileBuffer.put("\n".getBytes(ConfigInfo.TAR_DB_CONFIG.CHARSET));
     		}
 			
 			fileBuffer.put(msgCode.getCode("C0150").getBytes(ConfigInfo.TAR_DB_CONFIG.CHARSET));
@@ -291,7 +290,6 @@ public class Unloader {
 			
 			fileBuffer.put(msgCode.getCode("C0154").getBytes(ConfigInfo.TAR_DB_CONFIG.CHARSET));
 			fileBuffer.put(String.valueOf(makeElapsedTimeString(estimatedTime/1000)).getBytes(ConfigInfo.TAR_DB_CONFIG.CHARSET));
-			
 			
 			fileBuffer.flip();
 			fch.write(fileBuffer);
