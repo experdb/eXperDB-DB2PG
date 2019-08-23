@@ -18,9 +18,11 @@ import com.k4m.experdb.db2pg.config.MsgCode;
 
 
 public class Main {
+	static MsgCode msgCode = new MsgCode();
+
 	public static void main(String[] args) throws Exception {
-		MsgCode msgCode = new MsgCode();
 		msgCode.loadCode();
+		
 		ArgsParser argsParser = new ArgsParser();
 		argsParser.parse(args);
 		LogUtils.setVerbose(ConfigInfo.VERBOSE);
@@ -170,11 +172,11 @@ public class Main {
 	private static File checkDirectory(String strDirectory) throws Exception {
 		File dir = new File(strDirectory);
 		if(!dir.exists()){
-			LogUtils.info(String.format("%s directory is not existed.", dir.getPath()), Main.class);
+			LogUtils.info(String.format(msgCode.getCode("M0025"), dir.getPath()), Main.class);
 			if(dir.mkdirs()) {
-				LogUtils.info(String.format("Success to create %s directory.", dir.getPath()), Main.class);
+				LogUtils.info(String.format(msgCode.getCode("M0026"), dir.getPath()), Main.class);
 			} else {
-				LogUtils.error(String.format("Failed to create %s directory.", dir.getPath()), Main.class);
+				LogUtils.error(String.format(msgCode.getCode("M0027"), dir.getPath()), Main.class);
 				System.exit(Constant.ERR_CD.FAILED_CREATE_DIR_ERR);
 			}
 		}

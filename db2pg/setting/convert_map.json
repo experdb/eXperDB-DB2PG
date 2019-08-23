@@ -44,7 +44,11 @@
 		 "ora": [
 	       "^(?i)INTEGER$",
 	       "^(?i)INT$"
-	    ]		
+	    ],
+		 "tbr": [
+	       "^(?i)INTEGER$",
+	       "^(?i)INT$"
+	    ]	
 	},
 	"integer_case_3": {
 		"postgres": "BIGINT",
@@ -70,11 +74,20 @@
 			"^(?i)NUMBER\\s*\\(?[0-9]*\\)?$",
 			"^(?i)NUMBER\\s*\\(?[0-9]*,[0]*\\)?$",
 			"^(?i)NUMBER\\s*\\(?[0-9]*,[0-9]*\\)?$"
+		],
+		"tbr": [
+			"^(?i)NUMBER$",
+			"^(?i)NUMBER\\s*\\(?[0-9]*\\)?$",
+			"^(?i)NUMBER\\s*\\(?[0-9]*,[0]*\\)?$",
+			"^(?i)NUMBER\\s*\\(?[0-9]*,[0-9]*\\)?$"
 		]
 	},
 	"integer_case_6": {
 		"postgres": "NUMERIC(38)",
 		"ora": [
+			"^(?i)SMALLINT$"
+		],
+		"tbr": [
 			"^(?i)SMALLINT$"
 		]
 	},
@@ -85,6 +98,9 @@
 			"^(?i)FLOAT UNSIGNED$"
 		],
 		"ora" :[
+			"^(?i)BINARY_FLOAT$"
+		],
+		"tbr" :[
 			"^(?i)BINARY_FLOAT$"
 		]
 	},
@@ -98,6 +114,10 @@
 			"^(?i)FLOAT$"
 		],
 		"ora" :[
+			"^(?i)BINARY_DOUBLE$",
+			"^(?i)REAL$"
+		],
+		"tbr" :[
 			"^(?i)BINARY_DOUBLE$",
 			"^(?i)REAL$"
 		]
@@ -128,6 +148,11 @@
 			"^(?i)CLOB$",
 			"^(?i)LONG$",
 			"^(?i)NCLOB$"
+		],
+		"tbr" :[
+			"^(?i)CLOB$",
+			"^(?i)LONG$",
+			"^(?i)NCLOB$"
 		]
 	},
 	"char_case_1": {
@@ -141,6 +166,9 @@
 		],
 		"ora" :[
 			"^(?i)NCHAR\\s*\\(?[0-9]*\\)?$"
+		],
+		"tbr" :[
+			"^(?i)NCHAR\\s*\\(?[0-9]*\\)?$"
 		]
 	},
 	"char_case_2": {
@@ -150,6 +178,12 @@
 			"^(?i)VARCHAR$"
 		],
 		"ora" :[
+			"^(?i)VARCHAR2\\s*\\(?[0-9]*\\)?$",
+			"^(?i)NVARCHAR2\\s*\\(?[0-9]*\\)?$",
+			"^(?i)UROWID\\s*\\(?[0-9]*\\)?$",
+			"^(?i)NCHAR VARYING\\s*\\(?[0-9]*\\)?$"
+		],
+		"tbr" :[
 			"^(?i)VARCHAR2\\s*\\(?[0-9]*\\)?$",
 			"^(?i)NVARCHAR2\\s*\\(?[0-9]*\\)?$",
 			"^(?i)UROWID\\s*\\(?[0-9]*\\)?$",
@@ -166,11 +200,17 @@
 		"postgres": "VARCHAR(18)",
 		"ora": [
 			"^(?i)ROWID$"
+		],
+		"tbr": [
+			"^(?i)ROWID$"
 		]
 	},	
 	"char_case_5": {
 		"postgres": "VARCHAR(255)",
 		"ora": [
+			"^(?i)BFILE$"
+		],
+		"tbr": [
 			"^(?i)BFILE$"
 		]
 	},		
@@ -195,6 +235,11 @@
 			"^(?i)BLOB$",
 			"^(?i)LONG RAW$",
 			"^(?i)RAW\\s*\\(?[0-9]*\\)?$"
+		],
+		"tbr" :[
+			"^(?i)BLOB$",
+			"^(?i)LONG RAW$",
+			"^(?i)RAW\\s*\\(?[0-9]*\\)?$"
 		]
 	},
 	"date_case_1": {
@@ -212,6 +257,10 @@
 			"^(?i)DATETIMEOFFSET$"
 		],
 		"ora" :[
+			"^(?i)TIMESTAMP\\s*\\(?[0-9]*\\)? WITH LOCAL TIME ZONE$",
+			"^(?i)TIMESTAMP\\s*\\(?[0-9]*\\)?$"
+		],
+		"tbr" :[
 			"^(?i)TIMESTAMP\\s*\\(?[0-9]*\\)? WITH LOCAL TIME ZONE$",
 			"^(?i)TIMESTAMP\\s*\\(?[0-9]*\\)?$"
 		]
@@ -234,6 +283,9 @@
             "^(?i)DATETIME2$"
 		],
 		"ora": [
+            "^(?i)DATE\\s*\\(?[0-9]*\\)?$"
+		],
+		"tbr": [
             "^(?i)DATE\\s*\\(?[0-9]*\\)?$"
 		]
 	},
@@ -300,6 +352,9 @@
 	"xml_case": {
 		"postgres": "XML",
 	    "ora": [
+	        "^(?i)XMLTYPE$"
+	    ],
+	    "tbr": [
 	        "^(?i)XMLTYPE$"
 	    ]
 	}	

@@ -24,6 +24,8 @@ public class ConvertDBUtils {
 			String dbtype = dbConfigInfo.DB_TYPE;
 			if (dbtype.equals(Constant.DB_TYPE.ORA)) {
 				tables = OracleConvertDBUtils.getTableInform(tableNames, tableOnly, srcPoolName, dbConfigInfo);
+			} else if (dbtype.equals(Constant.DB_TYPE.TBR)) {
+				tables = TiberoConvertDBUtils.getTableInform(tableNames, tableOnly, srcPoolName, dbConfigInfo);
 			} else if (dbtype.equals(Constant.DB_TYPE.MSS)) {
 				tables = MsSQLConvertDBUtils.getTableInform(tableNames, tableOnly, srcPoolName, dbConfigInfo);
 			} else if (dbtype.equals(Constant.DB_TYPE.MYS)) {
@@ -60,6 +62,8 @@ public class ConvertDBUtils {
 			String dbtype = dbConfigInfo.DB_TYPE;
 			if (dbtype.equals(Constant.DB_TYPE.ORA)) {
 				table = OracleConvertDBUtils.setColumnInform(table, srcPoolName, dbConfigInfo);
+			} else if (dbtype.equals(Constant.DB_TYPE.TBR)) {
+				table = TiberoConvertDBUtils.setColumnInform(table, srcPoolName, dbConfigInfo);
 			} else if (dbtype.equals(Constant.DB_TYPE.MSS)) {
 				table = MsSQLConvertDBUtils.setColumnInform(table, srcPoolName, dbConfigInfo);
 			} else if (dbtype.equals(Constant.DB_TYPE.MYS)) {
@@ -116,6 +120,8 @@ public class ConvertDBUtils {
 			String dbtype = dbConfigInfo.DB_TYPE;
 			if (dbtype.equals(Constant.DB_TYPE.ORA)) {
 				table = OracleConvertDBUtils.setConstraintInform(table, srcPoolName, dbConfigInfo);
+			} else if (dbtype.equals(Constant.DB_TYPE.TBR)) {
+				table = TiberoConvertDBUtils.setConstraintInform(table, srcPoolName, dbConfigInfo);
 			} else if (dbtype.equals(Constant.DB_TYPE.MSS)) {
 				table = MsSQLConvertDBUtils.setConstraintInform(table, srcPoolName, dbConfigInfo);
 			} else if (dbtype.equals(Constant.DB_TYPE.MYS)) {
@@ -146,6 +152,8 @@ public class ConvertDBUtils {
 			String dbtype = dbConfigInfo.DB_TYPE;
 			if (dbtype.equals(Constant.DB_TYPE.ORA)) {
 				table = OracleConvertDBUtils.setKeyInform(table, srcPoolName, dbConfigInfo);
+			} else if (dbtype.equals(Constant.DB_TYPE.TBR)) {
+				table = TiberoConvertDBUtils.setKeyInform(table, srcPoolName, dbConfigInfo);
 			} else if (dbtype.equals(Constant.DB_TYPE.MSS)) {
 				table = MsSQLConvertDBUtils.setKeyInform(table, srcPoolName, dbConfigInfo);
 			} else if (dbtype.equals(Constant.DB_TYPE.MYS)) {
@@ -166,6 +174,8 @@ public class ConvertDBUtils {
 			String dbtype = dbConfigInfo.DB_TYPE;
 			if (dbtype.equals(Constant.DB_TYPE.ORA)) {
 				views = OracleConvertDBUtils.setViewInform(tableSchema, srcPoolName, dbConfigInfo);
+			}else if (dbtype.equals(Constant.DB_TYPE.TBR)) {
+				views = TiberoConvertDBUtils.setViewInform(tableSchema, srcPoolName, dbConfigInfo);
 			} else if (dbtype.equals(Constant.DB_TYPE.MSS)) {
 				views = MsSQLConvertDBUtils.setViewInform(tableSchema, srcPoolName, dbConfigInfo);
 			} else if (dbtype.equals(Constant.DB_TYPE.MYS)) {
@@ -184,6 +194,8 @@ public class ConvertDBUtils {
 			String dbtype = dbConfigInfo.DB_TYPE;
 			if (dbtype.equals(Constant.DB_TYPE.ORA)) {
 				table = OracleConvertDBUtils.setsetSequencesInform(table, srcPoolName, dbConfigInfo);
+			}else if (dbtype.equals(Constant.DB_TYPE.TBR)) {
+				table = TiberoConvertDBUtils.setsetSequencesInform(table, srcPoolName, dbConfigInfo);
 			} else if (dbtype.equals(Constant.DB_TYPE.MSS)) {
 //				table = MsSQLConvertDBUtils.setColumnInform(table, srcPoolName, dbConfigInfo);
 			} else if (dbtype.equals(Constant.DB_TYPE.MYS)) {
