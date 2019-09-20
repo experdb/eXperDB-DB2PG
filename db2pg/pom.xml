@@ -211,7 +211,13 @@
 			<scope>system</scope>
 			<systemPath>${project.basedir}/src/main/resources/cubrid-jdbc-9.3.6.0002.jar</systemPath>
 		</dependency>
-
+		<dependency>
+			<groupId>altibase</groupId>
+			<artifactId>altibase-jdbc</artifactId>
+			<version>6.1.1</version>
+			<scope>system</scope>
+			<systemPath>${project.basedir}/src/main/resources/Altibase.jar</systemPath>
+		</dependency>
 
 		<dependency>
 			<groupId>net.sourceforge.jtds</groupId>

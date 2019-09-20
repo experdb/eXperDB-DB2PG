@@ -81,7 +81,7 @@ public class ConfigInfo {
 	
 	public static boolean TAR_CONSTRAINT_REBUILD;
 	
-	public static boolean SRC_DDL_EXT;
+	public static boolean SRC_DDL_EXT_DBMS;
 	
 	
 	public static class Loader {
@@ -102,9 +102,9 @@ public class ConfigInfo {
 				SRC_DB_CONFIG.CHARSET 		= (String)propertyCheck(trimCheck(prop.getProperty("SRC_DB_CHARSET")),null,String.class);
 				// DDL 추출을 지원하는 DBMS
 				if(SRC_DB_CONFIG.DB_TYPE.equals(Constant.DB_TYPE.MYS) || SRC_DB_CONFIG.DB_TYPE.equals(Constant.DB_TYPE.ORA) || SRC_DB_CONFIG.DB_TYPE.equals(Constant.DB_TYPE.MSS) || SRC_DB_CONFIG.DB_TYPE.equals(Constant.DB_TYPE.TBR)){
-					ConfigInfo.SRC_DDL_EXT = true;
+					ConfigInfo.SRC_DDL_EXT_DBMS = true;
 				}else {
-					ConfigInfo.SRC_DDL_EXT = false;
+					ConfigInfo.SRC_DDL_EXT_DBMS = false;
 				}
 
 				ConfigInfo.SRC_LOB_BUFFER_SIZE = (int)propertyCheck(trimCheck(prop.getProperty("SRC_LOB_BUFFER_SIZE")),100,Integer.class);

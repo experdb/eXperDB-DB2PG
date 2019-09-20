@@ -83,14 +83,14 @@ public class Unloader {
 	private String getWhere() throws Exception {
 		String strWhere ="";
 		
-		if(ConfigInfo.SRC_WHERE_CONDITION!=null && !ConfigInfo.SRC_WHERE_CONDITION.equals("")) {
+		if(ConfigInfo.SRC_WHERE_CONDITION != null && !ConfigInfo.SRC_WHERE_CONDITION.equals("")) {
 			strWhere = "WHERE "+ConfigInfo.SRC_WHERE_CONDITION;
 		}
 		return strWhere;
 	}
 	
 	private void setSchemaNameCheck() throws Exception {
-		if (ConfigInfo.SRC_DB_CONFIG.SCHEMA_NAME == null && ConfigInfo.SRC_DB_CONFIG.SCHEMA_NAME.trim().equals("")) {
+		if (ConfigInfo.SRC_DB_CONFIG.SCHEMA_NAME == null || ConfigInfo.SRC_DB_CONFIG.SCHEMA_NAME.trim().equals("")) {
 			ConfigInfo.SRC_DB_CONFIG.SCHEMA_NAME = ConfigInfo.SRC_DB_CONFIG.USERID;
 		}
 	}
@@ -110,9 +110,8 @@ public class Unloader {
 			
 			LogUtils.debug(msgCode.getCode("C0144"), Unloader.class);
 
+			// Source Schema name 미입력 체크 
 			setSchemaNameCheck();
-			
-			
 			
 			//DBCPPoolManager.setupDriver(ConfigInfo.SRC_DB_CONFIG, Constant.POOLNAME.SOURCE.name(), ConfigInfo.SRC_SELECT_ON_PARALLEL);
 

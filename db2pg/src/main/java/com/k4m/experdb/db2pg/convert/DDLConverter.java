@@ -39,13 +39,13 @@ public class DDLConverter {
 			viewQueue = new PriorityBlockingQueue<DDLString>(5, DDLString.getComparator()),
 			constraintsQueue = new PriorityBlockingQueue<DDLString>(5, DDLString.getComparator());
 	protected DBConfigInfo dbConfigInfo;
-	protected String outputDirectory = ConfigInfo.SRC_FILE_OUTPUT_PATH + "ddl/";
+	protected String outputDirectory = ConfigInfo.SRC_FILE_OUTPUT_PATH + "ddl";
 	protected List<String> tableNameList = null, excludes = null;
 	protected String tableSchema = ConfigInfo.SRC_DB_CONFIG.SCHEMA_NAME;
 
 	public static DDLConverter getInstance() throws Exception {
 		DDLConverter ddlConverter = new DDLConverter();
-		if(ConfigInfo.SRC_DDL_EXT){
+		if(ConfigInfo.SRC_DDL_EXT_DBMS){
 			ddlConverter.convertMapper = ConvertMapper.makeConvertMapper(SqlConvertMapper.class);
 		}else{
 			throw new NotSupportDatabaseTypeException(ConfigInfo.SRC_DB_CONFIG.DB_TYPE);
