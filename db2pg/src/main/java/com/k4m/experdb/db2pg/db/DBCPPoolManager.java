@@ -1,6 +1,5 @@
 package com.k4m.experdb.db2pg.db;
 
-import java.io.FileReader;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.util.Properties;
@@ -13,7 +12,6 @@ import org.apache.commons.dbcp2.PoolableConnectionFactory;
 import org.apache.commons.dbcp2.PoolingDataSource;
 import org.apache.commons.dbcp2.PoolingDriver;
 import org.apache.commons.pool2.impl.GenericObjectPool;
-import org.apache.ibatis.builder.xml.XMLConfigBuilder;
 import org.apache.ibatis.builder.xml.XMLMapperBuilder;
 import org.apache.ibatis.mapping.Environment;
 import org.apache.ibatis.session.Configuration;
@@ -28,7 +26,6 @@ import com.k4m.experdb.db2pg.common.Constant;
 import com.k4m.experdb.db2pg.common.LogUtils;
 import com.k4m.experdb.db2pg.config.MsgCode;
 import com.k4m.experdb.db2pg.db.datastructure.DBConfigInfo;
-import com.k4m.experdb.db2pg.mapper.TestMapper;
 
 public class DBCPPoolManager {
 	static MsgCode msgCode = new MsgCode();
@@ -101,10 +98,14 @@ public class DBCPPoolManager {
 					driver = "cubrid.jdbc.driver.CUBRIDDriver" ;
 					connectURI = "jdbc:CUBRID:"+configInfo.SERVERIP+":"+configInfo.PORT+":"+configInfo.DBNAME+":"+configInfo.DBNAME+"::";
 					break;
+				case Constant.DB_TYPE.ALT :
+					driver = "Altibase.jdbc.driver.AltibaseDriver" ;
+					connectURI = "jdbc:Altibase://"+configInfo.SERVERIP+":"+configInfo.PORT+"/"+configInfo.DBNAME;//+"?fetch_enough=0&time_zone=DB_TZ";
+					break;
     		}
-    		
+    		LogUtils.debug("driver : "+driver+", url : "+connectURI,DBCPPoolManager.class);
 			Class.forName(driver);
-			
+			LogUtils.debug("JDBC driver loading Complete!",DBCPPoolManager.class);
 			//DB 연결대기 시간
 			DriverManager.setLoginTimeout(5);
 			
@@ -115,7 +116,7 @@ public class DBCPPoolManager {
 	        if (configInfo.CHARSET != null){
 	        	props.put("charset", configInfo.CHARSET);
 	        }
-	        LogUtils.info("PROPERTY : charset=" + configInfo.CHARSET,DBCPPoolManager.class);
+	        LogUtils.debug("PROPERTY : charset=" + configInfo.CHARSET,DBCPPoolManager.class);
 	        
 	        // 풀이 커넥션을 생성하는데 사용하는 DriverManagerConnectionFactory를 생성
 	        ConnectionFactory connectionFactory = new DriverManagerConnectionFactory(connectURI, props);
@@ -129,14 +130,17 @@ public class DBCPPoolManager {
 	        // Pool에서 Connection을 받아와 DB에 Query문을 날리기 전에
 	        // 해당 Connection이 Active한지 Check하고 
 	        // Active하지 않으면 해당 Connection을 다시 생성합니다
-	        //CUBRID는 setTestOnBorrow 속성 시에 Cannot get a connection, pool error: Unable to validate object 에러 발생
-	        
-	        if (!configInfo.DB_TYPE.equals("CUB")) {
+	        //CUBRID, ALTIBASE는 setTestOnBorrow 속성 시에 Cannot get a connection, pool error: Unable to validate object 에러 발생
+	        if (!configInfo.DB_TYPE.equals("CUB") && !configInfo.DB_TYPE.equals("ALT")) {
 		        connectionPool.setTestOnBorrow(true);	
+		        connectionPool.setTestOnReturn(true);
+		        connectionPool.setTestWhileIdle(true);
+	        }else {
+	        	connectionPool.setTestOnBorrow(false);
+		        connectionPool.setTestOnReturn(false);
+		        connectionPool.setTestWhileIdle(false);
 	        }
 	        
-	        connectionPool.setTestOnReturn(true);
-	        connectionPool.setTestWhileIdle(true);
 	        connectionPool.setMaxTotal(maxActive);		        
 	        connectionPool.setMaxWaitMillis(300000);  //사용할 커넥션이 없을 때 무한 대기
 	        connectionPool.setMinEvictableIdleTimeMillis(30 * 1000);
@@ -156,13 +160,14 @@ public class DBCPPoolManager {
 			new XMLMapperBuilder(DBCPPoolManager.class.getResourceAsStream("/mapper/TestMapper.xml"),config,"TestMapper",config.getSqlFragments()).parse();
 			new XMLMapperBuilder(DBCPPoolManager.class.getResourceAsStream("/mapper/MetaExtractMapper.xml"),config,"MetadataExtractMapper",config.getSqlFragments()).parse();
 			config.setEnvironment(env);
+
 			SqlSessionFactory sqlSessionFactory = sqlSessionFactoryBuilder.build(config);
             //Pool 등록
             pDriver.registerPool(poolName, connectionPool);
-            
+
             connInfoList.put(poolName, new PoolInfo(configInfo,sqlSessionFactory));
-            
-            setDBConnInfo(poolName, configInfo);
+           	setDBConnInfo(poolName, configInfo);
+           	
 			LogUtils.info(String.format(msgCode.getCode("C0085"),poolName),DBCPPoolManager.class);
 		} catch (Exception e) {
 			shutdownDriver(poolName);
@@ -180,15 +185,17 @@ public class DBCPPoolManager {
 	 * @throws Exception
 	 */
 	private static void setDBConnInfo(String poolName, DBConfigInfo configInfo) throws Exception{
-		Connection conn = getConnection(poolName);
+		Connection conn = null;
 		try {
-        conn.setAutoCommit(false);
-        configInfo.DB_VER = conn.getMetaData().getDatabaseMajorVersion() + "." + conn.getMetaData().getDatabaseMinorVersion();
-        configInfo.DB_MAJOR_VER = conn.getMetaData().getDatabaseMajorVersion();
-        configInfo.DB_MINOR_VER = conn.getMetaData().getDatabaseMinorVersion();
-        configInfo.ORG_SCHEMA_NM= conn.getMetaData().getUserName();
+			conn = getConnection(poolName);
+	        conn.setAutoCommit(false);
+	        configInfo.DB_VER = conn.getMetaData().getDatabaseMajorVersion() + "." + conn.getMetaData().getDatabaseMinorVersion();
+	        configInfo.DB_MAJOR_VER = conn.getMetaData().getDatabaseMajorVersion();
+	        configInfo.DB_MINOR_VER = conn.getMetaData().getDatabaseMinorVersion();
+	        configInfo.ORG_SCHEMA_NM= conn.getMetaData().getUserName();
 		} catch(Exception e) {
-			
+			System.out.println("error : "+e);
+			System.exit(Constant.ERR_CD.UNKNOWN_ERR);
 		} finally {
 	        if (conn != null) conn.close();
 		}
@@ -227,6 +234,7 @@ public class DBCPPoolManager {
 	
     public static Connection getConnection(String poolName) throws Exception {
     	Connection conn = DriverManager.getConnection("jdbc:apache:commons:dbcp:" + poolName);
+
     	/*
     	switch (getConfigInfo(poolName).DB_TYPE){
     		case Constant.DB_TYPE.ASE :

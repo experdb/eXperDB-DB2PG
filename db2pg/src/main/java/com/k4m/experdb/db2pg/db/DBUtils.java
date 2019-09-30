@@ -25,7 +25,7 @@ public class DBUtils {
 			
 			params.put("TABLE_SCHEMA", dbConfigInfo.SCHEMA_NAME);
 			params.put("SRC_TABLE_DDL", tableDdlOnly);
-			System.out.println(params);
+			System.out.println("param:"+params);
 			
 			MetaExtractWorker mew = new MetaExtractWorker(srcPoolName,new MetaExtractWork(WORK_TYPE.GET_TABLE_NAMES, params));
 			mew.run();
@@ -34,7 +34,9 @@ public class DBUtils {
 			LogUtils.info(String.format(msgCode.getCode("C0088"),tableNames),DBUtils.class);
 			stopWatch.stop();
 			LogUtils.debug(String.format(msgCode.getCode("C0089"),dbConfigInfo.DB_TYPE,stopWatch.getTime()),DBUtils.class);
+
 		} catch(Exception e){
+			System.out.println("error");
 			LogUtils.error(e.getMessage(),DBUtils.class);
 		} finally {
 			LogUtils.info(msgCode.getCode("C0090"),DBUtils.class);

@@ -829,6 +829,58 @@
 		SELECT owner.name, db_serial.* FROM db_serial WHERE class_name=#{TABLE_NAME}
 	</select>
 	
+	<select id="getTableNames" parameterType="map" resultType="java.lang.String" databaseId="ALT">
+		SELECT B.TABLE_NAME AS TABLE_NAME
+		FROM SYSTEM_.SYS_USERS_ A, SYSTEM_.SYS_TABLES_ B
+		WHERE A.USER_ID = B.USER_ID
+			AND  A.USER_NAME = #{TABLE_SCHEMA}
+		<choose>
+			<when test="SRC_TABLE_DDL == true">
+				AND B.TABLE_TYPE='T'
+			</when>
+			<otherwise>
+				AND B.TABLE_TYPE IN ('T','V')
+			</otherwise>
+		</choose>
+	</select>
+	<select id="getTableInform" parameterType="map" resultType="com.k4m.experdb.db2pg.common.LowerKeyMap" databaseId="ALT">
+		SELECT A.TABLE_NAME AS TABLE_NAME,
+		    NVL(SUBSTRB(A.COMMENTS,1,500),'') AS TABLE_COMMENT,
+		    C.USER_NAME AS SCHEMA_NAME
+		FROM SYSTEM_.SYS_COMMENTS_ A,
+			SYSTEM_.SYS_TABLES_ B,
+			SYSTEM_.SYS_USERS_ C
+		WHERE A.TABLE_NAME = B.TABLE_NAME
+			AND B.USER_ID = C.USER_ID
+			AND C.USER_NAME=#{TABLE_SCHEMA}
+			AND A.COLUMN_NAME IS NULL
+         <if test="TABLE_LIST != '' and TABLE_LIST != null">
+         	AND A.TABLE_NAME IN ( ${TABLE_LIST} )
+         </if>
+		ORDER BY SCHEMA_NAME, TABLE_NAME
+	</select>
+	<select id="getColumnInform" parameterType="map" resultType="com.k4m.experdb.db2pg.common.LowerKeyMap" resultMap="getColumnListResult" databaseId="ALT"> 
+		SELECT
+			A.COLUMN_NAME AS COLUMN_NAME,
+			A.COLUMN_ORDER AS ORDINAL_POSITION,
+			A.IS_NULLABLE AS IS_NULL,
+			A.DEFAULT_VAL AS COLUMN_DEFAULT,
+			(SELECT COMMENTS FROM SYSTEM_.SYS_COMMENTS_  WHERE TABLE_NAME=B.TABLE_NAME AND COLUMN_NAME=A.COLUMN_NAME) AS COLUMN_COMMENT,
+			A.PRECISION AS NUMERIC_PRECISION,
+			A.SCALE AS NUMERIC_SCALE,
+			A.DATA_TYPE AS COLUMN_TYPE
+		FROM SYSTEM_.SYS_COLUMNS_ A, SYSTEM_.SYS_TABLES_ B, SYSTEM_.SYS_USERS_ C
+		WHERE A.TABLE_ID = B.TABLE_ID
+			AND B.USER_ID = C.USER_ID
+			AND A.TABLE_ID=#{TABLE_NAME}
+			AND C.USER_NAME=#{TABLE_SCHEMA}
+		ORDER BY COLUMN_ORDER ASC
+	</select>
+	<select id="getConstraintInform" parameterType="map" resultType="com.k4m.experdb.db2pg.common.LowerKeyMap" resultMap="getColumnListResult" databaseId="ALT"> 
+	
+	</select>
+
+		
 	<select id="getPgFkDdl" resultType="map" databaseId="POG">
 		SELECT psat1.schemaname AS "SCHEMA_NM",
 			pc.conname AS "CONSTRAINT_NAME",

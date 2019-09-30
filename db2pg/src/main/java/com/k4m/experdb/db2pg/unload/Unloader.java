@@ -230,7 +230,7 @@ public class Unloader {
         	makeSummaryFile(jobList, estimatedTime);
     		//(new UnloadSummary("out/result", "summary")).run();
 		}catch(Exception e){
-			LogUtils.error(msgCode.getCode("C0148"),Unloader.class,e);
+			LogUtils.error(msgCode.getCode("C0148")+ " : "+ e,Unloader.class,e);
 			System.exit(Constant.ERR_CD.UNKNOWN_ERR);
 		} finally {
 			if(executorService != null) executorService.shutdown();
@@ -380,9 +380,7 @@ public class Unloader {
 			LogUtils.debug(msgCode.getCode("C0161"),Unloader.class);
 		}
 	}
-	
-	
-	
+
 	private class SelectQuery {
 		String name,query;
 
