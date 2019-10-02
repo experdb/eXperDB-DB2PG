@@ -131,7 +131,7 @@ public class ExecuteQuery implements Runnable{
         	for(int i=1;i<=rsmd.getColumnCount();i++)
         		columnNames.add(rsmd.getColumnName(i));
         	
-        	LogUtils.debug(String.format(msgCode.getCode("C0131"),this.tableName),ExecuteQuery.class);
+        	//LogUtils.debug(String.format(msgCode.getCode("C0131"),this.tableName),ExecuteQuery.class);
 
         	File output_file = new File(outputFileName);
         	FileOutputStream fos = new FileOutputStream(output_file);

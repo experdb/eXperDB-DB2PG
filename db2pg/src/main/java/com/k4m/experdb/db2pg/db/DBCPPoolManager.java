@@ -116,7 +116,7 @@ public class DBCPPoolManager {
 	        if (configInfo.CHARSET != null){
 	        	props.put("charset", configInfo.CHARSET);
 	        }
-	        LogUtils.debug("PROPERTY : charset=" + configInfo.CHARSET,DBCPPoolManager.class);
+	        //LogUtils.debug("PROPERTY : charset=" + configInfo.CHARSET,DBCPPoolManager.class);
 	        
 	        // 풀이 커넥션을 생성하는데 사용하는 DriverManagerConnectionFactory를 생성
 	        ConnectionFactory connectionFactory = new DriverManagerConnectionFactory(connectURI, props);
@@ -193,6 +193,9 @@ public class DBCPPoolManager {
 	        configInfo.DB_MAJOR_VER = conn.getMetaData().getDatabaseMajorVersion();
 	        configInfo.DB_MINOR_VER = conn.getMetaData().getDatabaseMinorVersion();
 	        configInfo.ORG_SCHEMA_NM= conn.getMetaData().getUserName();
+	        
+	        LogUtils.debug("DB Version : "+configInfo.DB_VER, DBCPPoolManager.class);
+	        LogUtils.debug("Current Schema name : "+configInfo.ORG_SCHEMA_NM, DBCPPoolManager.class);
 		} catch(Exception e) {
 			System.out.println("error : "+e);
 			System.exit(Constant.ERR_CD.UNKNOWN_ERR);

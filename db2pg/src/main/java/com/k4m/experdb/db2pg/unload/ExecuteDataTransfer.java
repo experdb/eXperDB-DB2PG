@@ -170,11 +170,11 @@ public class ExecuteDataTransfer implements Runnable{
         		columnNames.add(rsmd.getColumnName(i));
         	}
         	
-        	LogUtils.debug(String.format(msgCode.getCode("C0131"),this.tableName),ExecuteQuery.class);
+        	//LogUtils.debug(String.format(msgCode.getCode("C0131"),this.tableName),ExecuteQuery.class);
         	LogUtils.debug(String.format(msgCode.getCode("C0132"),this.tableName),ExecuteQuery.class);
         	
-        	
 			if(ConfigInfo.DB_WRITER_MODE) {
+				LogUtils.debug(String.format(msgCode.getCode("C0131"),this.tableName),ExecuteQuery.class);
 				if (ConfigInfo.TAR_TRUNCATE) {
 					execTruncTable(Constant.POOLNAME.TARGET.name(), this.tableName);
 				}

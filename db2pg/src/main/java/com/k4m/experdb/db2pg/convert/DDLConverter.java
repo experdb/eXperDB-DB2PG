@@ -56,9 +56,9 @@ public class DDLConverter {
 	public DDLConverter() throws Exception {
 		File dir = new File(outputDirectory);
 		if (!dir.exists()) {
-			LogUtils.info(String.format(msgCode.getCode("C0025"), dir.getPath()), DDLConverter.class);
+			LogUtils.debug(String.format(msgCode.getCode("C0025"), dir.getPath()), DDLConverter.class);
 			if (dir.mkdirs()) {
-				LogUtils.info(String.format(msgCode.getCode("C0026"), dir.getPath()), DDLConverter.class);
+				LogUtils.debug(String.format(msgCode.getCode("C0026"), dir.getPath()), DDLConverter.class);
 			} else {
 				LogUtils.error(String.format(msgCode.getCode("C0027"), dir.getPath()), DDLConverter.class);
 				System.exit(Constant.ERR_CD.FAILED_CREATE_DIR_ERR);
@@ -70,8 +70,7 @@ public class DDLConverter {
 		//DBCPPoolManager.setupDriver(dbConfigInfo, Constant.POOLNAME.SOURCE_DDL.name(), 1);
 		tableNameList = ConfigInfo.SRC_INCLUDE_TABLES;
 		if (tableNameList == null) {
-			tableNameList = DBUtils.getTableNames(ConfigInfo.SRC_TABLE_DDL, Constant.POOLNAME.SOURCE.name(),
-					dbConfigInfo);
+			tableNameList = DBUtils.getTableNames(ConfigInfo.SRC_TABLE_DDL, Constant.POOLNAME.SOURCE.name(),dbConfigInfo);
 		}
 		if (excludes != null) {
 			for (int eidx = 0; eidx < excludes.size(); eidx++) {

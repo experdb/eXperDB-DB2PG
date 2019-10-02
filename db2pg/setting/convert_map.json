@@ -26,6 +26,9 @@
 		],
 		"mss": [
             "^(?i)TINYINT$"
+		],
+		"alt": [
+			"^(?i)SMALLINT$\\(?[0-9]*\\)?$"
 		]
 	},
 	"integer_case_2": {
@@ -48,7 +51,11 @@
 		 "tbr": [
 	       "^(?i)INTEGER$",
 	       "^(?i)INT$"
-	    ]	
+	    ],
+		 "alt": [
+	       "^(?i)INTEGER$",
+	       "^(?i)INT$"
+	    ]
 	},
 	"integer_case_3": {
 		"postgres": "BIGINT",
@@ -56,7 +63,10 @@
 			"^(?i)INT\\s*\\(?[0-9]*\\)\\s*UNSIGNED?$",
             "^(?i)INTEGER\\s*\\(?[0-9]*\\)\\s*UNSIGNED?$",
             "^(?i)BIGINT\\s*\\(?[0-9]*\\)?$"
-		]
+		],
+		 "alt": [
+	       "^(?i)BIGINT\\s*\\(?[0-9]*\\)?$"
+	    ]
 	},
 	"integer_case_4": {
 		"postgres": "NUMERIC(20)",
@@ -80,6 +90,15 @@
 			"^(?i)NUMBER\\s*\\(?[0-9]*\\)?$",
 			"^(?i)NUMBER\\s*\\(?[0-9]*,[0]*\\)?$",
 			"^(?i)NUMBER\\s*\\(?[0-9]*,[0-9]*\\)?$"
+		],
+		"alt": [
+			"^(?i)NUMBER$",
+			"^(?i)NUMBER\\s*\\(?[0-9]*\\)?$",
+			"^(?i)NUMBER\\s*\\(?[0-9]*,[0]*\\)?$",
+			"^(?i)NUMBER\\s*\\(?[0-9]*,[0-9]*\\)?$",
+			"^(?i)NUMERIC\\s*\\(?[0-9]*,[0-9]*\\)?$",
+			"^(?i)FLOAT$",
+			"^(?i)DECIMAL$"
 		]
 	},
 	"integer_case_6": {
@@ -102,6 +121,9 @@
 		],
 		"tbr" :[
 			"^(?i)BINARY_FLOAT$"
+		],
+		"alt" :[
+			"^(?i)REAL$"
 		]
 	},
 	"real_case_2": {
@@ -120,6 +142,9 @@
 		"tbr" :[
 			"^(?i)BINARY_DOUBLE$",
 			"^(?i)REAL$"
+		],
+		"alt": [
+			"^(?i)DOUBLE$"
 		]
 	},
 	"bool_case": {
@@ -153,6 +178,11 @@
 			"^(?i)CLOB$",
 			"^(?i)LONG$",
 			"^(?i)NCLOB$"
+		],
+		"alt" :[
+			"^(?i)CLOB$",
+			"^(?i)GEOMETRY$",
+			"^(?i)NCLOB$"
 		]
 	},
 	"char_case_1": {
@@ -169,6 +199,10 @@
 		],
 		"tbr" :[
 			"^(?i)NCHAR\\s*\\(?[0-9]*\\)?$"
+		],
+		"alt": [
+			"^(?i)CHAR$",
+			"^(?i)NCHAR$"
 		]
 	},
 	"char_case_2": {
@@ -188,6 +222,10 @@
 			"^(?i)NVARCHAR2\\s*\\(?[0-9]*\\)?$",
 			"^(?i)UROWID\\s*\\(?[0-9]*\\)?$",
 			"^(?i)NCHAR VARYING\\s*\\(?[0-9]*\\)?$"
+		],
+		"alt": [
+			"^(?i)NVARCHAR$",
+			"^(?i)VARCHAR$"
 		]
 	},	
 	"char_case_3": {
@@ -240,6 +278,24 @@
 			"^(?i)BLOB$",
 			"^(?i)LONG RAW$",
 			"^(?i)RAW\\s*\\(?[0-9]*\\)?$"
+		],
+		"alt" :[
+			"^(?i)BLOB$",
+			"^(?i)BIT\\s*\\(?[0-9]*\\)?$",
+			"^(?i)BYTE\\s*\\(?[0-9]*\\)?$",
+			"^(?i)NIBBLE\\s*\\(?[0-9]*\\)?$"
+		]
+	},
+	"bit_case": {
+		"postgres": "BIT",
+		"alt": [
+			"^(?i)BIT\\s*\\(?[0-9]*\\)?$"
+		]
+	},
+	"varbit_case": {
+		"postgres": "VARBIT",
+		"alt": [
+			"^(?i)VARBIT\\s*\\(?[0-9]*\\)?$"
 		]
 	},
 	"date_case_1": {
@@ -286,6 +342,9 @@
             "^(?i)DATE\\s*\\(?[0-9]*\\)?$"
 		],
 		"tbr": [
+            "^(?i)DATE\\s*\\(?[0-9]*\\)?$"
+		],
+		"alt": [
             "^(?i)DATE\\s*\\(?[0-9]*\\)?$"
 		]
 	},

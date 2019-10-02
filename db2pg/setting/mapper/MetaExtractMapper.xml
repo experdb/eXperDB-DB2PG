@@ -879,7 +879,15 @@
 	<select id="getConstraintInform" parameterType="map" resultType="com.k4m.experdb.db2pg.common.LowerKeyMap" resultMap="getColumnListResult" databaseId="ALT"> 
 	
 	</select>
+	<select id="getKeyInform" parameterType="map" resultType="com.k4m.experdb.db2pg.common.LowerKeyMap" databaseId="ALT">
 
+	</select>
+	<select id="getViewInform" parameterType="map" resultMap="getViewInformResult" resultType="com.k4m.experdb.db2pg.common.LowerKeyMap"  databaseId="ALT">
+	
+	</select>
+	<select id="getSequencesInform" parameterType="map" resultType="com.k4m.experdb.db2pg.common.LowerKeyMap"  databaseId="ALT">
+	
+	</select>
 		
 	<select id="getPgFkDdl" resultType="map" databaseId="POG">
 		SELECT psat1.schemaname AS "SCHEMA_NM",
