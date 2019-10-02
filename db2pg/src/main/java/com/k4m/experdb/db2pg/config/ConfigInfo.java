@@ -97,7 +97,7 @@ public class ConfigInfo {
 				SRC_DB_CONFIG.DB_PW 		= trimCheck(prop.getProperty("SRC_PASSWORD")); 
 				SRC_DB_CONFIG.DBNAME 		= trimCheck(prop.getProperty("SRC_DATABASE")); 
 				SRC_DB_CONFIG.SCHEMA_NAME 	= trimCheck(prop.getProperty("SRC_SCHEMA")); 
-				SRC_DB_CONFIG.DB_TYPE 		= (String)propertyCheck(trimCheck(prop.getProperty("SRC_DBMS_TYPE")),"ORA",String.class);
+				SRC_DB_CONFIG.DB_TYPE 		= (String)propertyCheck(trimCheck(prop.getProperty("SRC_DB_TYPE")),"ORA",String.class);
 				SRC_DB_CONFIG.PORT			= (String)propertyCheck(trimCheck(prop.getProperty("SRC_PORT")),"1521",String.class);
 				SRC_DB_CONFIG.CHARSET 		= (String)propertyCheck(trimCheck(prop.getProperty("SRC_DB_CHARSET")),null,String.class);
 				// DDL 추출을 지원하는 DBMS
