@@ -858,8 +858,7 @@
 			SYSTEM_.SYS_TABLES_ A,
 			SYSTEM_.SYS_USERS_ B
 		WHERE 
-			A.USER_ID = B.USER_ID
-			AND B.USER_NAME=#{TABLE_SCHEMA}
+			A.USER_ID = B.USER_ID AND B.USER_NAME=#{TABLE_SCHEMA}
          <if test="TABLE_LIST != '' and TABLE_LIST != null">
          	AND A.TABLE_NAME IN ( ${TABLE_LIST} )
          </if>

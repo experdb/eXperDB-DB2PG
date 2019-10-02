@@ -33,6 +33,7 @@ public class ConvertDBUtils {
 			} else if (dbtype.equals(Constant.DB_TYPE.ALT)) {
 				tables = AltibaseConvertDBUtils.getTableInform(tableNames, tableOnly, srcPoolName, dbConfigInfo);
 			} else {
+				
 
 			}
 		} catch (Exception e) {
