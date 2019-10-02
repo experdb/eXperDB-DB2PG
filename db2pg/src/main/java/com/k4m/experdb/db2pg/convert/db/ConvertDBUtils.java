@@ -30,6 +30,8 @@ public class ConvertDBUtils {
 				tables = MsSQLConvertDBUtils.getTableInform(tableNames, tableOnly, srcPoolName, dbConfigInfo);
 			} else if (dbtype.equals(Constant.DB_TYPE.MYS)) {
 				tables = MySQLConvertDBUtils.getTableInform(tableNames, tableOnly, srcPoolName, dbConfigInfo);
+			} else if (dbtype.equals(Constant.DB_TYPE.ALT)) {
+				tables = AltibaseConvertDBUtils.getTableInform(tableNames, tableOnly, srcPoolName, dbConfigInfo);
 			} else {
 
 			}
@@ -68,6 +70,8 @@ public class ConvertDBUtils {
 				table = MsSQLConvertDBUtils.setColumnInform(table, srcPoolName, dbConfigInfo);
 			} else if (dbtype.equals(Constant.DB_TYPE.MYS)) {
 				table = MySQLConvertDBUtils.setColumnInform(table, srcPoolName, dbConfigInfo);
+			} else if (dbtype.equals(Constant.DB_TYPE.ALT)) {
+				table = AltibaseConvertDBUtils.setColumnInform(table, srcPoolName, dbConfigInfo);
 			} else {
 
 			}
@@ -126,6 +130,8 @@ public class ConvertDBUtils {
 				table = MsSQLConvertDBUtils.setConstraintInform(table, srcPoolName, dbConfigInfo);
 			} else if (dbtype.equals(Constant.DB_TYPE.MYS)) {
 				table = MySQLConvertDBUtils.setConstraintInform(table, srcPoolName, dbConfigInfo);
+			} else if (dbtype.equals(Constant.DB_TYPE.ALT)) {
+				table = AltibaseConvertDBUtils.setConstraintInform(table, srcPoolName, dbConfigInfo);
 			} else {
 
 			}
@@ -158,8 +164,10 @@ public class ConvertDBUtils {
 				table = MsSQLConvertDBUtils.setKeyInform(table, srcPoolName, dbConfigInfo);
 			} else if (dbtype.equals(Constant.DB_TYPE.MYS)) {
 				table = MySQLConvertDBUtils.setKeyInform(table, srcPoolName, dbConfigInfo);
+			} else if (dbtype.equals(Constant.DB_TYPE.ALT)) {
+				table = AltibaseConvertDBUtils.setKeyInform(table, srcPoolName, dbConfigInfo);
 			} else {
-
+				
 			}
 		} catch (Exception e) {
 			LogUtils.error(e.getMessage(), ConvertDBUtils.class);
@@ -180,6 +188,8 @@ public class ConvertDBUtils {
 				views = MsSQLConvertDBUtils.setViewInform(tableSchema, srcPoolName, dbConfigInfo);
 			} else if (dbtype.equals(Constant.DB_TYPE.MYS)) {
 				views = MySQLConvertDBUtils.setViewInform(tableSchema, srcPoolName, dbConfigInfo);
+			} else if (dbtype.equals(Constant.DB_TYPE.ALT)) {
+				views = AltibaseConvertDBUtils.setViewInform(tableSchema, srcPoolName, dbConfigInfo);
 			} else {
 
 			}
@@ -200,6 +210,8 @@ public class ConvertDBUtils {
 //				table = MsSQLConvertDBUtils.setColumnInform(table, srcPoolName, dbConfigInfo);
 			} else if (dbtype.equals(Constant.DB_TYPE.MYS)) {
 				table = MySQLConvertDBUtils.setColumnInform(table, srcPoolName, dbConfigInfo);
+			} else if (dbtype.equals(Constant.DB_TYPE.ALT)) {
+				table = AltibaseConvertDBUtils.setColumnInform(table, srcPoolName, dbConfigInfo);
 			} else {
 
 			}
