@@ -78,6 +78,7 @@ public class PgDDLMaker<T> {
 		ctsb.append("\" (\"");
 		boolean isFirst = true;
 		for (Column column : table.getColumns()) {
+			//System.out.println(column.getName()+":"+column.toString());
 			if (!isFirst) {
 				ctsb.append(", \"");
 			} else {

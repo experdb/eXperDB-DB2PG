@@ -101,7 +101,7 @@ public class ConfigInfo {
 				SRC_DB_CONFIG.PORT			= (String)propertyCheck(trimCheck(prop.getProperty("SRC_PORT")),"1521",String.class);
 				SRC_DB_CONFIG.CHARSET 		= (String)propertyCheck(trimCheck(prop.getProperty("SRC_DB_CHARSET")),null,String.class);
 				// DDL 추출을 지원하는 DBMS
-				if(SRC_DB_CONFIG.DB_TYPE.equals(Constant.DB_TYPE.MYS) || SRC_DB_CONFIG.DB_TYPE.equals(Constant.DB_TYPE.ORA) || SRC_DB_CONFIG.DB_TYPE.equals(Constant.DB_TYPE.MSS) || SRC_DB_CONFIG.DB_TYPE.equals(Constant.DB_TYPE.TBR)){
+				if(SRC_DB_CONFIG.DB_TYPE.equals(Constant.DB_TYPE.MYS) || SRC_DB_CONFIG.DB_TYPE.equals(Constant.DB_TYPE.ORA) || SRC_DB_CONFIG.DB_TYPE.equals(Constant.DB_TYPE.MSS) || SRC_DB_CONFIG.DB_TYPE.equals(Constant.DB_TYPE.TBR) || SRC_DB_CONFIG.DB_TYPE.equals(Constant.DB_TYPE.ALT)){
 					ConfigInfo.SRC_DDL_EXT_DBMS = true;
 				}else {
 					ConfigInfo.SRC_DDL_EXT_DBMS = false;

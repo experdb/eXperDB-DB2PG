@@ -282,6 +282,9 @@ public class DDLConverter {
 			case Constant.DB_TYPE.TBR:
 				tiberoTableConvert(table);
 				break;
+			case Constant.DB_TYPE.ALT:
+				altibaseTableConvert(table);
+				break;				
 			default:
 				throw new NotSupportDatabaseTypeException(ConfigInfo.SRC_DB_CONFIG.DB_TYPE);
 			}
@@ -440,6 +443,42 @@ public class DDLConverter {
 						column.setType(String.format("%s(%d)", convertVO.getToValue(),column.getTypeLength()));	
 					}else if(convertVO.getToValue().equals("CHAR")){
 						column.setType(String.format("%s(%d)", convertVO.getToValue(),column.getTypeLength()));	
+					}else if(convertVO.getToValue().equals("NUMERIC")){
+						if(column.getNumericPrecision() == null){
+							column.setType(String.format("%s", convertVO.getToValue()));
+						}else if(column.getNumericScale()!=null && column.getNumericScale()>0){
+							column.setType(String.format("%s(%d,%d)", convertVO.getToValue(),column.getNumericPrecision(), column.getNumericScale()));
+						}else if(column.getNumericScale()!=null && column.getNumericScale()==0){
+							column.setType(String.format("%s(%d)", convertVO.getToValue(),column.getNumericPrecision()));
+						}else{
+							column.setType(String.format("%s(%d)", convertVO.getToValue(),column.getNumericPrecision()));
+						}
+					}else if(convertVO.getToValue().equals("TIMESTAMP WITHOUT TIME ZONE")){
+							column.setType(String.format("%s(%d)%s", "TIMESTAMP",column.getNumericScale(), " WITHOUT TIME ZONE"));
+					}else{
+						column.setType(convertVO.getToValue());
+					}
+					break;
+				}
+			}
+			String onUptRedix = "^(?i)on update \\w*$";
+			Pattern onUptPattern = Pattern.compile(onUptRedix);
+		}
+	}
+	
+	private void altibaseTableConvert(Table table) throws NotSupportDatabaseTypeException {
+		for (Column column : table.getColumns()) {
+			for (ConvertObject convertVO : convertMapper.getPatternList()) {			
+				if(column.getDefaultValue() != null){
+					if(column.getDefaultValue().toUpperCase().contains("SYSDATE")){
+						column.setDefaultValue(column.getDefaultValue().toUpperCase().replaceAll("SYSDATE", "CURRENT_TIMESTAMP"));
+					}
+				}
+				if (convertVO.getPattern().matcher(column.getType()).find()) {
+					 if (convertVO.getToValue().equals("VARCHAR")){
+						column.setType(String.format("%s(%d)", convertVO.getToValue(),column.getNumericPrecision()));	
+					}else if(convertVO.getToValue().equals("CHAR")){
+						column.setType(String.format("%s(%d)", convertVO.getToValue(),column.getNumericPrecision()));	
 					}else if(convertVO.getToValue().equals("NUMERIC")){
 						if(column.getNumericPrecision() == null){
 							column.setType(String.format("%s", convertVO.getToValue()));

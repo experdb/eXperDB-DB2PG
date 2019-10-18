@@ -225,7 +225,9 @@
 		],
 		"alt": [
 			"^(?i)NVARCHAR$",
-			"^(?i)VARCHAR$"
+			"^(?i)VARCHAR$",
+			"^(?i)VARCHAR\\s*\\(?[0-9]*\\)?$",
+			"^(?i)NVARCHAR\\s*\\(?[0-9]*\\)?$"			
 		]
 	},	
 	"char_case_3": {

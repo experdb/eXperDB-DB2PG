@@ -5,15 +5,7 @@
      
 <mapper namespace="com.k4m.experdb.db2pg.mapper.MetaExtractMapper">
 
-<resultMap id="getColumnListResult" type="com.k4m.experdb.db2pg.common.LowerKeyMap"> 
-<result property="ORDINAL_POSITION" column="ORDINAL_POSITION" /> 
-<result property="COLUMN_NAME" column="COLUMN_NAME" /> 
-<result property="COLUMN_TYPE" column="COLUMN_TYPE" /> 
-<result property="COLUMN_DEFAULT" column="COLUMN_DEFAULT" jdbcType="VARCHAR" javaType="java.lang.String" />
-<result property="IS_NULL" column="IS_NULL" />
-<result property="COLUMN_COMMENT" column="COLUMN_COMMENT" /> 
-<result property="NUMERIC_PRECISION" column="NUMERIC_PRECISION" />
-<result property="NUMERIC_SCALE" column="NUMERIC_SCALE" /> </resultMap>
+
 
 <resultMap id="getViewInformResult" type="com.k4m.experdb.db2pg.common.LowerKeyMap"> 
 <result property="VIEW_NAME" column="VIEW_NAME" /> 
@@ -51,7 +43,7 @@
          AND UT.OBJECT_NAME NOT LIKE 'BIN$%'
 		ORDER BY SCHEMA_NAME, TABLE_NAME
 	</select>
-	<select id="getColumnInform" parameterType="map" resultType="com.k4m.experdb.db2pg.common.LowerKeyMap" resultMap="getColumnListResult" databaseId="ORA"> 
+	<select id="getColumnInform" parameterType="map" resultType="com.k4m.experdb.db2pg.common.LowerKeyMap" databaseId="ORA"> 
   			SELECT
   			A.ORDINAL_POSITION AS ORDINAL_POSITION,
   			A.COLUMN_NAME AS COLUMN_NAME,
@@ -198,7 +190,7 @@
          AND UT.OBJECT_NAME NOT LIKE 'BIN$%'
 		ORDER BY SCHEMA_NAME, TABLE_NAME
 	</select>
-	<select id="getColumnInform" parameterType="map" resultType="com.k4m.experdb.db2pg.common.LowerKeyMap" resultMap="getColumnListResult" databaseId="TBR"> 
+	<select id="getColumnInform" parameterType="map" resultType="com.k4m.experdb.db2pg.common.LowerKeyMap" databaseId="TBR"> 
   			SELECT
   			A.ORDINAL_POSITION AS ORDINAL_POSITION,
   			A.COLUMN_NAME AS COLUMN_NAME,
@@ -864,7 +856,7 @@
          </if>
 		ORDER BY SCHEMA_NAME, TABLE_NAME
 	</select>
-	<select id="getColumnInform" parameterType="map" resultType="com.k4m.experdb.db2pg.common.LowerKeyMap" resultMap="getColumnListResult" databaseId="ALT"> 
+	<select id="getColumnInform" parameterType="map" resultType="com.k4m.experdb.db2pg.common.LowerKeyMap"  databaseId="ALT"> 
 		SELECT
 			A.COLUMN_NAME AS COLUMN_NAME,
 			A.COLUMN_ORDER AS ORDINAL_POSITION,
@@ -872,17 +864,47 @@
 			A.DEFAULT_VAL AS COLUMN_DEFAULT,
 			(SELECT COMMENTS FROM SYSTEM_.SYS_COMMENTS_  WHERE TABLE_NAME=B.TABLE_NAME AND COLUMN_NAME=A.COLUMN_NAME) AS COLUMN_COMMENT,
 			A.PRECISION AS NUMERIC_PRECISION,
-			A.SCALE AS NUMERIC_SCALE,
+			A.SIZE AS NUMERIC_SCALE,
 			A.DATA_TYPE AS COLUMN_TYPE
 		FROM SYSTEM_.SYS_COLUMNS_ A, SYSTEM_.SYS_TABLES_ B, SYSTEM_.SYS_USERS_ C
 		WHERE A.TABLE_ID = B.TABLE_ID
 			AND B.USER_ID = C.USER_ID
-			AND A.TABLE_ID=#{TABLE_NAME}
+			AND B.TABLE_NAME=#{TABLE_NAME}
 			AND C.USER_NAME=#{TABLE_SCHEMA}
 		ORDER BY COLUMN_ORDER ASC
 	</select>
-	<select id="getConstraintInform" parameterType="map" resultType="com.k4m.experdb.db2pg.common.LowerKeyMap" resultMap="getColumnListResult" databaseId="ALT"> 
-	
+	<select id="getConstraintInform" parameterType="map" resultType="com.k4m.experdb.db2pg.common.LowerKeyMap"  databaseId="ALT"> 
+		SELECT
+			D.USER_NAME AS CONSTRAINT_SCHEMA,
+			A.CONSTRAINT_NAME,
+			D.USER_NAME AS TABLE_SCHEMA,
+			C.TABLE_NAME,
+			A.CONSTRAINT_NAME,
+			(CASE WHEN A.CONSTRAINT_TYPE='0' THEN 'F'
+				WHEN CONSTRAINT_TYPE='2' THEN 'U'
+				WHEN CONSTRAINT_TYPE='3' THEN 'P'
+				ELSE NULL END
+			) AS CONSTRAINT_TYPE,
+			E.COLUMN_NAME AS COLUMN_NAME,
+			B.CONSTRAINT_COL_ORDER AS ORDINAL_POSITION,
+			A.DELETE_RULE AS DELETE_RULE,
+			(SELECT USER_NAME FROM SYSTEM_.SYS_USERS_ WHERE USER_ID=(SELECT USER_ID FROM SYSTEM_.SYS_TABLES_ WHERE A.REFERENCED_TABLE_ID=TABLE_ID)) AS REF_TABLE_SCHEMA,
+			(SELECT TABLE_NAME FROM SYSTEM_.SYS_TABLES_ WHERE A.REFERENCED_TABLE_ID=TABLE_ID) AS REF_TABLE_NAME,
+			(SELECT COLUMN_NAME FROM SYSTEM_.SYS_COLUMNS_ WHERE COLUMN_ID=(SELECT COLUMN_ID FROM SYSTEM_.SYS_INDEX_COLUMNS_ WHERE INDEX_ID=A.REFERENCED_INDEX_ID AND INDEX_COL_ORDER=B.CONSTRAINT_COL_ORDER)) AS REF_COLUMN_NAME
+		FROM
+			SYSTEM_.SYS_CONSTRAINTS_ A,
+			SYSTEM_.SYS_CONSTRAINT_COLUMNS_ B,
+			SYSTEM_.SYS_TABLES_ C,
+			SYSTEM_.SYS_USERS_ D,
+			SYSTEM_.SYS_COLUMNS_ E
+		WHERE
+			A.CONSTRAINT_ID = B.CONSTRAINT_ID
+			AND B.TABLE_ID = C.TABLE_ID
+			AND C.USER_ID = D.USER_ID
+			AND B.COLUMN_ID = E.COLUMN_ID
+			AND A.CONSTRAINT_TYPE!=1
+			AND C.TABLE_NAME=#{TABLE_NAME}
+			AND D.USER_NAME=#{TABLE_SCHEMA}
 	</select>
 	<select id="getKeyInform" parameterType="map" resultType="com.k4m.experdb.db2pg.common.LowerKeyMap" databaseId="ALT">
 

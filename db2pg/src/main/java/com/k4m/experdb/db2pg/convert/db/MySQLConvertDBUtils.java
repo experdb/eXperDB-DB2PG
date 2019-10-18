@@ -126,7 +126,7 @@ public class MySQLConvertDBUtils {
         		obj = result.get("numeric_precision");
         		if(obj != null) column.setNumericPrecision(Integer.valueOf(obj.toString()));
         		obj = result.get("numeric_scale");
-        		if(obj != null) column.setNumericScale(Integer.valueOf(obj.toString()));
+        		if(obj != null) column.setNumericScale(Long.valueOf(obj.toString()));
         		obj = result.get("column_type");
         		column.setType(obj!=null?obj.toString():null);
         		obj = result.get("column_comment");

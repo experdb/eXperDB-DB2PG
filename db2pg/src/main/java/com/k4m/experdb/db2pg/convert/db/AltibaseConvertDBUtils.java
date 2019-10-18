@@ -6,12 +6,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.k4m.experdb.db2pg.common.Constant;
 import com.k4m.experdb.db2pg.common.LogUtils;
 import com.k4m.experdb.db2pg.config.MsgCode;
 import com.k4m.experdb.db2pg.convert.table.Column;
 import com.k4m.experdb.db2pg.convert.table.Table;
 import com.k4m.experdb.db2pg.convert.table.View;
-import com.k4m.experdb.db2pg.convert.table.key.Cluster;
 import com.k4m.experdb.db2pg.convert.table.key.ForeignKey;
 import com.k4m.experdb.db2pg.convert.table.key.Key.IndexType;
 import com.k4m.experdb.db2pg.convert.table.key.Key.Type;
@@ -27,7 +27,7 @@ import com.k4m.experdb.db2pg.work.db.impl.MetaExtractWork;
 import com.k4m.experdb.db2pg.work.db.impl.MetaExtractWorker;
 import com.k4m.experdb.db2pg.work.db.impl.WORK_TYPE;
 
-public class MsSQLConvertDBUtils {
+public class AltibaseConvertDBUtils {
 	static MsgCode msgCode = new MsgCode();
 	/** [Add] sequence extract function**/
 	/**
@@ -35,10 +35,37 @@ public class MsSQLConvertDBUtils {
 	 * <br>table's name : table_name (string)
 	 * <br>table has comment : table_comment (string)
 	 * */
+	
+	static Map<String,String> altiType = new HashMap<String,String>();
+
+	public static void putType() {
+		altiType.put("-5","BIGINT");
+		altiType.put("-7","BIT");
+		altiType.put("30","BLOB");
+		altiType.put("20001","BYTE");
+		altiType.put("1","CHAR");
+		altiType.put("40","CLOB");
+		altiType.put("9","DATE");
+		altiType.put("2","DECIMAL");
+		altiType.put("8","DOUBLE");
+		altiType.put("6","FLOAT");
+		altiType.put("10003","GEOMETRY");
+		altiType.put("4","INTEGER");
+		altiType.put("-8","NCHAR");
+		altiType.put("20002","NIBBLE");
+		altiType.put("6","NUMBER");
+		altiType.put("2","NUMERIC");
+		altiType.put("-9","NVARCHAR");
+		altiType.put("7","REAL");
+		altiType.put("5","SMALLINT");
+		altiType.put("-100","VARBIT");
+		altiType.put("12","VARCHAR");
+	}
+	
 	public static List<Table> getTableInform(List<String> tableNames,boolean tableOnly, String srcPoolName, DBConfigInfo dbConfigInfo) {
 		List<Table> tables = new ArrayList<Table>();
 		try {
-			LogUtils.info(msgCode.getCode("C0031"),MsSQLConvertDBUtils.class);
+			LogUtils.info(msgCode.getCode("C0031"),AltibaseConvertDBUtils.class);
 			Map<String,Object> params = new HashMap<String,Object>();
 			params.put("TABLE_SCHEMA", dbConfigInfo.SCHEMA_NAME);
 //			String columnName = null;
@@ -65,8 +92,8 @@ public class MsSQLConvertDBUtils {
 			MetaExtractWorker mew = new MetaExtractWorker(srcPoolName, new MetaExtractWork(WORK_TYPE.GET_TABLE_INFORM, params));
 			mew.run();
 			List<Map<String,Object>> results = (List<Map<String,Object>>)mew.getListResult();
-			LogUtils.info(msgCode.getCode("C0032")+results,MsSQLConvertDBUtils.class);
-			LogUtils.info(msgCode.getCode("C0033")+results,MsSQLConvertDBUtils.class);
+			LogUtils.info(msgCode.getCode("C0032")+results,AltibaseConvertDBUtils.class);
+			LogUtils.info(msgCode.getCode("C0033")+results,AltibaseConvertDBUtils.class);
 			Object obj = null;
 			for (Map<String,Object> result : results) {
 				Table table = new Table();
@@ -79,9 +106,9 @@ public class MsSQLConvertDBUtils {
 				tables.add(table);
 			}
 		} catch(Exception e){
-			LogUtils.error(e.getMessage(),MsSQLConvertDBUtils.class);
+			LogUtils.error(e.getMessage(),AltibaseConvertDBUtils.class);
 		} finally {
-			LogUtils.info(msgCode.getCode("C0034"),MsSQLConvertDBUtils.class);
+			LogUtils.info(msgCode.getCode("C0034"),AltibaseConvertDBUtils.class);
 		}
 		
 		return tables;
@@ -104,17 +131,18 @@ public class MsSQLConvertDBUtils {
 	 * */
 	public static Table setColumnInform(Table table, String srcPoolName, DBConfigInfo dbConfigInfo) {
 		try {
-			LogUtils.info(msgCode.getCode("C0035"),MsSQLConvertDBUtils.class);
-			Map<String,Object> params = new HashMap<String,Object>();
+			putType();
 			
+			LogUtils.info(msgCode.getCode("C0035"),AltibaseConvertDBUtils.class);
+			Map<String,Object> params = new HashMap<String,Object>();
 			params.put("TABLE_SCHEMA", table.getSchemaName());
 			params.put("TABLE_NAME", table.getName());
 			
+			System.out.println("TABLE_SCHEMA:"+table.getSchemaName()+", TABLE_NAME:"+table.getName());
 			MetaExtractWorker mew = new MetaExtractWorker(srcPoolName, new MetaExtractWork(WORK_TYPE.GET_COLUMN_INFORM, params));
 			mew.run();
 			List<Map<String,Object>> results = (List<Map<String,Object>>)mew.getListResult();
-			LogUtils.info(msgCode.getCode("C0036")+results,MsSQLConvertDBUtils.class);
-			
+			//LogUtils.info(msgCode.getCode("C0036")+results,AltibaseConvertDBUtils.class);
 			Object obj = null;
         	for (Map<String,Object> result : results) {
         		Column column = new Column();
@@ -131,9 +159,7 @@ public class MsSQLConvertDBUtils {
         		obj = result.get("numeric_scale");
         		if(obj != null) column.setNumericScale(Long.valueOf(obj.toString()));
         		obj = result.get("column_type");
-        		column.setType(obj!=null?obj.toString():null);
-        		obj = result.get("type_length");
-        		if(obj != null) column.setTypeLength(Integer.valueOf(obj.toString()));
+        		column.setType(obj!=null?altiType.get(obj.toString()):null);
         		obj = result.get("column_comment");
         		column.setComment(obj!=null?obj.toString():null);
         		obj = result.get("seq_start");
@@ -146,11 +172,12 @@ public class MsSQLConvertDBUtils {
         		column.setExtra(obj!=null?obj.toString():null);
         		table.getColumns().add(column);
         		
+        		//System.out.println(column.toString());
         	}
         	Collections.sort(table.getColumns(),Column.getComparator());
-			LogUtils.info(msgCode.getCode("C0037"),MsSQLConvertDBUtils.class);
+			LogUtils.info(msgCode.getCode("C0037"),AltibaseConvertDBUtils.class);
 		} catch(Exception e){
-			LogUtils.error(e.getMessage(),MsSQLConvertDBUtils.class);
+			LogUtils.error(e.getMessage(),AltibaseConvertDBUtils.class);
 		}
 		return table;
 	}
@@ -170,14 +197,8 @@ public class MsSQLConvertDBUtils {
 	   <br>&nbsp - U : unique key
 	   <br>&nbsp - F : foreign key
 	 * <br>Index's type : index_type (enum)
-		<br>0 = Heap				
-		<br>1 = Clustered		
-		<br>2 = Nonclustered				
-		<br>3 = XML				
-		<br>4 = Spatial				
-		<br>5 = Clustered columnstore index. Applies to: SQL Server 2014 (12.x) through SQL Server 2017.				
-		<br>6 = Nonclustered columnstore index. Applies to: SQL Server 2012 (11.x) through SQL Server 2017.				
-		<br>7 = Nonclustered hash index. Applies to: SQL Server 2014 (12.x) through SQL Server 2017.
+	   <br>&nbsp - HASH : hash index
+	   <br>&nbsp - BTREE : btree index
 	 * <br>Match option of the foreign key constraint : match_option (enum)
 	   <br>&nbsp - FULL : MATCH FULL
 	   <br>&nbsp - PARTIAL : PostgreSQL is not yet implemented. ( 2018.07.30 )
@@ -197,21 +218,23 @@ public class MsSQLConvertDBUtils {
 	*/
 	public static Table setConstraintInform(Table table, String srcPoolName, DBConfigInfo dbConfigInfo) {
 		try {
-			LogUtils.info(msgCode.getCode("C0038"),MsSQLConvertDBUtils.class);
+			LogUtils.info(msgCode.getCode("C0038"),AltibaseConvertDBUtils.class);
 			Map<String,Object> params = new HashMap<String,Object>();
-
-				params.put("TABLE_SCHEMA", table.getSchemaName());
-				params.put("TABLE_NAME", table.getName());
+			params.put("TABLE_SCHEMA", table.getSchemaName());
+			params.put("TABLE_NAME", table.getName());
 			
 			MetaExtractWorker mew = new MetaExtractWorker(srcPoolName, new MetaExtractWork(WORK_TYPE.GET_CONSTRAINT_INFORM, params));
 			mew.run();
 			
 			List<Map<String,Object>> results = (List<Map<String,Object>>)mew.getListResult();
-			LogUtils.info(msgCode.getCode("C0039") + results, ConvertDBUtils.class);
+			LogUtils.info(msgCode.getCode("C0039") +":::" + results, ConvertDBUtils.class);
 			Object obj = null;
+			int k = 1;
         	for(Map<String,Object> result : results ) {
         		
         		String constraintType = (obj=result.get("constraint_type")) != null ?obj.toString():null;
+        		System.out.println("constraintType"+k+":"+constraintType);
+        		k++;
         		if(constraintType.equals("P")) {
         			String keySchema = (obj=result.get("constraint_schema")) != null ?obj.toString():null;
         			String keyName = (obj=result.get("constraint_name")) != null ?obj.toString():null;
@@ -253,19 +276,14 @@ public class MsSQLConvertDBUtils {
         			pkey.setName(keyName);
         			if (indexType == null){
         				pkey.setIndexType(IndexType.BTREE);
-        			} else if(indexType.equals("1")) {
-        				pkey.setIndexType(IndexType.BTREE);
-        			} else if (indexType.equals("2")) {
-        				pkey.setIndexType(IndexType.BTREE);
-        			} else if (indexType.equals("5")) {
-        				pkey.setIndexType(IndexType.BTREE);
-        			} else if (indexType.equals("6")) {
-        				pkey.setIndexType(IndexType.BTREE);
-        			} else if (indexType.equals("7")) {
+        			} else if(indexType.equals("HASH")) {
         				pkey.setIndexType(IndexType.HASH);
+        			} else if (indexType.equals("BTREE")) {
+        				pkey.setIndexType(IndexType.BTREE);
         			}
         			table.getKeys().add(pkey);
         		} else if (constraintType.equals("U")) {
+        			System.out.println("sdfsdfsadfasdf");
         			String keySchema = (obj=result.get("constraint_schema")) != null ?obj.toString():null;
         			String keyName = (obj=result.get("constraint_name")) != null ?obj.toString():null;
         			String tableSchema = (obj=result.get("table_schema")) != null ?obj.toString():null;
@@ -306,18 +324,13 @@ public class MsSQLConvertDBUtils {
         			ukey.setName(keyName);
         			if (indexType == null){
         				ukey.setIndexType(IndexType.BTREE);
-        			} else if(indexType.equals("1")) {
-        				ukey.setIndexType(IndexType.BTREE);
-        			} else if (indexType.equals("2")) {
-        				ukey.setIndexType(IndexType.BTREE);
-        			} else if (indexType.equals("5")) {
-        				ukey.setIndexType(IndexType.BTREE);
-        			} else if (indexType.equals("6")) {
-        				ukey.setIndexType(IndexType.BTREE);
-        			} else if (indexType.equals("7")) {
+        			} else if(indexType.equals("HASH")) {
         				ukey.setIndexType(IndexType.HASH);
+        			} else if (indexType.equals("BTREE")) {
+        				ukey.setIndexType(IndexType.BTREE);
         			}
         			table.getKeys().add(ukey);
+        			
         		} else if (constraintType.equals("F")) {
         			String keySchema = (obj=result.get("constraint_schema")) != null ?obj.toString():null;
         			String keyName = (obj=result.get("constraint_name")) != null ?obj.toString():null;
@@ -327,6 +340,7 @@ public class MsSQLConvertDBUtils {
         			obj = result.get("ordinal_position");
         			int ordinalPosition = -1;
         			if(obj!=null) ordinalPosition = Integer.valueOf(obj.toString());
+        			
         			String indexType = (obj=result.get("index_type")) != null ?obj.toString():null;
         			String refTableSchema = (obj=result.get("ref_table_schema")) != null ?obj.toString():null; 
         			String refTable = (obj=result.get("ref_table_name")) != null ?obj.toString():null;
@@ -334,8 +348,7 @@ public class MsSQLConvertDBUtils {
         			String matchOption = (obj=result.get("match_option")) != null ?obj.toString():null; 
         			String updateRule = (obj=result.get("update_rule")) != null ?obj.toString():null;
         			String deleteRule = (obj=result.get("delete_rule")) != null ?obj.toString():null;
-        			
-        			
+
         			ForeignKey fkey = new ForeignKey();
         			
         			boolean isAdded = false;
@@ -353,6 +366,8 @@ public class MsSQLConvertDBUtils {
         						columnName = null;
         						ordinalPosition = -1;
         						isAdded = true;
+        						
+        						System.out.println(key.toString());
         						break;
         					}
         				}
@@ -376,39 +391,11 @@ public class MsSQLConvertDBUtils {
         				fkey.setRefDef(new ReferenceDefinition());
         			}
         			
-        			if( matchOption != null ) {
-        				if(matchOption.toUpperCase().contains("FULL")) {
-        					fkey.getRefDef().setMatch(ForeignKeyMatch.FULL);
-        				} else if(matchOption.toUpperCase().contains("PARTIAL")) {
-        					fkey.getRefDef().setMatch(ForeignKeyMatch.PARTIAL);
-        				} else if(matchOption.toUpperCase().contains("SIMPLE")) {
-        					fkey.getRefDef().setMatch(ForeignKeyMatch.SIMPLE);
-        				}
-        			}
-        			if( updateRule != null ) {
-        				if(updateRule.toUpperCase().contains("RESTRICT")) {
-        					fkey.getRefDef().setUpdate(ForeignKeyUpdate.RESTRICT);
-        				} else if(updateRule.toUpperCase().contains("CASCADE")) {
-        					fkey.getRefDef().setUpdate(ForeignKeyUpdate.CASCADE);
-        				} else if(updateRule.toUpperCase().contains("SET") && updateRule.toUpperCase().contains("NULL")) {
-        					fkey.getRefDef().setUpdate(ForeignKeyUpdate.SET_NULL);
-        				} else if(updateRule.toUpperCase().contains("NO") && updateRule.toUpperCase().contains("ACTION")) {
-        					fkey.getRefDef().setUpdate(ForeignKeyUpdate.NO_ACTION);
-        				} else if(updateRule.toUpperCase().contains("SET") && updateRule.toUpperCase().contains("DEFAULT")) {
-        					fkey.getRefDef().setUpdate(ForeignKeyUpdate.SET_DEFAULT);
-        				}
-        			}
         			if( deleteRule != null ) {
-        				if(deleteRule.toUpperCase().contains("RESTRICT")) {
-        					fkey.getRefDef().setDelete(ForeignKeyDelete.RESTRICT);
-        				} else if(deleteRule.toUpperCase().contains("CASCADE")) {
-        					fkey.getRefDef().setDelete(ForeignKeyDelete.CASCADE);
-        				} else if(deleteRule.toUpperCase().contains("SET") && updateRule.toUpperCase().contains("NULL")) {
-        					fkey.getRefDef().setDelete(ForeignKeyDelete.SET_NULL);
-        				} else if(deleteRule.toUpperCase().contains("NO") && updateRule.toUpperCase().contains("ACTION")) {
+        				if(deleteRule.equals("0")) {
         					fkey.getRefDef().setDelete(ForeignKeyDelete.NO_ACTION);
-        				} else if(deleteRule.toUpperCase().contains("SET") && updateRule.toUpperCase().contains("DEFAULT")) {
-        					fkey.getRefDef().setDelete(ForeignKeyDelete.SET_DEFAULT);
+        				} else if(deleteRule.equals("1")) {
+        					fkey.getRefDef().setDelete(ForeignKeyDelete.CASCADE);
         				}
         			}
         			
@@ -420,25 +407,19 @@ public class MsSQLConvertDBUtils {
         			fkey.setRefTable(refTable);
         			if (indexType == null){
         				fkey.setIndexType(IndexType.BTREE);
-        			} else if(indexType.equals("1")) {
-        				fkey.setIndexType(IndexType.BTREE);
-        			} else if (indexType.equals("2")) {
-        				fkey.setIndexType(IndexType.BTREE);
-        			} else if (indexType.equals("5")) {
-        				fkey.setIndexType(IndexType.BTREE);
-        			} else if (indexType.equals("6")) {
-        				fkey.setIndexType(IndexType.BTREE);
-        			} else if (indexType.equals("7")) {
+        			} else if(indexType.equals("HASH")) {
         				fkey.setIndexType(IndexType.HASH);
+        			} else if (indexType.equals("BTREE")) {
+        				fkey.setIndexType(IndexType.BTREE);
         			}
         			table.getKeys().add(fkey);
         		}
         		
         	}
         	Collections.sort(table.getColumns(),Column.getComparator());
-			LogUtils.info(msgCode.getCode("C0040"),MsSQLConvertDBUtils.class);
+			LogUtils.info(msgCode.getCode("C0040"),AltibaseConvertDBUtils.class);
 		} catch(Exception e){
-			LogUtils.error(e.getMessage(),MsSQLConvertDBUtils.class);
+			LogUtils.error(e.getMessage(),AltibaseConvertDBUtils.class);
 		}
 		return table;
 	}
@@ -452,23 +433,16 @@ public class MsSQLConvertDBUtils {
 	 *<br>Column's name : column_name (string) 
 	 *<br>Column's index ordinal position : ordinal_position (int)
 	 *<br>Index's type : index_type (enum)
-		<br>0 = Heap				
-		<br>1 = Clustered		
-		<br>2 = Nonclustered				
-		<br>3 = XML				
-		<br>4 = Spatial				
-		<br>5 = Clustered columnstore index. Applies to: SQL Server 2014 (12.x) through SQL Server 2017.				
-		<br>6 = Nonclustered columnstore index. Applies to: SQL Server 2012 (11.x) through SQL Server 2017.				
-		<br>7 = Nonclustered hash index. Applies to: SQL Server 2014 (12.x) through SQL Server 2017.
+	  <br>&nbsp - HASH : hash index
+	  <br>&nbsp - BTREE : btree index
 	 * */
 	public static Table setKeyInform(Table table, String srcPoolName, DBConfigInfo dbConfigInfo) {
 		try {
-			LogUtils.info(msgCode.getCode("C0041"),MsSQLConvertDBUtils.class);
+			LogUtils.info(msgCode.getCode("C0041"),AltibaseConvertDBUtils.class);
 			Map<String,Object> params = new HashMap<String,Object>();
-
-				params.put("TABLE_SCHEMA", table.getSchemaName());
-				params.put("TABLE_NAME", table.getName());
-		
+			params.put("TABLE_SCHEMA", table.getSchemaName());
+			params.put("TABLE_NAME", table.getName());
+			
 			MetaExtractWorker mew = new MetaExtractWorker(srcPoolName, new MetaExtractWork(WORK_TYPE.GET_KEY_INFORM, params));
 			mew.run();
 			List<Map<String,Object>> results = (List<Map<String,Object>>)mew.getListResult();
@@ -492,7 +466,6 @@ public class MsSQLConvertDBUtils {
     			String indexType = obj!=null?obj.toString():null;
     			
     			NormalKey nkey = new NormalKey();
-    			Cluster cluster = new Cluster();
     			
     			boolean isAdded = false;
     			for(int i=0; i<table.getKeys().size();i++) {
@@ -520,40 +493,29 @@ public class MsSQLConvertDBUtils {
     			nkey.setTableName(tableName);
     			nkey.setKeySchema(keySchema);
     			nkey.setName(keyName);
-
     			if (indexType == null){
     				nkey.setIndexType(IndexType.BTREE);
-    			} else if(indexType.equals("1")) {
-    				nkey.setIndexType(IndexType.BTREE);
-    				cluster.setTableName(tableName);
-    				cluster.setIndexName(result.get("index_name").toString());
-    				table.getKeys().add(cluster);
-    			} else if (indexType.equals("2")) {
-    				nkey.setIndexType(IndexType.BTREE);
-    			} else if (indexType.equals("5")) {
-    				nkey.setIndexType(IndexType.BTREE);
-    			} else if (indexType.equals("6")) {
-    				nkey.setIndexType(IndexType.BTREE);
-    			} else if (indexType.equals("7")) {
+    			} else if(indexType.equals("HASH")) {
     				nkey.setIndexType(IndexType.HASH);
+    			} else if (indexType.equals("BTREE")) {
+    				nkey.setIndexType(IndexType.BTREE);
     			}
     			table.getKeys().add(nkey);
         	}
         	
         	Collections.sort(table.getColumns(),Column.getComparator());
-			LogUtils.info(msgCode.getCode("C0043"),MsSQLConvertDBUtils.class);
+			LogUtils.info(msgCode.getCode("C0043"),AltibaseConvertDBUtils.class);
 		} catch(Exception e){
-			LogUtils.error(e.getMessage(),MsSQLConvertDBUtils.class);
+			LogUtils.error(e.getMessage(),AltibaseConvertDBUtils.class);
 		}
 		return table;
 	}
+
 	
-
-
 	public static List<View> setViewInform(String Schema, String srcPoolName, DBConfigInfo dbConfigInfo) {
 		List<View> views = new ArrayList<View>();
 		try {
-			LogUtils.info(msgCode.getCode("C0044"),MsSQLConvertDBUtils.class);
+			LogUtils.info(msgCode.getCode("C0044"),AltibaseConvertDBUtils.class);
 			Map<String,Object> params = new HashMap<String,Object>();
 			
 			params.put("TABLE_SCHEMA", Schema);
@@ -561,7 +523,7 @@ public class MsSQLConvertDBUtils {
 			MetaExtractWorker mew = new MetaExtractWorker(srcPoolName, new MetaExtractWork(WORK_TYPE.GET_VIEW_INFORM, params));
 			mew.run();
 			List<Map<String,Object>> results = (List<Map<String,Object>>)mew.getListResult();
-			LogUtils.info(msgCode.getCode("C0045")+results,MsSQLConvertDBUtils.class);
+			LogUtils.info(msgCode.getCode("C0045")+results,AltibaseConvertDBUtils.class);
 			
 			Object obj = null;
         	for (Map<String,Object> result : results) {
@@ -601,11 +563,11 @@ public class MsSQLConvertDBUtils {
     			
     			views.add(view);
         	}       	
-			LogUtils.info(msgCode.getCode("C0046"),MsSQLConvertDBUtils.class);
+			LogUtils.info(msgCode.getCode("C0046"),AltibaseConvertDBUtils.class);
 		} catch(Exception e){
-			LogUtils.error(e.getMessage(),MsSQLConvertDBUtils.class);
+			LogUtils.error(e.getMessage(),AltibaseConvertDBUtils.class);
 		}
 		return views;
-	}
+	}	
 	
 }

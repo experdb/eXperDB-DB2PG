@@ -129,7 +129,7 @@ public class TiberoConvertDBUtils {
 					column.setNumericPrecision(Integer.valueOf(obj.toString()));
 				obj = result.get("numeric_scale");
 				if (obj != null)
-					column.setNumericScale(Integer.valueOf(obj.toString()));
+					column.setNumericScale(Long.valueOf(obj.toString()));
 				obj = result.get("column_type");
 				column.setType(obj != null ? obj.toString() : null);
 				obj = result.get("column_comment");

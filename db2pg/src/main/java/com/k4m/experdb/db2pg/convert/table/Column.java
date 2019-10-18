@@ -10,7 +10,7 @@ public class Column {
 	private String type;
 	private String extra;
 	private Integer numericPrecision;
-	private Integer numericScale;
+	private Long numericScale;
 	private boolean isNotNull;
 	private long seqStart;
 	private long seqMinValue;
@@ -71,10 +71,10 @@ public class Column {
 	public void setNumericPrecision(Integer numeric_precision) {
 		this.numericPrecision = numeric_precision;
 	}
-	public Integer getNumericScale() {
+	public Long getNumericScale() {
 		return numericScale;
 	}
-	public void setNumericScale(Integer numeric_scale) {
+	public void setNumericScale(Long numeric_scale) {
 		this.numericScale = numeric_scale;
 	}
 	
@@ -116,6 +116,9 @@ public class Column {
 			sb.append(" type=");
 			sb.append(type);
 		}
+		
+		sb.append(" numericScale=");
+		sb.append(numericScale);
 		sb.append(" isNotNull=");
 		sb.append(isNotNull);
 		sb.append(" seqStart=");
