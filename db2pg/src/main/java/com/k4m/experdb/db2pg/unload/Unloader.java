@@ -27,9 +27,11 @@ import com.k4m.experdb.db2pg.common.Constant;
 import com.k4m.experdb.db2pg.common.DevUtils;
 import com.k4m.experdb.db2pg.common.LogUtils;
 import com.k4m.experdb.db2pg.config.ConfigInfo;
+import com.k4m.experdb.db2pg.config.MsgCode;
 import com.k4m.experdb.db2pg.db.DBUtils;
 
 public class Unloader {
+	static MsgCode msgCode = new MsgCode();
 	private File impSql = null;
 	List<SelectQuery> selectQuerys = new ArrayList<SelectQuery>();
 
@@ -69,7 +71,7 @@ public class Unloader {
 	private String getConvertObjectName(String objName) throws Exception {
 		String strReplaceTableName = "";
 		
-		if(ConfigInfo.SRC_DB_CONFIG.DB_TYPE.equals(Constant.DB_TYPE.MYSQL)) {
+		if(ConfigInfo.SRC_DB_CONFIG.DB_TYPE.equals(Constant.DB_TYPE.MYS)) {
 			strReplaceTableName = "`" + objName + "`";
 		} else {
 			strReplaceTableName =  "\"" + objName + "\"";
@@ -81,14 +83,14 @@ public class Unloader {
 	private String getWhere() throws Exception {
 		String strWhere ="";
 		
-		if(ConfigInfo.SRC_WHERE_CONDITION!=null && !ConfigInfo.SRC_WHERE_CONDITION.equals("")) {
+		if(ConfigInfo.SRC_WHERE_CONDITION != null && !ConfigInfo.SRC_WHERE_CONDITION.equals("")) {
 			strWhere = "WHERE "+ConfigInfo.SRC_WHERE_CONDITION;
 		}
 		return strWhere;
 	}
 	
 	private void setSchemaNameCheck() throws Exception {
-		if (ConfigInfo.SRC_DB_CONFIG.SCHEMA_NAME == null && ConfigInfo.SRC_DB_CONFIG.SCHEMA_NAME.trim().equals("")) {
+		if (ConfigInfo.SRC_DB_CONFIG.SCHEMA_NAME == null || ConfigInfo.SRC_DB_CONFIG.SCHEMA_NAME.trim().equals("")) {
 			ConfigInfo.SRC_DB_CONFIG.SCHEMA_NAME = ConfigInfo.SRC_DB_CONFIG.USERID;
 		}
 	}
@@ -106,11 +108,10 @@ public class Unloader {
 			}
 			startTime = System.currentTimeMillis();
 			
-			LogUtils.debug("START UNLOADER !!!", Unloader.class);
+			LogUtils.debug(msgCode.getCode("C0144"), Unloader.class);
 
+			// Source Schema name 미입력 체크 
 			setSchemaNameCheck();
-			
-			
 			
 			//DBCPPoolManager.setupDriver(ConfigInfo.SRC_DB_CONFIG, Constant.POOLNAME.SOURCE.name(), ConfigInfo.SRC_SELECT_ON_PARALLEL);
 
@@ -174,7 +175,7 @@ public class Unloader {
         	long estimatedTime = System.currentTimeMillis() - startTime;
         	
         	LogUtils.debug("\n",Unloader.class);
-        	LogUtils.info("[SUMMARY_INFO]",Unloader.class);
+        	LogUtils.info(msgCode.getCode("C0145"),Unloader.class);
         	
         	// import.sql을 생성
         	impSql = new File(ConfigInfo.SRC_FILE_OUTPUT_PATH + "data/import.sql");
@@ -189,7 +190,9 @@ public class Unloader {
     			sb.append(jobList.get(i).getTableName());
     			sb.append(", ROWNUM : ");
     			sb.append(String.valueOf(jobList.get(i).getRowCnt()));
-    			sb.append(", STATE : ");
+    			sb.append(", MIGTIME : ");
+    			sb.append(jobList.get(i).getMigTime());
+    			sb.append("ms, STATE : ");
     			if(jobList.get(i).isSuccess()){
     				sb.append("SUCCESS");
     				// 파일로 데이터 추출시 import.sql 파일에 psql을 이용한 데이터 적재가 가능하도록 구문 생성
@@ -220,28 +223,23 @@ public class Unloader {
     		impsb = null;
     		pw.close();
     		
-    		LogUtils.info(String.format("[TOTAL_INFO] SUCCESS : %d / FAILURE : %d / TOTAL: %d",jobList.size()-failCnt,failCnt,jobList.size()),Unloader.class);
-    		LogUtils.info("[ELAPSED_TIME] " + makeElapsedTimeString(estimatedTime/1000),Unloader.class);
+    		LogUtils.info(String.format(msgCode.getCode("C0146"),jobList.size()-failCnt,failCnt,jobList.size()),Unloader.class);
+    		LogUtils.info(String.format(msgCode.getCode("C0147"),makeElapsedTimeString(estimatedTime/1000)),Unloader.class);
     		
     		//SUMMARY 파일 생성	   	
         	makeSummaryFile(jobList, estimatedTime);
     		//(new UnloadSummary("out/result", "summary")).run();
 		}catch(Exception e){
-			LogUtils.error("EXCEPTION!!!!",Unloader.class,e);
+			LogUtils.error(msgCode.getCode("C0148")+ " : "+ e,Unloader.class,e);
 			System.exit(Constant.ERR_CD.UNKNOWN_ERR);
 		} finally {
 			if(executorService != null) executorService.shutdown();
 		}
 	}
-	
-	
-	
-	
-	
-	
+
 	private void makeSummaryFile(List<ExecuteDataTransfer> jobList, long estimatedTime) {
 		LogUtils.debug("\n",Unloader.class);
-		LogUtils.debug("[MAKE_SUMMARY_FILE_START]",UnloadSummary.class);
+		LogUtils.debug(msgCode.getCode("C0149"),UnloadSummary.class);
 		
 		Calendar calendar = Calendar.getInstance();
         java.util.Date date = calendar.getTime();
@@ -251,48 +249,46 @@ public class Unloader {
 			ByteBuffer fileBuffer = ByteBuffer.allocateDirect(ConfigInfo.SRC_BUFFER_SIZE);
 			FileChannel fch = null;
 				
-			File file = new File(ConfigInfo.SRC_FILE_OUTPUT_PATH+"result/summary_"+today+".out");
+			File file = new File(ConfigInfo.SRC_FILE_OUTPUT_PATH+"result/summary_"+ConfigInfo.SRC_DB_CONFIG.SCHEMA_NAME+"_"+today+".txt");
 			
 			FileOutputStream fos = new FileOutputStream( file);
 			fch = fos.getChannel();
 			int failCnt = 0;
-			
+			fileBuffer.put("Schema:TableName:Rownum:Migtime:State\n".getBytes(ConfigInfo.TAR_DB_CONFIG.CHARSET));
 			for(int i=0;i<jobList.size();i++) {
-				fileBuffer.put(" TABLE_NAME : ".getBytes(ConfigInfo.TAR_DB_CONFIG.CHARSET));
+				fileBuffer.put(ConfigInfo.SRC_DB_CONFIG.SCHEMA_NAME.getBytes(ConfigInfo.TAR_DB_CONFIG.CHARSET));
+				fileBuffer.put(":".getBytes(ConfigInfo.TAR_DB_CONFIG.CHARSET));
 				fileBuffer.put(jobList.get(i).getTableName().getBytes(ConfigInfo.TAR_DB_CONFIG.CHARSET));
-				fileBuffer.put("\n".getBytes(ConfigInfo.TAR_DB_CONFIG.CHARSET));
-				fileBuffer.put(" ROWNUM : ".getBytes(ConfigInfo.TAR_DB_CONFIG.CHARSET));
+				fileBuffer.put(":".getBytes(ConfigInfo.TAR_DB_CONFIG.CHARSET));
 				fileBuffer.put(String.valueOf(jobList.get(i).getRowCnt()).getBytes(ConfigInfo.TAR_DB_CONFIG.CHARSET));
-				fileBuffer.put("\n".getBytes(ConfigInfo.TAR_DB_CONFIG.CHARSET));
-				fileBuffer.put(" STATE : ".getBytes(ConfigInfo.TAR_DB_CONFIG.CHARSET));
+				fileBuffer.put(":".getBytes(ConfigInfo.TAR_DB_CONFIG.CHARSET));
+				fileBuffer.put(String.valueOf(jobList.get(i).getMigTime()).getBytes(ConfigInfo.TAR_DB_CONFIG.CHARSET));
+				fileBuffer.put(":".getBytes(ConfigInfo.TAR_DB_CONFIG.CHARSET));
 				if(jobList.get(i).isSuccess()){
 					fileBuffer.put("SUCCESS".getBytes(ConfigInfo.TAR_DB_CONFIG.CHARSET));
     			} else {
     				fileBuffer.put("FAILURE".getBytes(ConfigInfo.TAR_DB_CONFIG.CHARSET));
     				failCnt++;
     			}
-				fileBuffer.put("\n".getBytes(ConfigInfo.TAR_DB_CONFIG.CHARSET));			
-				fileBuffer.put("\n".getBytes(ConfigInfo.TAR_DB_CONFIG.CHARSET));		
-				fileBuffer.put("\n".getBytes(ConfigInfo.TAR_DB_CONFIG.CHARSET));	
+				fileBuffer.put("\n".getBytes(ConfigInfo.TAR_DB_CONFIG.CHARSET));
     		}
 			
-			fileBuffer.put(" [TOTAL_INFO] ".getBytes(ConfigInfo.TAR_DB_CONFIG.CHARSET));
+			fileBuffer.put(msgCode.getCode("C0150").getBytes(ConfigInfo.TAR_DB_CONFIG.CHARSET));
 			fileBuffer.put("\n".getBytes(ConfigInfo.TAR_DB_CONFIG.CHARSET));
-			fileBuffer.put(" SUCCESS : ".getBytes(ConfigInfo.TAR_DB_CONFIG.CHARSET));
+			fileBuffer.put(msgCode.getCode("C0151").getBytes(ConfigInfo.TAR_DB_CONFIG.CHARSET));
 			fileBuffer.put(String.valueOf(jobList.size()-failCnt).getBytes(ConfigInfo.TAR_DB_CONFIG.CHARSET));
 			fileBuffer.put("\n".getBytes(ConfigInfo.TAR_DB_CONFIG.CHARSET));
 			
-			fileBuffer.put(" FAILURE : ".getBytes(ConfigInfo.TAR_DB_CONFIG.CHARSET));
+			fileBuffer.put(msgCode.getCode("C0152").getBytes(ConfigInfo.TAR_DB_CONFIG.CHARSET));
 			fileBuffer.put(String.valueOf(failCnt).getBytes(ConfigInfo.TAR_DB_CONFIG.CHARSET));
 			fileBuffer.put("\n".getBytes(ConfigInfo.TAR_DB_CONFIG.CHARSET));
 			
-			fileBuffer.put(" TOTAL : ".getBytes(ConfigInfo.TAR_DB_CONFIG.CHARSET));
+			fileBuffer.put(msgCode.getCode("C0153").getBytes(ConfigInfo.TAR_DB_CONFIG.CHARSET));
 			fileBuffer.put(String.valueOf(jobList.size()).getBytes(ConfigInfo.TAR_DB_CONFIG.CHARSET));
 			fileBuffer.put("\n".getBytes(ConfigInfo.TAR_DB_CONFIG.CHARSET));
 			
-			fileBuffer.put("ELAPSED_TIME : ".getBytes(ConfigInfo.TAR_DB_CONFIG.CHARSET));
+			fileBuffer.put(msgCode.getCode("C0154").getBytes(ConfigInfo.TAR_DB_CONFIG.CHARSET));
 			fileBuffer.put(String.valueOf(makeElapsedTimeString(estimatedTime/1000)).getBytes(ConfigInfo.TAR_DB_CONFIG.CHARSET));
-			
 			
 			fileBuffer.flip();
 			fch.write(fileBuffer);
@@ -301,9 +297,9 @@ public class Unloader {
 			fch.close();
 			fos.close();			
 		} catch ( Exception e ) {
-			LogUtils.error("[MAKE_SUMMARY_FILE_FAIL]",Unloader.class,e);
+			LogUtils.error(msgCode.getCode("C0155"),Unloader.class,e);
 		} finally {
-			LogUtils.debug("[MAKE_SUMMARY_FILE_END]",Unloader.class);
+			LogUtils.debug(msgCode.getCode("C0156"),Unloader.class);
 		}
 			
 		
@@ -331,7 +327,7 @@ public class Unloader {
 	
 	
 	private void loadSelectQuery(String queryFilePath) {
-		LogUtils.debug("[SELECT_QUERY_LOAD_START]",Unloader.class);
+		LogUtils.debug(msgCode.getCode("C0157"),Unloader.class);
 		try {
 			File queryFile = new File(queryFilePath);
 			if(queryFile.exists()) {
@@ -374,19 +370,17 @@ public class Unloader {
 						}
 					}
 				}
-				LogUtils.debug("[SELECT_QUERY_LOAD_SUCCESS]",Unloader.class);
+				LogUtils.debug(msgCode.getCode("C0158"),Unloader.class);
 			} else {
-				LogUtils.warn("[SELECT_QUERY_FILE_NOT_FOUND]",Unloader.class);
+				LogUtils.warn(msgCode.getCode("C0159"),Unloader.class);
 			}
 		} catch ( Exception e ) {
-			LogUtils.error("[SELECT_QUERY_LOAD_FAIL]",Unloader.class,e);
+			LogUtils.error(msgCode.getCode("C0160"),Unloader.class,e);
 		} finally {
-			LogUtils.debug("[SELECT_QUERY_LOAD_END]",Unloader.class);
+			LogUtils.debug(msgCode.getCode("C0161"),Unloader.class);
 		}
 	}
-	
-	
-	
+
 	private class SelectQuery {
 		String name,query;
 

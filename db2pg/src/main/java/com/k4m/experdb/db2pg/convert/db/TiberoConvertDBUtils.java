@@ -25,7 +25,7 @@ import com.k4m.experdb.db2pg.work.db.impl.MetaExtractWork;
 import com.k4m.experdb.db2pg.work.db.impl.MetaExtractWorker;
 import com.k4m.experdb.db2pg.work.db.impl.WORK_TYPE;
 
-public class OracleConvertDBUtils {
+public class TiberoConvertDBUtils {
 	static MsgCode msgCode = new MsgCode();
 	/** [Add] sequence extract function **/
 	/**

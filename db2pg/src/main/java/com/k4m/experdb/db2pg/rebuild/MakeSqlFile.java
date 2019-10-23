@@ -6,11 +6,14 @@ import java.util.List;
 
 import com.k4m.experdb.db2pg.common.LogUtils;
 import com.k4m.experdb.db2pg.config.ConfigInfo;
+import com.k4m.experdb.db2pg.config.MsgCode;
 
 public class MakeSqlFile {
+	static MsgCode msgCode = new MsgCode();
+	
 	public static <T> boolean listToSqlFile(String filepath,List<T> list) {
 		boolean check = true;
-		LogUtils.info(String.format("[LIST_TO_FILE_START] %s", filepath),MakeSqlFile.class);
+		LogUtils.info(String.format(msgCode.getCode("C0101"), filepath),MakeSqlFile.class);
 		try {
 			File file = new File(filepath);
 			FileOutputStream fos = new FileOutputStream(file);
@@ -37,10 +40,10 @@ public class MakeSqlFile {
 			fos.flush();
 			fos.close();
 		} catch (Exception e) {
-			LogUtils.error("[LIST_TO_FILE_ERROR]",MakeSqlFile.class,e);
+			LogUtils.error(msgCode.getCode("C0102"),MakeSqlFile.class,e);
 			check = false;
 		} finally {
-			LogUtils.info(String.format("[LIST_TO_FILE_END] %s", filepath),MakeSqlFile.class);
+			LogUtils.info(msgCode.getCode("C0103"),MakeSqlFile.class);
 		}
 		
 		return check;

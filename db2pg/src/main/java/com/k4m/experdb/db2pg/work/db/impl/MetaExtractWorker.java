@@ -40,6 +40,7 @@ public final class MetaExtractWorker extends DBWorker {
 			work.params.put("DB_VER", dbconf.DB_VER);
 			work.params.put("DB_MAJOR_VER", dbconf.DB_MAJOR_VER);
 			work.params.put("DB_MINOR_VER", dbconf.DB_MINOR_VER);
+
 			switch (work.type) {
 			case GET_AUTOINCREMENT_INFORM:
 				result = mapper.getAutoincrementInform(work.params);

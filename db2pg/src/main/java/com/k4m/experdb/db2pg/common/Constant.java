@@ -25,8 +25,9 @@ public class Constant {
 	    public static final String TBR = "TBR";
 	    public static final String DB2 = "DB2";
 	    public static final String ASE = "ASE";
-	    public static final String MYSQL = "MYS";
+	    public static final String MYS = "MYS";
 	    public static final String CUB = "CUB";
+	    public static final String ALT = "ALT";
     }
 
     public static enum POOLNAME

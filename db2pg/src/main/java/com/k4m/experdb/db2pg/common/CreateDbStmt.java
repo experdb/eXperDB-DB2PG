@@ -1,13 +1,16 @@
 package com.k4m.experdb.db2pg.common;
 
+import com.k4m.experdb.db2pg.config.MsgCode;
+
 public class CreateDbStmt {
+	static MsgCode msgCode = new MsgCode();
 
 	public static String AddRownumSql(String DB_TYPE, String sql, int rowcnt) throws Exception{
 		switch(DB_TYPE){
 		case Constant.DB_TYPE.ORA: case Constant.DB_TYPE.TBR:
 			sql = "SELECT * FROM ( " + sql + ") T1 WHERE ROWNUM <= " + rowcnt;
 			break;
-		case Constant.DB_TYPE.POG: case Constant.DB_TYPE.MYSQL:
+		case Constant.DB_TYPE.POG: case Constant.DB_TYPE.MYS:
 			sql = "SELECT * FROM ( " + sql + ") T1 LIMIT " + rowcnt;
 			break;
 		case Constant.DB_TYPE.MSS: case Constant.DB_TYPE.ASE:
@@ -21,7 +24,7 @@ public class CreateDbStmt {
 			sql = "SELECT * FROM ( " + sql +  ") AS TTT1 FETCH FIRST " + rowcnt + " ROWS ONLY";
 			break;
 		default :
-			throw new Exception("미지원 DB 입니다.");
+			throw new Exception(msgCode.getCode("C0001"));
 		}
 		return sql;
 	}
@@ -56,7 +59,7 @@ public class CreateDbStmt {
 				DDL = "ALTER TABLE " + SCHEMA_NM + "." + TABLE_NM + " DISABLE PRIMARY KEY";				
 				break;
 			default:
-				throw new Exception("Not Support Disable PrimaryKey Stmt!!!");
+				throw new Exception(msgCode.getCode("C0002"));
 		}
 		
 		return DDL;
@@ -76,7 +79,7 @@ public class CreateDbStmt {
 				DDL = "ALTER TABLE " + SCHEMA_NM + "." + TABLE_NM + " ENABLE " + VALIDATED + " PRIMARY KEY";				
 				break;
 			default :
-				throw new Exception("Not Support Disable PrimaryKey Stmt!!!");
+				throw new Exception(msgCode.getCode("C0002"));
 		}
 		
 		return DDL;
@@ -99,7 +102,7 @@ public class CreateDbStmt {
 			case Constant.DB_TYPE.MSS : 
 				break;
 			default:
-				throw new Exception("Not Support Disable PrimaryKey Stmt!!!");
+				throw new Exception(msgCode.getCode("C0003"));
 		}
 		
 		return DDL;
@@ -117,7 +120,7 @@ public class CreateDbStmt {
 				DDL = "SELECT CURRENT_TIME FROM SYSIBM.SYSDUMMY1";
 				break;
 			default:
-				throw new Exception("Not Support Disable PrimaryKey Stmt!!!");
+				throw new Exception(msgCode.getCode("C0004"));
 		}
 		
 		return DDL;
@@ -135,7 +138,7 @@ public class CreateDbStmt {
 				DDL = "ALTER TABLE " + SCHEMA_NM + "." + TAR_TBL_ENM + " ACTIVATE NOT LOGGED INITIALLY";
 				break;
 			default:
-				throw new Exception("Not Support Disable PrimaryKey Stmt!!!");
+				throw new Exception(msgCode.getCode("C0005"));
 		}
 		
 		return DDL;
@@ -152,7 +155,7 @@ public class CreateDbStmt {
 			case Constant.DB_TYPE.DB2 :				
 				break;
 			default:
-				throw new Exception("Not Support Disable PrimaryKey Stmt!!!");
+				throw new Exception(msgCode.getCode("C0006"));
 		}
 		
 		return DDL;
@@ -169,7 +172,7 @@ public class CreateDbStmt {
 			case Constant.DB_TYPE.DB2 :				
 				break;
 			default:
-				throw new Exception("Not Support Disable PrimaryKey Stmt!!!");
+				throw new Exception(msgCode.getCode("C0006"));
 		}
 		
 		return DDL;
@@ -182,7 +185,7 @@ public class CreateDbStmt {
 			builder.append("DROP SEQUENCE \"").append(SEQUENCE_OWNER).append("\".\"").append(SEQUENCE_NAME).append("\"");
 			break;
 		default:
-			throw new Exception("Not Support Disable PrimaryKey Stmt!!!");
+			throw new Exception(msgCode.getCode("C0007"));
 		}
 		return builder.toString();
 	}
@@ -194,7 +197,7 @@ public class CreateDbStmt {
 			builder.append("EXEC DBMS_STATS.CREATE_STAT_TABLE(OWNNAME =>'").append(SCHEMA_NM).append("',STATTAB=>'").append(TABLE_NAME).append("')");
 			break;
 		default:
-			throw new Exception("Not Support Create Stat Table Stmt!!!");
+			throw new Exception(msgCode.getCode("C0008"));
 		}
 		return builder.toString();
 	}
@@ -206,7 +209,7 @@ public class CreateDbStmt {
 			builder.append("EXEC DBMS_STATS.DROP_STAT_TABLE(OWNNAME =>'").append(SCHEMA_NM).append("',STATTAB=>'").append(TABLE_NAME).append("')");
 			break;
 		default:
-			throw new Exception("Not Support Drop Stat Table Stmt!!!");
+			throw new Exception(msgCode.getCode("C0009"));
 		}
 		return builder.toString();
 	}
@@ -241,7 +244,7 @@ public class CreateDbStmt {
 						builder.append(" NOORDER ");
 					}
 				}else{
-					new Exception("Not Supported Version!!!");
+					new Exception(msgCode.getCode("C0010"));
 				}
 
 				break;
@@ -284,7 +287,7 @@ public class CreateDbStmt {
 						builder.append(" CACHE ").append(CACHE_SIZE);
 					}
 				}else{
-					new Exception("Not Supported Version!!!");
+					new Exception(msgCode.getCode("C0010"));
 				}
 				break;
 				/*
@@ -327,7 +330,7 @@ public class CreateDbStmt {
 						builder.append(" CACHE ").append(CACHE_SIZE);
 					}				
 				}else{
-					new Exception("Not Supported Version!!!");;
+					new Exception(msgCode.getCode("C0010"));;
 				}
 					
 				break;
@@ -351,12 +354,12 @@ public class CreateDbStmt {
 						builder.append(" CACHE ").append(CACHE_SIZE);
 					}				
 				}else{
-					new Exception("Not Supported Version!!!");;
+					new Exception(msgCode.getCode("C0010"));;
 				}
 				
 				break;
 			default:
-				throw new Exception("Not Support DB!!!");
+				throw new Exception(msgCode.getCode("C0001"));
 			}
 		}catch(Exception e){
 			

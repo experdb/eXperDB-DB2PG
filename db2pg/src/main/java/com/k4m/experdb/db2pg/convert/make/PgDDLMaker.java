@@ -78,6 +78,7 @@ public class PgDDLMaker<T> {
 		ctsb.append("\" (\"");
 		boolean isFirst = true;
 		for (Column column : table.getColumns()) {
+			//System.out.println(column.getName()+":"+column.toString());
 			if (!isFirst) {
 				ctsb.append(", \"");
 			} else {
@@ -85,7 +86,7 @@ public class PgDDLMaker<T> {
 			}
 			ctsb.append(DevUtils.classifyString(column.getName(),ConfigInfo.SRC_CLASSIFY_STRING));
 			ctsb.append("\" ");
-			if(ConfigInfo.SRC_DB_CONFIG.DB_TYPE.equals(Constant.DB_TYPE.MYSQL) && SqlPattern.check(column.getType(), SqlPattern.MYSQL.ENUM)) {
+			if(ConfigInfo.SRC_DB_CONFIG.DB_TYPE.equals(Constant.DB_TYPE.MYS) && SqlPattern.check(column.getType(), SqlPattern.MYS.ENUM)) {
 				String typeName = String.format("%s_%s_enum", table.getName(), column.getName());
 				tmpsb.append("CREATE TYPE \"");
 				tmpsb.append(typeName);
@@ -100,7 +101,7 @@ public class PgDDLMaker<T> {
 						+ "\n * But, PostgresQL has needed enum type create."
 						+ "\n * So, eXperDB-DB2PG is automatically enum type create."
 						+ "\n * TypeName : {1}_{2}\n */", table.getSchemaName(),table.getName(),column.getName()));
-			}else if(ConfigInfo.SRC_DB_CONFIG.DB_TYPE.equals(Constant.DB_TYPE.MSS) && SqlPattern.check(column.getType(), SqlPattern.MYSQL.ENUM)) {
+			}else if(ConfigInfo.SRC_DB_CONFIG.DB_TYPE.equals(Constant.DB_TYPE.MSS) && SqlPattern.check(column.getType(), SqlPattern.MYS.ENUM)) {
 				String typeName = String.format("%s_%s_enum", table.getName(), column.getName());
 				tmpsb.append("CREATE TYPE \"");
 				tmpsb.append(typeName);

@@ -14,11 +14,15 @@ import com.k4m.experdb.db2pg.rebuild.MakeSqlFile;
 import com.k4m.experdb.db2pg.rebuild.TargetPgDDL;
 import com.k4m.experdb.db2pg.unload.ManagementConstraint;
 import com.k4m.experdb.db2pg.unload.Unloader;
-
+import com.k4m.experdb.db2pg.config.MsgCode;
 
 
 public class Main {
+	static MsgCode msgCode = new MsgCode();
+
 	public static void main(String[] args) throws Exception {
+		msgCode.loadCode();
+		
 		ArgsParser argsParser = new ArgsParser();
 		argsParser.parse(args);
 		LogUtils.setVerbose(ConfigInfo.VERBOSE);
@@ -60,17 +64,17 @@ public class Main {
 		// create pool
 		createPool();
 		
-		LogUtils.info("[DB2PG_START]",Main.class);
+		LogUtils.info(msgCode.getCode("M0001"),Main.class);
 		
 		// check output directory 
 		// checkDirectory(ConfigInfo.SRC_FILE_OUTPUT_PATH);
 		makeDirectory();
 		
 		if(ConfigInfo.SRC_DDL_EXPORT) {
-			LogUtils.debug("[SRC_DDL_EXPORT_START]",Main.class);
+			LogUtils.debug(msgCode.getCode("M0002"),Main.class);
 			DDLConverter ddlConv = DDLConverter.getInstance();
 			ddlConv.start();
-			LogUtils.debug("[SRC_DDL_EXPORT_END]",Main.class);
+			LogUtils.debug(msgCode.getCode("M0003"),Main.class);
 		}
 		
 		if(ConfigInfo.TAR_CONSTRAINT_DDL) {
@@ -85,41 +89,41 @@ public class Main {
 			ManagementConstraint managementConstraint = new ManagementConstraint();
 			
 			if(ConfigInfo.DB_WRITER_MODE ) {
-				LogUtils.debug("[PG_CONSTRAINT_EXTRACT_START]",Main.class);
+				LogUtils.debug(msgCode.getCode("M0004"),Main.class);
 				makeSqlFile(dbInform);
-				LogUtils.debug("[PG_CONSTRAINT_EXTRACT_END]",Main.class);
+				LogUtils.debug(msgCode.getCode("M0005"),Main.class);
 			}
 
 			if(ConfigInfo.DB_WRITER_MODE && ConfigInfo.TAR_CONSTRAINT_REBUILD) {
-				LogUtils.debug("[DROP_FK_START]",Main.class);
+				LogUtils.debug(msgCode.getCode("M0006"),Main.class);
 				managementConstraint.dropFk(dbInform);
-				LogUtils.debug("[DROP_FK_END]",Main.class);
+				LogUtils.debug(msgCode.getCode("M0007"),Main.class);
 				
-				LogUtils.debug("[DROP_INDEX_START]",Main.class);
+				LogUtils.debug(msgCode.getCode("M0008"),Main.class);
 				managementConstraint.dropIndex(dbInform);
-				LogUtils.debug("[DROP_INDEX_END]",Main.class);
+				LogUtils.debug(msgCode.getCode("M0009"),Main.class);
 			}
 
-			LogUtils.debug("[SRC_INCLUDE_DATA_EXPORT_START]",Main.class);
+			LogUtils.debug(msgCode.getCode("M0010"),Main.class);
 			Unloader loader = new Unloader();
 			loader.start();	
-			LogUtils.debug("[SRC_INCLUDE_DATA_EXPORT_END]",Main.class);
+			LogUtils.debug(msgCode.getCode("M0011"),Main.class);
 
 			if(ConfigInfo.DB_WRITER_MODE && ConfigInfo.TAR_CONSTRAINT_REBUILD) {					
-				LogUtils.debug("[CREATE_INDEX_START]",Main.class);
+				LogUtils.debug(msgCode.getCode("M0012"),Main.class);
 				managementConstraint.createIndex(dbInform);
-				LogUtils.debug("[CREATE_INDEX_END]",Main.class);
+				LogUtils.debug(msgCode.getCode("M0013"),Main.class);
 				
-				LogUtils.debug("[CREATE_FK_START]",Main.class);
+				LogUtils.debug(msgCode.getCode("M0014"),Main.class);
 				managementConstraint.createFk(dbInform);
-				LogUtils.debug("[CREATE_FK_END]",Main.class);
+				LogUtils.debug(msgCode.getCode("M0015"),Main.class);
 			}	
 		}
 		
 
 		//pool 삭제
 		shutDownPool();
-		LogUtils.info("[DB2PG_END]",Main.class);
+		LogUtils.info(msgCode.getCode("M0016"),Main.class);
 	}
 	
 	//pool 생성
@@ -168,11 +172,11 @@ public class Main {
 	private static File checkDirectory(String strDirectory) throws Exception {
 		File dir = new File(strDirectory);
 		if(!dir.exists()){
-			LogUtils.info(String.format("%s directory is not existed.", dir.getPath()), Main.class);
+			LogUtils.info(String.format(msgCode.getCode("M0025"), dir.getPath()), Main.class);
 			if(dir.mkdirs()) {
-				LogUtils.info(String.format("Success to create %s directory.", dir.getPath()), Main.class);
+				LogUtils.info(String.format(msgCode.getCode("M0026"), dir.getPath()), Main.class);
 			} else {
-				LogUtils.error(String.format("Failed to create %s directory.", dir.getPath()), Main.class);
+				LogUtils.error(String.format(msgCode.getCode("M0027"), dir.getPath()), Main.class);
 				System.exit(Constant.ERR_CD.FAILED_CREATE_DIR_ERR);
 			}
 		}

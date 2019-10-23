@@ -16,6 +16,20 @@
 		</select>
 	</db>
 	
+	<db type="TBR">
+		<select id="GET_TABLE_NAMES">
+			SELECT TABLE_NAME FROM DBA_TABLES 
+			WHERE OWNER=#{OWNER} 
+				AND OBJECT_NAME NOT IN ('TOAD_PLAN_TABLE','PLAN_TABLE') 
+				AND OBJECT_NAME NOT LIKE 'MDRT%'
+				AND OBJECT_NAME NOT LIKE 'MDXT%'
+				${SRC_TABLE_DDL}
+		</select>
+		<select id="GET_SOURCE_TABLE_DATA">
+			SELECT * FROM ${SCHEMA}${TABLE} ${WHERE}
+		</select>
+	</db>
+	
 	<db type="MSS">
 		<select id="GET_TABLE_NAMES">
 			SELECT TABLE_NAME FROM information_schema.tables WHERE TABLE_SCHEMA=#{TABLE_SCHEMA}
@@ -34,7 +48,7 @@
 		</select>
 	</db>
 	
-	<db type="MYSQL">
+	<db type="MYS">
 		<select id="GET_TABLE_NAMES">
 			SELECT table_name
  			 FROM information_schema.tables

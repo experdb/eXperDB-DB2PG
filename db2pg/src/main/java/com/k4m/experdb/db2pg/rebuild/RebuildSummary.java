@@ -9,8 +9,10 @@ import java.util.List;
 
 import com.k4m.experdb.db2pg.common.LogUtils;
 import com.k4m.experdb.db2pg.common.StrUtil;
+import com.k4m.experdb.db2pg.config.MsgCode;
 
 public class RebuildSummary {
+	static MsgCode msgCode = new MsgCode();
 	private File[] logFiles = null;
 	private File summaryFile = null;
 	private String outputDirectory = null;
@@ -29,7 +31,7 @@ public class RebuildSummary {
 //		(new RebuildSummary(".","rebuild.log")).run();
 //	}
 	public void run() {
-		LogUtils.info("[MAKE_SUMMARY_FILE_START]",RebuildSummary.class);
+		LogUtils.info(msgCode.getCode("C0104"),RebuildSummary.class);
 		try {
 			long allElapsedTime = 0;
 			int fkCS = 0,fkCF = 0,fkDS = 0,fkDF = 0,idxCS = 0 ,idxCF = 0,idxDS = 0,idxDF = 0,unknown = 0;
@@ -41,7 +43,7 @@ public class RebuildSummary {
 				String msg = null;
 				List<LogInformation> infoList = new ArrayList<LogInformation>();
 				LogInformation currInfo = null;
-				LogUtils.info("[RUN_PARSING] "+ logFiles[i],RebuildSummary.class);
+				LogUtils.info(String.format(msgCode.getCode("C0105"),logFiles[i]),RebuildSummary.class);
 				int line = 0;
 				try {
 					int start, end;
@@ -102,7 +104,7 @@ public class RebuildSummary {
 					LogUtils.error(line+"line ",RebuildSummary.class,e);
 				}
 				
-				LogUtils.info("[END_PARSING] "+ logFiles[i],RebuildSummary.class);
+				LogUtils.info(String.format(msgCode.getCode("C0106"),logFiles[i]),RebuildSummary.class);
 				
 				for ( LogInformation info : infoList) {
 					switch(info.style) {
@@ -137,16 +139,16 @@ public class RebuildSummary {
 					,fkCS,idxCS,fkDS,idxDS,fkCF,idxCF,fkDF,idxDF,unknown);
 			LogUtils.info(rStr,RebuildSummary.class);
 			fos.write( rStr.getBytes() );
-			LogUtils.info("TOTAL_ELAPSED_TIME=\""+StrUtil.makeElapsedTimeString(allElapsedTime)+"\"",RebuildSummary.class);
-			fos.write( ("\nTOTAL_ELAPSED_TIME=\""+StrUtil.makeElapsedTimeString(allElapsedTime)+"\"").getBytes() );
+			LogUtils.info(String.format(msgCode.getCode("C0107"),StrUtil.makeElapsedTimeString(allElapsedTime)),RebuildSummary.class);
+			fos.write( ("\n"+String.format(msgCode.getCode("C0107"),StrUtil.makeElapsedTimeString(allElapsedTime))).getBytes() );
 			fos.flush();
 			
 			fos.close();
-			LogUtils.info("[MAKE_SUMMARY_FILE_SUCCESS]",RebuildSummary.class);
+			LogUtils.info(msgCode.getCode("C0108"),RebuildSummary.class);
     	} catch (Exception e) {
-    		LogUtils.error("[MAKE_SUMMARY_FILE_FAIL]",RebuildSummary.class,e);
+    		LogUtils.error(msgCode.getCode("C0109"),RebuildSummary.class,e);
 		}
-		LogUtils.info("[MAKE_SUMMARY_FILE_END]",RebuildSummary.class);
+		LogUtils.info(msgCode.getCode("C0110"),RebuildSummary.class);
 	}
 	private enum FileStyle {
 		fk_drop("fk_drop"),idx_drop("idx_drop"),idx_create("idx_create"),fk_create("fk_create"), unknown("unknown");
@@ -164,18 +166,14 @@ public class RebuildSummary {
 		@Override
 		public String toString() {
 			StringBuilder sb = new StringBuilder();
-			sb.append("TYPE=\"");
-			sb.append(style);
-			sb.append("\", ");
-			sb.append("SQL=\"");
-			sb.append(sql);
-			sb.append("\", ");
-			sb.append("ELAPSED_TIME=\"");
-			sb.append(StrUtil.makeElapsedTimeString(((elapsedTime+500)/1000+500)/1000));
-			sb.append("\", ");
+			sb.append(String.format(msgCode.getCode("C0111"),style));
+			sb.append(", ");
+			sb.append(String.format(msgCode.getCode("C0112"),sql));
+			sb.append(", ");
+			sb.append(String.format(msgCode.getCode("C0113"),StrUtil.makeElapsedTimeString(((elapsedTime+500)/1000+500)/1000)));
+			sb.append(", ");
 			sb.append(isSuccess?"SUCCESS":"FAILURE");
 			return sb.toString();
 		}
-		
 	}
 }

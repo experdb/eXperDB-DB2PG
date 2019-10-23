@@ -14,9 +14,12 @@ import oracle.spatial.geometry.JGeometry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.k4m.experdb.db2pg.config.MsgCode;
+
 
 
 public class Process {
+	static MsgCode msgCode = new MsgCode();
 	private static final Logger logger = LoggerFactory.getLogger(Process.class);
 
 	//region parse
@@ -28,7 +31,7 @@ public class Process {
 			oGeometry.dim = jGeometry.getDimensions();
 			oGeometry.lrs = jGeometry.getLRMDimension();
 			if(oGeometry.dim<2) {
-				logger.error("ERROR: Dimension "+oGeometry.dim+" is not valid. Either specify a dimension or use Oracle Locator Version 9i or later.");
+				logger.error(String.format(msgCode.getCode("C0061"),oGeometry));
 				return "";
 			}
 			
@@ -120,16 +123,16 @@ public class Process {
 			int interpretation = interpretation(oGeometry,elemIndex);
 			
 			if(sOffset<1 || sOffset > oGeometry.coords.size()*oGeometry.dim) {
-				logger.error("ERROR: SDO_ELEM_INFO starting offset "+oGeometry.coords.size()*oGeometry.dim+"Offset inconsistent with ordinates length ");
+				logger.error(String.format(msgCode.getCode("C0062"),oGeometry.coords.size()*oGeometry.dim,sOffset));
 			}
 			if(etype!=SDO_ETYPE.POINT){
-				logger.error("ERROR: SDO_ETYPE "+etype+" inconsistent with expected POINT");
+				logger.error(String.format(msgCode.getCode("C0063"),etype));
 			}
 			
 			if(interpretation > 1) {
 				return createMultiPoint(oGeometry,elemIndex);
 			} else if(interpretation == 0) {
-				logger.error("ERROR: SDO_ETYPE.POINT requires interpretation >= 1");
+				logger.error(msgCode.getCode("C0064"));
 				return null;
 			}
 			
@@ -157,10 +160,10 @@ public class Process {
 			
 			int length = oGeometry.coords.size() * oGeometry.dim;
 			if((sOffset <1) || (sOffset>length)) {
-				logger.error("ERROR: SDO_ELEM_INFO starting offset "+sOffset+" inconsistent with ordinates length "+oGeometry.coords.size());
+				logger.error(String.format(msgCode.getCode("C0065"),sOffset,oGeometry.coords.size()));
 			}
 			if(oGeometry.sdoElemInfoList.get(elemIndex).SDO_ETYPE == SDO_ETYPE.POINT){
-				logger.error("ERROR: SDO_ETYPE "+SDO_ETYPE.POINT+" inconsistent with expected POINT");
+				logger.error(String.format(msgCode.getCode("C0063"),SDO_ETYPE.POINT));
 			}
 			List<String> points = new ArrayList<String>();
 			int start = (sOffset-1) / oGeometry.dim;
@@ -234,10 +237,10 @@ public class Process {
 			int length = oGeometry.coords.size() * oGeometry.dim;
 			
 			if(sOffset <1 || sOffset > length) {
-				logger.error("ERROR: SDO_ELEM_INFO starting offset "+sOffset+" inconsistent with ordinates length "+oGeometry.coords.size());
+				logger.error(String.format(msgCode.getCode("C0065"),sOffset,oGeometry.coords.size()));
 			}
 			if(etype != SDO_ETYPE.LINESTRING) {
-				logger.error("ERROR: SDO_ETYPE "+etype+" inconsistent with expected LINESTRING");
+				logger.error(String.format(msgCode.getCode("C0066"),etype));
 			}
 			int endTriplet = (numGeom != -1) ? (elemIndex + numGeom) : oGeometry.sdoElemInfoList.size();
 			List<String> lines = new ArrayList<String>();
@@ -283,10 +286,10 @@ public class Process {
 			int length = oGeometry.coords.size() * oGeometry.dim;
 			
 			if(sOffset < 1 || sOffset > length) {
-				logger.error("ERROR: SDO_ELEM_INFO starting offset "+sOffset+" inconsistent with ordinates length "+oGeometry.coords.size());
+				logger.error(String.format(msgCode.getCode("C0062"),sOffset,oGeometry.coords.size()));
 			}
 			if(etype != SDO_ETYPE.LINESTRING) {
-				logger.error("ERROR: SDO_ETYPE "+etype+" inconsistent with expected LINESTRING");
+				logger.error(String.format(msgCode.getCode("C0066"),etype));
 			}
 			
 //			int endTriplet = (numGeom != -1) ? (elemIndex + numGeom) : ((oGeometry.sdoElemInfoList.size()+1) / 3);
@@ -336,7 +339,7 @@ public class Process {
 			if(etype==0) return null;
 			
 			if(sOffset <1 || sOffset > length) {
-				logger.error("ERROR: SDO_ELEM_INFO starting offset "+sOffset+" inconsistent with ordinates length "+oGeometry.coords.size());
+				logger.error(String.format(msgCode.getCode("C0065"),sOffset,oGeometry.coords.size()));
 			}
 			if(etype == SDO_ETYPE.COMPOUND_POLYGON_INTERIOR || etype == SDO_ETYPE.COMPOUND_POLYGON_EXTERIOR) {
 				return null;
@@ -411,7 +414,7 @@ public class Process {
 			}
 			
 			if(sOffset<1 || sOffset > oGeometry.coords.size()*oGeometry.dim) {
-				logger.error("ERROR: SDO_ELEM_INFO starting offset "+sOffset+"Offset inconsistent with COORDINATES length "+(oGeometry.coords.size()*oGeometry.dim));
+				logger.error(String.format(msgCode.getCode("C0065"),sOffset,oGeometry.coords.size()*oGeometry.dim));
 			}
 			
 			List<String> rings = new ArrayList<String>();
@@ -493,10 +496,10 @@ public class Process {
 			int length = oGeometry.coords.size() * oGeometry.dim;
 			
 			if(sOffset <1 || sOffset > length) {
-				logger.error("ERROR: SDO_ELEM_INFO starting offset "+sOffset+" inconsistent with ordinates length "+oGeometry.coords.size());
+				logger.error(String.format(msgCode.getCode("C0065"),sOffset,oGeometry.coords.size()));
 			}
 			if(etype != SDO_ETYPE.POLYGON && etype != SDO_ETYPE.POLYGON_EXTERIOR) {
-				logger.error("ERROR: SDO_ETYPE "+etype+" inconsistent with expected POLYGON or POLYGON_EXTERIOR");
+				logger.error(String.format(msgCode.getCode("C0067"),etype));
 			}
 			if(interpretation != 1 && interpretation != 3) {
 				return null;
@@ -542,7 +545,7 @@ public class Process {
 			int length = oGeometry.coords.size() * oGeometry.dim;
 			
 			if(sOffset > length)
-				logger.error("ERROR: SDO_ELEM_INFO starting offset "+sOffset+" inconsistent with ordinates length " + oGeometry.coords.size());
+				logger.error(String.format(msgCode.getCode("C0065"),sOffset,oGeometry.coords.size()));
 			
 //			int endTriplet = (numGeom != -1) ? (elemIndex + numGeom) : (oGeometry.sdoElemInfoList.size() / 3) + 1;
 //			int endTriplet = (oGeometry.sdoElemInfoList.size()+1)/3+1;
@@ -575,11 +578,10 @@ public class Process {
 					//Skip interior rings
 					while(eType(oGeometry, i+1) == SDO_ETYPE.POLYGON_INTERIOR) i++;
 				} else if ( etype == SDO_ETYPE.POLYGON_INTERIOR ) {
-					logger.error(String.format("%s %s", "ERROR: SDO_ETYPE 2003 (Polygon Interior) no expected in a GeometryCollection"
-							,"(2003 is used to represent polygon holes, in a 1003 polygon exterior)"));
+					logger.error(String.format("%s %s", msgCode.getCode("C0068_1"),msgCode.getCode("C0068_2")));
 					continue;
 				} else {
-					logger.error("ERROR: SDO_ETYPE "+etype+" not representable as a EWKT Geometry by DX-DB2PG");
+					logger.error(String.format(msgCode.getCode("C0069"),etype));
 					continue;
 				}
 				geoms.add(geom);
@@ -606,7 +608,7 @@ public class Process {
 			int length = oGeometry.coords.size() * oGeometry.dim;
 			
 			if(sOffset <1 || sOffset > length) {
-				logger.error("ERROR: SDO_ELEM_INFO starting offset "+sOffset+" inconsistent with ordinates length "+oGeometry.coords.size());
+				logger.error(String.format(msgCode.getCode("C0065"),sOffset,oGeometry.coords.size()));
 			}
 //			if(etype != SDO_ETYPE.SURFACE_EXTERIOR) {
 //				logger.error("ERROR: SDO_ETYPE "+etype+" inconsistent with expected SURFACE_EXTERIOR");
@@ -682,7 +684,7 @@ public class Process {
 			}
 			
 			if(sOffset < 1 || sOffset > oGeometry.coords.size()*oGeometry.dim) {
-				logger.error("ERROR: SDO_ELEM_INFO starting offset "+sOffset+"Offset inconsistent with COORDINATES length "+(oGeometry.coords.size()*oGeometry.dim));
+				logger.error(String.format(msgCode.getCode("C0071"),sOffset,(oGeometry.coords.size()*oGeometry.dim)));
 			}
 			
 			List<String> surfaces = new ArrayList<String>();
@@ -728,10 +730,10 @@ public class Process {
 			int length = oGeometry.coords.size() * oGeometry.dim;
 			
 			if(sOffset <1 || sOffset > length) {
-				logger.error("ERROR: SDO_ELEM_INFO starting offset "+sOffset+" inconsistent with ordinates length "+oGeometry.coords.size());
+				logger.error(String.format(msgCode.getCode("C0062"),sOffset,oGeometry.coords.size()));
 			}
 			if(etype != SDO_ETYPE.SOLID_EXTERIOR ) {
-				logger.error("ERROR: SDO_ETYPE "+etype+" inconsistent with expected SOLID_EXTERIOR ");
+				logger.error(String.format(msgCode.getCode("C0070"),etype));
 			}
 			if(etype == SDO_ETYPE.SOLID_EXTERIOR && interpretation != 1 && interpretation != 3) {
 				return null;

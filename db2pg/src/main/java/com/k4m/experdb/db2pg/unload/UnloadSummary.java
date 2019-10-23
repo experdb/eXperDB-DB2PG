@@ -10,8 +10,10 @@ import java.util.List;
 
 import com.k4m.experdb.db2pg.common.LogUtils;
 import com.k4m.experdb.db2pg.common.StrUtil;
+import com.k4m.experdb.db2pg.config.MsgCode;
 
 public class UnloadSummary {
+	static MsgCode msgCode = new MsgCode();
 	private File logFile = null, summaryFile = null;
 	private String outputDirectory = null;
 	
@@ -32,14 +34,14 @@ public class UnloadSummary {
 	}
 	
 	public void run() {
-		LogUtils.debug("[MAKE_SUMMARY_FILE_START]",UnloadSummary.class);
+		LogUtils.debug(msgCode.getCode("C0162"),UnloadSummary.class);
 		try {
 			BufferedReader br = new BufferedReader(new FileReader(logFile));
 			FileOutputStream fos = new FileOutputStream(outputDirectory+summaryFile);
 			String msg = null;
 			List<ProcessedInfo> pInfos = new ArrayList<ProcessedInfo>(); 
 			ProcessedInfo pInfo = null;
-			LogUtils.debug("[RUN_PARSING]",UnloadSummary.class);
+			LogUtils.debug(msgCode.getCode("C0163"),UnloadSummary.class);
 			int line = 0;
 			try {
 				int start, end;
@@ -77,7 +79,7 @@ public class UnloadSummary {
 				LogUtils.error(Integer.toString(line),UnloadSummary.class,e);
 			}
 			
-			LogUtils.debug("[END_PARSING]",UnloadSummary.class);
+			LogUtils.debug(msgCode.getCode("C0164"),UnloadSummary.class);
 			long allElapsedTime = 0;
 			int tableCnt = 0, tableCorrectCnt = 0,tableIncorrectCnt = 0;
 			
@@ -92,23 +94,16 @@ public class UnloadSummary {
 				}
 				tableCnt++;
 			}
-			LogUtils.info("TOTAL="+tableCnt
-					+ ", SUCCESS="+tableCorrectCnt
-					+ ", FAILURE="+tableIncorrectCnt
-					+ ", TOTAL_ELAPSED_TIME=\""+StrUtil.makeElapsedTimeString(allElapsedTime)+"\""
-					,UnloadSummary.class);
-			fos.write( ("\nTOTAL="+tableCnt
-					+ ", SUCCESS="+tableCorrectCnt
-					+ ", FAILURE="+tableIncorrectCnt
-					+ ", TOTAL_ELAPSED_TIME=\""+StrUtil.makeElapsedTimeString(allElapsedTime)+"\"").getBytes() );
+			LogUtils.info(String.format(msgCode.getCode("C0165"),tableCnt,tableCorrectCnt,tableIncorrectCnt,StrUtil.makeElapsedTimeString(allElapsedTime)),UnloadSummary.class);
+			fos.write( ("\n"+String.format(msgCode.getCode("C0165"),tableCnt,tableCorrectCnt,tableIncorrectCnt,StrUtil.makeElapsedTimeString(allElapsedTime))).getBytes() );
 			fos.flush();
 			br.close();
 			fos.close();
-			LogUtils.debug("[MAKE_SUMMARY_FILE_SUCCESS]",UnloadSummary.class);
+			LogUtils.debug(msgCode.getCode("C0166"),UnloadSummary.class);
     	} catch (Exception e) {
-    		LogUtils.error("[MAKE_SUMMARY_FILE_FAIL]",UnloadSummary.class,e);
+    		LogUtils.error(msgCode.getCode("C0167"),UnloadSummary.class,e);
 		}
-		LogUtils.debug("[MAKE_SUMMARY_FILE_END]",UnloadSummary.class);
+		LogUtils.debug(msgCode.getCode("C0168"),UnloadSummary.class);
 	}
 	private class ProcessedInfo {
 		long selectCount, copyCount, elapsedTime;
@@ -117,21 +112,15 @@ public class UnloadSummary {
 		@Override
 		public String toString() {
 			StringBuilder sb = new StringBuilder();
-			sb.append("TABLENAME=");
-			sb.append(tablename);
+			sb.append(String.format(msgCode.getCode("C0169"),tablename));
 			sb.append(", ");
-			sb.append("SELECT_COUNT=");
-			sb.append(selectCount);
+			sb.append(String.format(msgCode.getCode("C0170"),selectCount));
 			sb.append(", ");
-			sb.append("COPY_COUNT=");
-			sb.append(copyCount);
+			sb.append(String.format(msgCode.getCode("C0171"),copyCount));
 			sb.append(", ");
-			sb.append("ELAPSED_TIME=\"");
-			sb.append(StrUtil.makeElapsedTimeString(((elapsedTime+500)/1000+500)/1000));
-			sb.append('"');
+			sb.append(String.format(msgCode.getCode("C0172"),StrUtil.makeElapsedTimeString(((elapsedTime+500)/1000+500)/1000)));
 			sb.append(", ");
-			sb.append("STATUS=");
-			sb.append(status?"SUCCESS":"FAILURE");
+			sb.append(String.format(msgCode.getCode("C0173"),status?"SUCCESS":"FAILURE"));
 			return sb.toString();
 		}
 		

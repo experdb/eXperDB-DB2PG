@@ -38,6 +38,7 @@ import com.k4m.experdb.db2pg.common.Constant;
 import com.k4m.experdb.db2pg.common.DevUtils;
 import com.k4m.experdb.db2pg.common.LogUtils;
 import com.k4m.experdb.db2pg.config.ConfigInfo;
+import com.k4m.experdb.db2pg.config.MsgCode;
 import com.k4m.experdb.db2pg.db.DBCPPoolManager;
 import com.k4m.experdb.db2pg.db.datastructure.DBConfigInfo;
 import com.k4m.experdb.db2pg.db.oracle.spatial.geometry.Process;
@@ -47,6 +48,7 @@ import oracle.spatial.geometry.JGeometry;
 import test.write.TestFileWriter;
 
 public class ExecuteQuery implements Runnable{
+	static MsgCode msgCode = new MsgCode();
 	private String srcPoolName, selectQuery, outputFileName, tableName;
 	private int status=1;
 	long  rowCnt = 0;
@@ -129,14 +131,14 @@ public class ExecuteQuery implements Runnable{
         	for(int i=1;i<=rsmd.getColumnCount();i++)
         		columnNames.add(rsmd.getColumnName(i));
         	
-        	LogUtils.debug(String.format("[%s-CREATE_PIPE_LINE]",this.tableName),ExecuteQuery.class);
+        	//LogUtils.debug(String.format(msgCode.getCode("C0131"),this.tableName),ExecuteQuery.class);
 
         	File output_file = new File(outputFileName);
         	FileOutputStream fos = new FileOutputStream(output_file);
         	outChannel = fos.getChannel();
     		
-        	LogUtils.debug(String.format("[%s-CREATE_BUFFEREDOUTPUTSTREAM]",this.tableName),ExecuteQuery.class);
-        	LogUtils.debug("[START_FETCH_DATA]" + outputFileName,ExecuteQuery.class);
+        	LogUtils.debug(String.format(msgCode.getCode("C0132"),this.tableName),ExecuteQuery.class);
+        	LogUtils.debug(String.format(msgCode.getCode("C0133"),outputFileName),ExecuteQuery.class);
         	
         	stringBuffer = new StringBuffer("");
         	stringBuffer.append("SET client_encoding TO '");
@@ -198,7 +200,7 @@ public class ExecuteQuery implements Runnable{
         	outChannel.close();
         	fos.close();
         	stopWatch.stop();
-        	LogUtils.debug("[ELAPSED_TIME] "+tableName+" " + stopWatch.getTime()+"ms",ExecuteQuery.class);
+        	LogUtils.debug(String.format(msgCode.getCode("C0140"),outputFileName,tableName,stopWatch.getTime()),ExecuteQuery.class);
         	
 		} catch(Exception e) {
 			this.success = false;
@@ -211,7 +213,7 @@ public class ExecuteQuery implements Runnable{
 				ps.print(selectQuery);
 				ps.close();
 			} catch (FileNotFoundException e1) {
-				LogUtils.error("[SQL_ERROR]" + outputFileName+".error",ExecuteQuery.class);
+				LogUtils.error(String.format(msgCode.getCode("C0141"),outputFileName)+".error",ExecuteQuery.class);
 			}
 			LogUtils.error(
 					"\""
@@ -222,8 +224,8 @@ public class ExecuteQuery implements Runnable{
 		} finally {
 			CloseConn(SrcConn, preSrcStmt);
 			status = 0;
-			LogUtils.debug("[END_FETCH_DATA]" + outputFileName,ExecuteQuery.class);
-			LogUtils.info("COMPLETE UNLOAD (TABLE_NAME : " +tableName + ", ROWNUM : " + rowCnt + ") !!!",ExecuteQuery.class);
+			LogUtils.debug(String.format(msgCode.getCode("C0142"),outputFileName),ExecuteQuery.class);
+			LogUtils.info(String.format(msgCode.getCode("C0143"),tableName,rowCnt),ExecuteQuery.class);
 		}
 	}
 	

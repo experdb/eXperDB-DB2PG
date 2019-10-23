@@ -16,6 +16,7 @@ import java.util.regex.Pattern;
 import com.k4m.experdb.db2pg.common.Constant;
 import com.k4m.experdb.db2pg.common.LogUtils;
 import com.k4m.experdb.db2pg.config.ConfigInfo;
+import com.k4m.experdb.db2pg.config.MsgCode;
 import com.k4m.experdb.db2pg.convert.db.ConvertDBUtils;
 import com.k4m.experdb.db2pg.convert.exception.NotSupportDatabaseTypeException;
 import com.k4m.experdb.db2pg.convert.make.PgDDLMaker;
@@ -30,6 +31,7 @@ import com.k4m.experdb.db2pg.db.datastructure.DBConfigInfo;
 import com.k4m.experdb.db2pg.db.datastructure.exception.DBTypeNotFoundException;
 
 public class DDLConverter {
+	static MsgCode msgCode = new MsgCode();
 	protected ConvertMapper<?> convertMapper;
 	protected PriorityBlockingQueue<DDLString> tableQueue = new PriorityBlockingQueue<DDLString>(5, DDLString.getComparator()),
 			sequenceQueue = new PriorityBlockingQueue<DDLString>(5, DDLString.getComparator()),
@@ -37,13 +39,13 @@ public class DDLConverter {
 			viewQueue = new PriorityBlockingQueue<DDLString>(5, DDLString.getComparator()),
 			constraintsQueue = new PriorityBlockingQueue<DDLString>(5, DDLString.getComparator());
 	protected DBConfigInfo dbConfigInfo;
-	protected String outputDirectory = ConfigInfo.SRC_FILE_OUTPUT_PATH + "ddl/";
+	protected String outputDirectory = ConfigInfo.SRC_FILE_OUTPUT_PATH + "ddl";
 	protected List<String> tableNameList = null, excludes = null;
 	protected String tableSchema = ConfigInfo.SRC_DB_CONFIG.SCHEMA_NAME;
 
 	public static DDLConverter getInstance() throws Exception {
 		DDLConverter ddlConverter = new DDLConverter();
-		if(ConfigInfo.SRC_DB_CONFIG.DB_TYPE.equals(Constant.DB_TYPE.MYSQL) || ConfigInfo.SRC_DB_CONFIG.DB_TYPE.equals(Constant.DB_TYPE.ORA) || ConfigInfo.SRC_DB_CONFIG.DB_TYPE.equals(Constant.DB_TYPE.MSS)){
+		if(ConfigInfo.SRC_DDL_EXT_DBMS){
 			ddlConverter.convertMapper = ConvertMapper.makeConvertMapper(SqlConvertMapper.class);
 		}else{
 			throw new NotSupportDatabaseTypeException(ConfigInfo.SRC_DB_CONFIG.DB_TYPE);
@@ -54,11 +56,11 @@ public class DDLConverter {
 	public DDLConverter() throws Exception {
 		File dir = new File(outputDirectory);
 		if (!dir.exists()) {
-			LogUtils.info(String.format("%s directory is not existed.", dir.getPath()), DDLConverter.class);
+			LogUtils.debug(String.format(msgCode.getCode("C0025"), dir.getPath()), DDLConverter.class);
 			if (dir.mkdirs()) {
-				LogUtils.info(String.format("Success to create %s directory.", dir.getPath()), DDLConverter.class);
+				LogUtils.debug(String.format(msgCode.getCode("C0026"), dir.getPath()), DDLConverter.class);
 			} else {
-				LogUtils.error(String.format("Failed to create %s directory.", dir.getPath()), DDLConverter.class);
+				LogUtils.error(String.format(msgCode.getCode("C0027"), dir.getPath()), DDLConverter.class);
 				System.exit(Constant.ERR_CD.FAILED_CREATE_DIR_ERR);
 			}
 		}
@@ -68,8 +70,7 @@ public class DDLConverter {
 		//DBCPPoolManager.setupDriver(dbConfigInfo, Constant.POOLNAME.SOURCE_DDL.name(), 1);
 		tableNameList = ConfigInfo.SRC_INCLUDE_TABLES;
 		if (tableNameList == null) {
-			tableNameList = DBUtils.getTableNames(ConfigInfo.SRC_TABLE_DDL, Constant.POOLNAME.SOURCE.name(),
-					dbConfigInfo);
+			tableNameList = DBUtils.getTableNames(ConfigInfo.SRC_TABLE_DDL, Constant.POOLNAME.SOURCE.name(),dbConfigInfo);
 		}
 		if (excludes != null) {
 			for (int eidx = 0; eidx < excludes.size(); eidx++) {
@@ -89,7 +90,7 @@ public class DDLConverter {
 		List<Table> tables = ConvertDBUtils.getTableInform(tableNameList, true, Constant.POOLNAME.SOURCE.name(),dbConfigInfo);
 		
 		// DDL 추출시 view 제외 여부
-		if(ConfigInfo.SRC_CONVERT_VIEW) {
+		if(ConfigInfo.SRC_TABLE_DDL==false) {
 			List<View> views = ConvertDBUtils.setViewInform(tableSchema, Constant.POOLNAME.SOURCE.name(),dbConfigInfo);
 			viewFileCreate(views);
 		}
@@ -99,7 +100,15 @@ public class DDLConverter {
 		int sequenceCheck=0;
 		for (Table table : tables) {
 			if(ConfigInfo.SRC_DB_CONFIG.DB_TYPE.equals(Constant.DB_TYPE.ORA) && sequenceCheck==0){
-				ConvertDBUtils.setsetSequencesInform(table, Constant.POOLNAME.SOURCE.name(), dbConfigInfo);
+				ConvertDBUtils.setSequencesInform(table, Constant.POOLNAME.SOURCE.name(), dbConfigInfo);
+				sequenceCheck++;
+			}
+			if(ConfigInfo.SRC_DB_CONFIG.DB_TYPE.equals(Constant.DB_TYPE.TBR) && sequenceCheck==0){
+				ConvertDBUtils.setSequencesInform(table, Constant.POOLNAME.SOURCE.name(), dbConfigInfo);
+				sequenceCheck++;
+			}
+			if(ConfigInfo.SRC_DB_CONFIG.DB_TYPE.equals(Constant.DB_TYPE.ALT) && sequenceCheck==0){
+				ConvertDBUtils.setSequencesInform(table, Constant.POOLNAME.SOURCE.name(), dbConfigInfo);
 				sequenceCheck++;
 			}
 			ConvertDBUtils.setColumnInform(table, Constant.POOLNAME.SOURCE.name(), dbConfigInfo);
@@ -143,11 +152,11 @@ public class DDLConverter {
 		ByteBuffer fileBuffer = ByteBuffer.allocateDirect(ConfigInfo.SRC_BUFFER_SIZE);
 		FileChannel fch = null;
 			
-		File viewSqlFile = new File(outputDirectory + "/" + dbConfigInfo.DBNAME + "_view.sql");
+		File viewSqlFile = new File(outputDirectory + "/" + dbConfigInfo.DBNAME + "_" + dbConfigInfo.SCHEMA_NAME + "_view.sql");
 		FileOutputStream fos = new FileOutputStream(viewSqlFile);
 		fch = fos.getChannel();
 
-		if(ConfigInfo.SRC_DB_CONFIG.DB_TYPE.equals(Constant.DB_TYPE.MYSQL)){
+		if(ConfigInfo.SRC_DB_CONFIG.DB_TYPE.equals(Constant.DB_TYPE.MYS)){
 			for(int i=0; i<views.size(); i++){
 				fileBuffer.put("CREATE VIEW ".getBytes(ConfigInfo.TAR_DB_CONFIG.CHARSET));
 				fileBuffer.put(views.get(i).getTableName().getBytes(ConfigInfo.TAR_DB_CONFIG.CHARSET));
@@ -158,7 +167,7 @@ public class DDLConverter {
 				fch.write(fileBuffer);
 				fileBuffer.clear();
 			}	
-		}else if(ConfigInfo.SRC_DB_CONFIG.DB_TYPE.equals(Constant.DB_TYPE.MSS) || ConfigInfo.SRC_DB_CONFIG.DB_TYPE.equals(Constant.DB_TYPE.ORA)){
+		}else if(ConfigInfo.SRC_DB_CONFIG.DB_TYPE.equals(Constant.DB_TYPE.MSS) || ConfigInfo.SRC_DB_CONFIG.DB_TYPE.equals(Constant.DB_TYPE.ORA) || ConfigInfo.SRC_DB_CONFIG.DB_TYPE.equals(Constant.DB_TYPE.TBR)){
 			for(int i=0; i<views.size(); i++){
 				fileBuffer.put(views.get(i).getViewDefinition().getBytes(ConfigInfo.TAR_DB_CONFIG.CHARSET));
 				fileBuffer.put("\n".getBytes(ConfigInfo.TAR_DB_CONFIG.CHARSET));
@@ -181,7 +190,7 @@ public class DDLConverter {
 		FileChannel fch = null;
 		
 		
-		File tableSqlFile = new File(outputDirectory + "/" + dbConfigInfo.DBNAME + "_table.sql");
+		File tableSqlFile = new File(outputDirectory + "/" + dbConfigInfo.DBNAME + "_" + dbConfigInfo.SCHEMA_NAME + "_table.sql");
 		FileOutputStream fos = new FileOutputStream(tableSqlFile);
 		fch = fos.getChannel();
 
@@ -203,7 +212,7 @@ public class DDLConverter {
 		fos.close();
 		
 		
-		File sequenceSqlFile = new File(outputDirectory + "/" + dbConfigInfo.DBNAME + "_sequence.sql");
+		File sequenceSqlFile = new File(outputDirectory + "/" + dbConfigInfo.DBNAME + "_" + dbConfigInfo.SCHEMA_NAME + "_sequence.sql");
 		fos = new FileOutputStream(sequenceSqlFile);
 		fch = fos.getChannel();
 		while ((ddlStrVO = sequenceQueue.poll()) != null) {
@@ -217,7 +226,7 @@ public class DDLConverter {
 		fos.close();		
 		
 
-		File constraintsSqlFile = new File(outputDirectory + "/" + dbConfigInfo.DBNAME + "_constraints.sql");
+		File constraintsSqlFile = new File(outputDirectory + "/" + dbConfigInfo.DBNAME + "_" + dbConfigInfo.SCHEMA_NAME + "_constraints.sql");
 		fos = new FileOutputStream(constraintsSqlFile);
 		fch = fos.getChannel();
 		while ((ddlStrVO = constraintsQueue.poll()) != null) {
@@ -231,7 +240,7 @@ public class DDLConverter {
 		fos.close();
 
 		
-		File indexSqlFile = new File(outputDirectory + "/" + dbConfigInfo.DBNAME + "_index.sql");
+		File indexSqlFile = new File(outputDirectory + "/" + dbConfigInfo.DBNAME + "_" + dbConfigInfo.SCHEMA_NAME + "_index.sql");
 		fos = new FileOutputStream(indexSqlFile);
 		fch = fos.getChannel();
 		while ((ddlStrVO = indexQueue.poll()) != null) {
@@ -246,7 +255,7 @@ public class DDLConverter {
 		
 		
 		if (!alertComments.isEmpty()) {
-			File alertFile = new File(outputDirectory + "/" + dbConfigInfo.DBNAME + "_alert.log");
+			File alertFile = new File(outputDirectory + "/" + dbConfigInfo.DBNAME + "_" + dbConfigInfo.SCHEMA_NAME + "_alert.log");
 			fos = new FileOutputStream(alertFile);
 			fch = fos.getChannel();
 			for (String alertComment : alertComments) {
@@ -265,7 +274,7 @@ public class DDLConverter {
 	private void tableConvert(Table table) throws NotSupportDatabaseTypeException {
 		if (convertMapper != null) {
 			switch (ConfigInfo.SRC_DB_CONFIG.DB_TYPE) {
-			case Constant.DB_TYPE.MYSQL:
+			case Constant.DB_TYPE.MYS:
 				mysqlTableConvert(table);
 				break;
 			case Constant.DB_TYPE.ORA:
@@ -274,6 +283,12 @@ public class DDLConverter {
 			case Constant.DB_TYPE.MSS:
 				mssqlTableConvert(table);
 				break;
+			case Constant.DB_TYPE.TBR:
+				tiberoTableConvert(table);
+				break;
+			case Constant.DB_TYPE.ALT:
+				altibaseTableConvert(table);
+				break;				
 			default:
 				throw new NotSupportDatabaseTypeException(ConfigInfo.SRC_DB_CONFIG.DB_TYPE);
 			}
@@ -396,6 +411,78 @@ public class DDLConverter {
 						column.setType(String.format("%s(%d)", convertVO.getToValue(),column.getTypeLength()));	
 					}else if(convertVO.getToValue().equals("CHAR")){
 						column.setType(String.format("%s(%d)", convertVO.getToValue(),column.getTypeLength()));	
+					}else if(convertVO.getToValue().equals("NUMERIC")){
+						if(column.getNumericPrecision() == null){
+							column.setType(String.format("%s", convertVO.getToValue()));
+						}else if(column.getNumericScale()!=null && column.getNumericScale()>0){
+							column.setType(String.format("%s(%d,%d)", convertVO.getToValue(),column.getNumericPrecision(), column.getNumericScale()));
+						}else if(column.getNumericScale()!=null && column.getNumericScale()==0){
+							column.setType(String.format("%s(%d)", convertVO.getToValue(),column.getNumericPrecision()));
+						}else{
+							column.setType(String.format("%s(%d)", convertVO.getToValue(),column.getNumericPrecision()));
+						}
+					}else if(convertVO.getToValue().equals("TIMESTAMP WITHOUT TIME ZONE")){
+							column.setType(String.format("%s(%d)%s", "TIMESTAMP",column.getNumericScale(), " WITHOUT TIME ZONE"));
+					}else{
+						column.setType(convertVO.getToValue());
+					}
+					break;
+				}
+			}
+			String onUptRedix = "^(?i)on update \\w*$";
+			Pattern onUptPattern = Pattern.compile(onUptRedix);
+		}
+	}
+	
+	private void tiberoTableConvert(Table table) throws NotSupportDatabaseTypeException {
+		for (Column column : table.getColumns()) {
+			for (ConvertObject convertVO : convertMapper.getPatternList()) {			
+				if(column.getDefaultValue() != null){
+					if(column.getDefaultValue().toUpperCase().contains("SYSDATE")){
+						column.setDefaultValue(column.getDefaultValue().toUpperCase().replaceAll("SYSDATE", "CURRENT_TIMESTAMP"));
+					}
+				}
+				if (convertVO.getPattern().matcher(column.getType()).find()) {
+					 if (convertVO.getToValue().equals("VARCHAR")){
+						column.setType(String.format("%s(%d)", convertVO.getToValue(),column.getTypeLength()));	
+					}else if(convertVO.getToValue().equals("CHAR")){
+						column.setType(String.format("%s(%d)", convertVO.getToValue(),column.getTypeLength()));	
+					}else if(convertVO.getToValue().equals("NUMERIC")){
+						if(column.getNumericPrecision() == null){
+							column.setType(String.format("%s", convertVO.getToValue()));
+						}else if(column.getNumericScale()!=null && column.getNumericScale()>0){
+							column.setType(String.format("%s(%d,%d)", convertVO.getToValue(),column.getNumericPrecision(), column.getNumericScale()));
+						}else if(column.getNumericScale()!=null && column.getNumericScale()==0){
+							column.setType(String.format("%s(%d)", convertVO.getToValue(),column.getNumericPrecision()));
+						}else{
+							column.setType(String.format("%s(%d)", convertVO.getToValue(),column.getNumericPrecision()));
+						}
+					}else if(convertVO.getToValue().equals("TIMESTAMP WITHOUT TIME ZONE")){
+							column.setType(String.format("%s(%d)%s", "TIMESTAMP",column.getNumericScale(), " WITHOUT TIME ZONE"));
+					}else{
+						column.setType(convertVO.getToValue());
+					}
+					break;
+				}
+			}
+			String onUptRedix = "^(?i)on update \\w*$";
+			Pattern onUptPattern = Pattern.compile(onUptRedix);
+		}
+	}
+	
+	private void altibaseTableConvert(Table table) throws NotSupportDatabaseTypeException {
+		for (Column column : table.getColumns()) {
+			for (ConvertObject convertVO : convertMapper.getPatternList()) {			
+				if(column.getDefaultValue() != null){
+					if(column.getDefaultValue().toUpperCase().contains("SYSDATE")){
+						column.setDefaultValue(column.getDefaultValue().toUpperCase().replaceAll("SYSDATE", "CURRENT_TIMESTAMP"));
+					}
+				}
+				if (convertVO.getPattern().matcher(column.getType()).find()) {
+					 if (convertVO.getToValue().equals("VARCHAR")){
+						column.setType(String.format("%s(%d)", convertVO.getToValue(),column.getNumericPrecision()));	
+					}else if(convertVO.getToValue().equals("CHAR")){
+						column.setType(String.format("%s(%d)", convertVO.getToValue(),column.getNumericPrecision()));	
 					}else if(convertVO.getToValue().equals("NUMERIC")){
 						if(column.getNumericPrecision() == null){
 							column.setType(String.format("%s", convertVO.getToValue()));

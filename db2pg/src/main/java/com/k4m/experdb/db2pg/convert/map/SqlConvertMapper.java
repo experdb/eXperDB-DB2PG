@@ -32,7 +32,7 @@ public class SqlConvertMapper extends ConvertMapper<SqlConvertMapper> {
 	
 	@Override
 	protected void init() throws FileNotFoundException, IOException, ParseException {
-		System.out.println("ConfigInfo.SRC_DB_CONFIG.DB_TYPE="+ConfigInfo.SRC_DB_CONFIG.DB_TYPE);
+		//System.out.println("ConfigInfo.SRC_DB_CONFIG.DB_TYPE="+ConfigInfo.SRC_DB_CONFIG.DB_TYPE);
 		JSONParser jsonParser = new JSONParser();
 		JSONObject convMapObj = (JSONObject)jsonParser.parse(new InputStreamReader(SqlConvertMapper.class.getResourceAsStream("/convert_map.json")));
 		convertPatternValues = new ArrayList<ConvertObject>(30);
