@@ -631,7 +631,7 @@ public class OracleConvertDBUtils {
 		return views;
 	}
 	
-	public static Table setsetSequencesInform(Table table, String srcPoolName, DBConfigInfo dbConfigInfo) {
+	public static Table setSequencesInform(Table table, String srcPoolName, DBConfigInfo dbConfigInfo) {
 		try {
 			LogUtils.info(msgCode.getCode("C0047"), OracleConvertDBUtils.class);
 			Map<String, Object> params = new HashMap<String, Object>();

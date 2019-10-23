@@ -100,11 +100,15 @@ public class DDLConverter {
 		int sequenceCheck=0;
 		for (Table table : tables) {
 			if(ConfigInfo.SRC_DB_CONFIG.DB_TYPE.equals(Constant.DB_TYPE.ORA) && sequenceCheck==0){
-				ConvertDBUtils.setsetSequencesInform(table, Constant.POOLNAME.SOURCE.name(), dbConfigInfo);
+				ConvertDBUtils.setSequencesInform(table, Constant.POOLNAME.SOURCE.name(), dbConfigInfo);
 				sequenceCheck++;
 			}
 			if(ConfigInfo.SRC_DB_CONFIG.DB_TYPE.equals(Constant.DB_TYPE.TBR) && sequenceCheck==0){
-				ConvertDBUtils.setsetSequencesInform(table, Constant.POOLNAME.SOURCE.name(), dbConfigInfo);
+				ConvertDBUtils.setSequencesInform(table, Constant.POOLNAME.SOURCE.name(), dbConfigInfo);
+				sequenceCheck++;
+			}
+			if(ConfigInfo.SRC_DB_CONFIG.DB_TYPE.equals(Constant.DB_TYPE.ALT) && sequenceCheck==0){
+				ConvertDBUtils.setSequencesInform(table, Constant.POOLNAME.SOURCE.name(), dbConfigInfo);
 				sequenceCheck++;
 			}
 			ConvertDBUtils.setColumnInform(table, Constant.POOLNAME.SOURCE.name(), dbConfigInfo);

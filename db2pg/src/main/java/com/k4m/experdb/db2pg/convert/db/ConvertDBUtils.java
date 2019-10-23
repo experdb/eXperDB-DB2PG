@@ -190,7 +190,7 @@ public class ConvertDBUtils {
 			} else if (dbtype.equals(Constant.DB_TYPE.MYS)) {
 				views = MySQLConvertDBUtils.setViewInform(tableSchema, srcPoolName, dbConfigInfo);
 			} else if (dbtype.equals(Constant.DB_TYPE.ALT)) {
-				views = AltibaseConvertDBUtils.setViewInform(tableSchema, srcPoolName, dbConfigInfo);
+				//views = AltibaseConvertDBUtils.setViewInform(tableSchema, srcPoolName, dbConfigInfo);
 			} else {
 
 			}
@@ -200,19 +200,19 @@ public class ConvertDBUtils {
 		return views;
 	}
 	
-	public static Table setsetSequencesInform(Table table, String srcPoolName, DBConfigInfo dbConfigInfo) {
+	public static Table setSequencesInform(Table table, String srcPoolName, DBConfigInfo dbConfigInfo) {
 		try {
 			String dbtype = dbConfigInfo.DB_TYPE;
 			if (dbtype.equals(Constant.DB_TYPE.ORA)) {
-				table = OracleConvertDBUtils.setsetSequencesInform(table, srcPoolName, dbConfigInfo);
+				table = OracleConvertDBUtils.setSequencesInform(table, srcPoolName, dbConfigInfo);
 			}else if (dbtype.equals(Constant.DB_TYPE.TBR)) {
-				table = TiberoConvertDBUtils.setsetSequencesInform(table, srcPoolName, dbConfigInfo);
+				table = TiberoConvertDBUtils.setSequencesInform(table, srcPoolName, dbConfigInfo);
 			} else if (dbtype.equals(Constant.DB_TYPE.MSS)) {
 //				table = MsSQLConvertDBUtils.setColumnInform(table, srcPoolName, dbConfigInfo);
 			} else if (dbtype.equals(Constant.DB_TYPE.MYS)) {
 				table = MySQLConvertDBUtils.setColumnInform(table, srcPoolName, dbConfigInfo);
 			} else if (dbtype.equals(Constant.DB_TYPE.ALT)) {
-				table = AltibaseConvertDBUtils.setColumnInform(table, srcPoolName, dbConfigInfo);
+				table = AltibaseConvertDBUtils.setSequencesInform(table, srcPoolName, dbConfigInfo);
 			} else {
 
 			}
