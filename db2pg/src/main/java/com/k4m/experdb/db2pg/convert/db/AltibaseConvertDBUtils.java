@@ -10,6 +10,7 @@ import com.k4m.experdb.db2pg.common.Constant;
 import com.k4m.experdb.db2pg.common.LogUtils;
 import com.k4m.experdb.db2pg.config.MsgCode;
 import com.k4m.experdb.db2pg.convert.table.Column;
+import com.k4m.experdb.db2pg.convert.table.Sequence;
 import com.k4m.experdb.db2pg.convert.table.Table;
 import com.k4m.experdb.db2pg.convert.table.View;
 import com.k4m.experdb.db2pg.convert.table.key.ForeignKey;
@@ -68,13 +69,7 @@ public class AltibaseConvertDBUtils {
 			LogUtils.info(msgCode.getCode("C0031"),AltibaseConvertDBUtils.class);
 			Map<String,Object> params = new HashMap<String,Object>();
 			params.put("TABLE_SCHEMA", dbConfigInfo.SCHEMA_NAME);
-//			String columnName = null;
-//			if(dbConfigInfo.DB_TYPE.equals(Constant.DB_TYPE.MYS)) {
-//				columnName = "table_name";
-//			} else if(dbConfigInfo.DB_TYPE.equals(Constant.DB_TYPE.MSS)) {
-//				columnName = "o.name";
-//			}
-			
+
 			if(tableNames != null && !tableNames.isEmpty()) {
 				StringBuilder sb = new StringBuilder();
 //				sb.append("AND "+columnName+" IN (");
@@ -138,7 +133,6 @@ public class AltibaseConvertDBUtils {
 			params.put("TABLE_SCHEMA", table.getSchemaName());
 			params.put("TABLE_NAME", table.getName());
 			
-			System.out.println("TABLE_SCHEMA:"+table.getSchemaName()+", TABLE_NAME:"+table.getName());
 			MetaExtractWorker mew = new MetaExtractWorker(srcPoolName, new MetaExtractWork(WORK_TYPE.GET_COLUMN_INFORM, params));
 			mew.run();
 			List<Map<String,Object>> results = (List<Map<String,Object>>)mew.getListResult();
@@ -227,7 +221,7 @@ public class AltibaseConvertDBUtils {
 			mew.run();
 			
 			List<Map<String,Object>> results = (List<Map<String,Object>>)mew.getListResult();
-			LogUtils.info(msgCode.getCode("C0039") +":::" + results, ConvertDBUtils.class);
+			LogUtils.debug(msgCode.getCode("C0039") +":::" + results, ConvertDBUtils.class);
 			Object obj = null;
 			int k = 1;
         	for(Map<String,Object> result : results ) {
@@ -283,7 +277,6 @@ public class AltibaseConvertDBUtils {
         			}
         			table.getKeys().add(pkey);
         		} else if (constraintType.equals("U")) {
-        			System.out.println("sdfsdfsadfasdf");
         			String keySchema = (obj=result.get("constraint_schema")) != null ?obj.toString():null;
         			String keyName = (obj=result.get("constraint_name")) != null ?obj.toString():null;
         			String tableSchema = (obj=result.get("table_schema")) != null ?obj.toString():null;
@@ -570,4 +563,37 @@ public class AltibaseConvertDBUtils {
 		return views;
 	}	
 	
+	public static Table setSequencesInform(Table table, String srcPoolName, DBConfigInfo dbConfigInfo) {
+		try {
+			LogUtils.debug(msgCode.getCode("C0047"), AltibaseConvertDBUtils.class);
+			Map<String, Object> params = new HashMap<String, Object>();
+			params.put("TABLE_SCHEMA", table.getSchemaName());
+			
+			MetaExtractWorker mew = new MetaExtractWorker(srcPoolName, new MetaExtractWork(WORK_TYPE.GET_SEQUENCE_INFORM, params));
+			mew.run();
+			List<Map<String, Object>> results = (List<Map<String, Object>>) mew.getListResult();
+			LogUtils.debug(msgCode.getCode("C0048") + results, AltibaseConvertDBUtils.class);
+			Object obj = null;
+			for (Map<String, Object> result : results) {
+				Sequence sequence = new Sequence();
+				obj = result.get("current_seq");
+				if (obj != null)
+					sequence.setSeqStart(Long.valueOf(obj.toString()));
+				obj = result.get("min_seq");
+				if (obj != null)
+					sequence.setSeqMinValue(Long.valueOf(obj.toString()));
+				obj = result.get("increment_seq");
+				if (obj != null)
+					sequence.setSeqIncValue(Long.valueOf(obj.toString()));
+				obj = result.get("table_name");
+				sequence.setSeqName(obj != null ? obj.toString() : null);
+				table.getSequence().add(sequence);
+			}
+			Collections.sort(table.getColumns(), Column.getComparator());
+			LogUtils.info(msgCode.getCode("C0049"), AltibaseConvertDBUtils.class);
+		} catch (Exception e) {
+			LogUtils.error(e.getMessage(), AltibaseConvertDBUtils.class);
+		}
+		return table;
+	}
 }

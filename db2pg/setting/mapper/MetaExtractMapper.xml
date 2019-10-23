@@ -851,6 +851,7 @@
 			SYSTEM_.SYS_USERS_ B
 		WHERE 
 			A.USER_ID = B.USER_ID AND B.USER_NAME=#{TABLE_SCHEMA}
+			AND A.TABLE_TYPE='T'
          <if test="TABLE_LIST != '' and TABLE_LIST != null">
          	AND A.TABLE_NAME IN ( ${TABLE_LIST} )
          </if>
@@ -907,13 +908,45 @@
 			AND D.USER_NAME=#{TABLE_SCHEMA}
 	</select>
 	<select id="getKeyInform" parameterType="map" resultType="com.k4m.experdb.db2pg.common.LowerKeyMap" databaseId="ALT">
-
+		SELECT
+			D.USER_NAME AS TABLE_SCHEMA,
+			(SELECT USER_NAME FROM SYSTEM_.SYS_USERS_ WHERE USER_ID=A.USER_ID) AS INDEX_SCHEMA,
+			C.TABLE_NAME, 
+			A.INDEX_NAME,
+			A.INDEX_TYPE,
+			(SELECT COLUMN_NAME FROM SYSTEM_.SYS_COLUMNS_ WHERE COLUMN_ID=B.COLUMN_ID) AS COLUMN_NAME,
+			B.INDEX_COL_ORDER AS ORDINAL_POSITION
+		FROM
+			SYSTEM_.SYS_INDICES_ A,
+			SYSTEM_.SYS_INDEX_COLUMNS_ B,
+			SYSTEM_.SYS_TABLES_ C,
+			SYSTEM_.SYS_USERS_ D
+		WHERE
+			A.INDEX_ID = B.INDEX_ID
+			AND B.TABLE_ID = C.TABLE_ID
+			AND C.USER_ID = D.USER_ID
+			AND D.USER_NAME=#{TABLE_SCHEMA}
+			AND C.TABLE_NAME=#{TABLE_NAME}
+		ORDER BY C.TABLE_NAME,A.INDEX_NAME,B.INDEX_COL_ORDER
 	</select>
 	<select id="getViewInform" parameterType="map" resultMap="getViewInformResult" resultType="com.k4m.experdb.db2pg.common.LowerKeyMap"  databaseId="ALT">
 	
 	</select>
 	<select id="getSequencesInform" parameterType="map" resultType="com.k4m.experdb.db2pg.common.LowerKeyMap"  databaseId="ALT">
-	
+		SELECT
+			B.TABLE_NAME,
+			A.MIN_SEQ,
+			A.MAX_SEQ,
+			A.INCREMENT_SEQ,
+			A.CURRENT_SEQ
+		FROM
+			V$SEQ A,
+			SYSTEM_.SYS_TABLES_ B,
+			SYSTEM_.SYS_USERS_ C
+		WHERE 
+			A.SEQ_OID=B.TABLE_OID
+			AND B.USER_ID=C.USER_ID
+			AND C.USER_NAME=#{TABLE_SCHEMA}
 	</select>
 		
 	<select id="getPgFkDdl" resultType="map" databaseId="POG">
