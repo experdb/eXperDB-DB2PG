@@ -49,6 +49,8 @@ public class ExecuteDataTransfer implements Runnable{
 	static MsgCode msgCode = new MsgCode();
 	private String srcPoolName, selectQuery, outputFileName, tableName;
 	private Long migTime;
+	private Long beforeTime;
+	private Long afterTime; 
 	private int status=1;
 	long  rowCnt = 0;
 	private boolean success;
@@ -150,7 +152,9 @@ public class ExecuteDataTransfer implements Runnable{
 		DBWriter dbWriter = null;
 		
 		try {
-			stopWatch.start();
+			//stopWatch.start();
+			beforeTime = System.currentTimeMillis();
+			
 			LogUtils.info(String.format("%s : %s", this.tableName, selectQuery),ExecuteQuery.class);
 			
 			SrcConn = DBCPPoolManager.getConnection(srcPoolName);
@@ -242,9 +246,11 @@ public class ExecuteDataTransfer implements Runnable{
         		this.success = false;
         	}
         	
-
-        	stopWatch.stop();
-        	this.migTime = stopWatch.getTime();
+        	
+        	//stopWatch.stop();
+        	//this.migTime = stopWatch.getTime();
+        	afterTime = System.currentTimeMillis();
+        	this.migTime = (afterTime - beforeTime)/1000;
         	LogUtils.debug(String.format(msgCode.getCode("C0134"),tableName,this.migTime),ExecuteQuery.class);
         	
 		} catch(Exception e) {

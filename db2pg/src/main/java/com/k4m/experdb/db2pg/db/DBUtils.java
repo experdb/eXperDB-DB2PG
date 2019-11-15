@@ -26,6 +26,10 @@ public class DBUtils {
 			params.put("TABLE_SCHEMA", dbConfigInfo.SCHEMA_NAME);
 			params.put("SRC_TABLE_DDL", tableDdlOnly);
 			
+			if(dbConfigInfo.DB_TYPE.equals("CUB")){
+				params.put("TABLE_SCHEMA", dbConfigInfo.USERID.toUpperCase());
+			}
+			
 			MetaExtractWorker mew = new MetaExtractWorker(srcPoolName,new MetaExtractWork(WORK_TYPE.GET_TABLE_NAMES, params));
 			mew.run();
 			
