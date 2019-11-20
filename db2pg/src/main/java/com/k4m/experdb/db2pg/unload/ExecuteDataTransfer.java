@@ -153,7 +153,6 @@ public class ExecuteDataTransfer implements Runnable{
 		
 		try {
 			//stopWatch.start();
-			beforeTime = System.currentTimeMillis();
 			
 			LogUtils.info(String.format("%s : %s", this.tableName, selectQuery),ExecuteQuery.class);
 			
@@ -188,6 +187,8 @@ public class ExecuteDataTransfer implements Runnable{
 				LogUtils.debug(String.format(msgCode.getCode("C0133"),outputFileName),ExecuteQuery.class);
 				fileWriter = new FileWriter(this.tableName);
 			}
+			
+			beforeTime = System.currentTimeMillis();
 			
 			int intErrCnt = 0;
 			
@@ -230,6 +231,9 @@ public class ExecuteDataTransfer implements Runnable{
         		
         	}
         	
+        	afterTime = System.currentTimeMillis();
+        	this.migTime = (afterTime - beforeTime)/1000;
+        	
         	if (bf.length() != 0){
 	    		if(ConfigInfo.DB_WRITER_MODE) {
 	       			if(!(intErrCnt > ConfigInfo.TAR_LIMIT_ERROR)) {
@@ -245,12 +249,9 @@ public class ExecuteDataTransfer implements Runnable{
         	if(intErrCnt > 0) {
         		this.success = false;
         	}
-        	
-        	
+        	     	
         	//stopWatch.stop();
         	//this.migTime = stopWatch.getTime();
-        	afterTime = System.currentTimeMillis();
-        	this.migTime = (afterTime - beforeTime)/1000;
         	LogUtils.debug(String.format(msgCode.getCode("C0134"),tableName,this.migTime),ExecuteQuery.class);
         	
 		} catch(Exception e) {
