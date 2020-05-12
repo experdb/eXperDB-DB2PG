@@ -424,7 +424,8 @@ public class ExecuteDataTransfer implements Runnable{
 						bf.append("\\\\x");
 						if (blob.length() < ConfigInfo.SRC_LOB_BUFFER_SIZE){								
 							len = in.read(buffer);
-							buffeOutr.write(buffer, 0, len);
+							if(len > 0)
+								buffeOutr.write(buffer, 0, len);
 							buffeOutr.flush();
 							bf.append(DatatypeConverter.printHexBinary(buffeOutr.toByteArray()));								
 						}else{							
