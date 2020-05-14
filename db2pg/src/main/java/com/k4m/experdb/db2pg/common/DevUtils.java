@@ -30,9 +30,9 @@ public class DevUtils {
 		type = type.toLowerCase();
 		if(str != null) {
 			if(type.equals("toupper")) {
-				convStr = str.toUpperCase();
+				convStr = '"'+str.toUpperCase()+'"';
 			} else if (type.equals("tolower")) {
-				convStr = str.toLowerCase();
+				convStr = '"'+str.toLowerCase()+'"';
 			} else {
 				convStr = str;
 			}
@@ -40,6 +40,22 @@ public class DevUtils {
 			convStr = "";
 		}
 		return convStr;
+	}
+	
+	public static String checkString(String str) {
+        boolean strCheck = false;
+        
+		for(int i = 0; i < str.length(); i++) {
+            int index = str.charAt(i);
+            if( (index >= 48 && index <= 57) || (index >= 65 && index <= 122) ) {
+            } else {
+            	strCheck = true;
+            }
+            
+        }
+		
+        if(true) return '"'+str+'"';
+        else return str;
 	}
 	
 }
