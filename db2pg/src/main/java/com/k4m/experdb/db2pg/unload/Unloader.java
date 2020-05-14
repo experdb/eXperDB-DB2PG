@@ -153,7 +153,7 @@ public class Unloader {
 			
 			if(selSqlList != null) {
 				for(int i=0; i<selSqlList.size(); i++){
-	        		ExecuteDataTransfer eq = new ExecuteDataTransfer(Constant.POOLNAME.SOURCE.name(), selSqlList.get(i), DevUtils.checkString(tableNameList.get(i)), ConfigInfo.SRC_DB_CONFIG);
+	        		ExecuteDataTransfer eq = new ExecuteDataTransfer(Constant.POOLNAME.SOURCE.name(), selSqlList.get(i), tableNameList.get(i), ConfigInfo.SRC_DB_CONFIG);
 	        		jobList.add(eq);
 	        		executorService.execute(eq);
 				}

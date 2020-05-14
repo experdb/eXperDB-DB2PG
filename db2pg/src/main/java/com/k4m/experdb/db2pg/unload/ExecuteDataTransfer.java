@@ -66,9 +66,9 @@ public class ExecuteDataTransfer implements Runnable{
 		this.srcPoolName = srcPoolName;
 		this.selectQuery = selectQuery;
 		this.outputFileName = outputFileName.replace("\"", "");
-		this.tableName = DevUtils.classifyString(outputFileName,ConfigInfo.SRC_CLASSIFY_STRING);
-		this.outputFileName = ConfigInfo.SRC_FILE_OUTPUT_PATH
+		this.outputFileName = ConfigInfo.SRC_FILE_OUTPUT_PATH+"data/"
 								+ DevUtils.classifyString(outputFileName,ConfigInfo.SRC_CLASSIFY_STRING).replace("$", "-")+".sql";
+		this.tableName = DevUtils.classifyString(outputFileName,ConfigInfo.SRC_CLASSIFY_STRING);
 		this.dbConfigInfo = dbConfigInfo;
 
 		//this.byteBuffer = ByteBuffer.allocateDirect(ConfigInfo.SRC_BUFFER_SIZE);
@@ -154,7 +154,7 @@ public class ExecuteDataTransfer implements Runnable{
 		try {
 			//stopWatch.start();
 			
-			LogUtils.info(String.format("%s : %s", this.tableName, selectQuery),ExecuteQuery.class);
+			LogUtils.debug(String.format("%s : %s", this.tableName, selectQuery),ExecuteQuery.class);
 			
 			SrcConn = DBCPPoolManager.getConnection(srcPoolName);
 			preSrcStmt = SrcConn.prepareStatement(selectQuery);

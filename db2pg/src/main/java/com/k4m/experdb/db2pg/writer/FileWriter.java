@@ -23,11 +23,13 @@ public class FileWriter {
 	
 	public FileWriter(){}
 	
-	public FileWriter(String table_nm) throws IOException{		
-			fileCreater(outputDirectory + table_nm+ ".out");			
+	public FileWriter(String table_nm) throws IOException{
+		table_nm = table_nm.replace("\"", "");
+		fileCreater(outputDirectory + table_nm+ ".out");			
 	}
 	
 	public boolean dataWriteToFile(String lineStr, String table_nm) throws IOException {
+		table_nm = table_nm.replace("\"", "");
 		byte[] inputBytes = (lineStr).getBytes();
 		ByteBuffer byteBuffer = ByteBuffer.wrap(inputBytes);
 		try {

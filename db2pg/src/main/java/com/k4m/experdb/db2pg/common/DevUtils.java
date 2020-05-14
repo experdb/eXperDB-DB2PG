@@ -34,7 +34,11 @@ public class DevUtils {
 			} else if (type.equals("tolower")) {
 				convStr = '"'+str.toLowerCase()+'"';
 			} else {
-				convStr = str;
+				if(checkStr(str)) {	// 특수문자 포함되어 있을때
+					convStr = '"'+str+'"';
+				}else {
+					convStr = str;
+				}
 			}
 		} else {
 			convStr = "";
@@ -43,6 +47,11 @@ public class DevUtils {
 	}
 	
 	public static String checkString(String str) {
+        if(checkStr(str)) return '"'+str+'"';
+        else return str;
+	}
+	
+	public static boolean checkStr(String str) {
         boolean strCheck = false;
         
 		for(int i = 0; i < str.length(); i++) {
@@ -51,11 +60,8 @@ public class DevUtils {
             } else {
             	strCheck = true;
             }
-            
         }
-		
-        if(true) return '"'+str+'"';
-        else return str;
+		return strCheck;
 	}
 	
 }
