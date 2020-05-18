@@ -348,6 +348,7 @@
 									<includes>
 										<include>db2pg.bat</include>
 										<include>db2pg.sh</include>
+										<include>setup.sh</include>
 									</includes>
 								</resource>
 								<resource>
