@@ -17,16 +17,10 @@ It works on JAVA basis, so there is no restriction on platforms such as Unix, Li
 * Removing FK and INDEX before performing data import operation(Rebuild after termination).
 * Data export using select query is supported.
 * Selective extraction through exclusion table.
-* Support for Oracle, Oracle Spatial, SQL Server, Sybase.
-
+* Support for Oracle, Oracle Spatial, SQL Server, Sybase, DB2, Mysql, Sybase, Altibase, Cubrid.
 
 ## TODO
-* Export Oracle schema to a PostgreSQL schema.
-* Export DDL to PostgreSQL DDL.
-* Support CUBRID.
-<!--* Export predefined functions, triggers, procedures. -->
-<!--* Support cubrid.-->
-
+* Export DDL from DB2, Sybase, Cubrid to PostgreSQL DDL.
 
 ## License
 [![LICENSE](https://img.shields.io/badge/LICENSE-GPLv3-ff69b4.svg)](https://github.com/experdb/eXperDB-Management/blob/master/LICENSE)
