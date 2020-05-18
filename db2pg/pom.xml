@@ -3,7 +3,7 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<groupId>com.k4m</groupId>
-	<version>v2.1.0</version>
+	<version>v2.2.1</version>
 	<artifactId>db2pg</artifactId>
 	<packaging>jar</packaging>
 	<name>db2pg</name>
@@ -348,6 +348,7 @@
 									<includes>
 										<include>db2pg.bat</include>
 										<include>db2pg.sh</include>
+										<include>setup.sh</include>
 									</includes>
 								</resource>
 								<resource>

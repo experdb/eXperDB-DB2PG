@@ -30,16 +30,38 @@ public class DevUtils {
 		type = type.toLowerCase();
 		if(str != null) {
 			if(type.equals("toupper")) {
-				convStr = str.toUpperCase();
+				convStr = '"'+str.toUpperCase()+'"';
 			} else if (type.equals("tolower")) {
-				convStr = str.toLowerCase();
+				convStr = '"'+str.toLowerCase()+'"';
 			} else {
-				convStr = str;
+				if(checkStr(str)) {	// 특수문자 포함되어 있을때
+					convStr = '"'+str+'"';
+				}else {
+					convStr = str;
+				}
 			}
 		} else {
 			convStr = "";
 		}
 		return convStr;
+	}
+	
+	public static String checkString(String str) {
+        if(checkStr(str)) return '"'+str+'"';
+        else return str;
+	}
+	
+	public static boolean checkStr(String str) {
+        boolean strCheck = false;
+        
+		for(int i = 0; i < str.length(); i++) {
+            int index = str.charAt(i);
+            if( (index >= 48 && index <= 57) || (index >= 65 && index <= 122) ) {
+            } else {
+            	strCheck = true;
+            }
+        }
+		return strCheck;
 	}
 	
 }

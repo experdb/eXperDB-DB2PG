@@ -331,8 +331,9 @@ public class ExecuteQuery implements Runnable{
 						ByteArrayOutputStream buffeOutr = new ByteArrayOutputStream();
 						if (blob.length() < ConfigInfo.SRC_BUFFER_SIZE) {		
 							len = in.read(buffer);
-							if(len > -1)
+							if(len > -1) {
 								buffeOutr.write(buffer, 0, len);
+							}
 							buffeOutr.flush();
 							stringBuffer.append("\\\\x");
 							stringBuffer.append(DatatypeConverter.printHexBinary(buffeOutr.toByteArray()));

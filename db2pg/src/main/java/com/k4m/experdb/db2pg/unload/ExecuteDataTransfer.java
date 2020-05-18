@@ -49,6 +49,8 @@ public class ExecuteDataTransfer implements Runnable{
 	static MsgCode msgCode = new MsgCode();
 	private String srcPoolName, selectQuery, outputFileName, tableName;
 	private Long migTime;
+	private Long beforeTime;
+	private Long afterTime; 
 	private int status=1;
 	long  rowCnt = 0;
 	private boolean success;
@@ -64,9 +66,9 @@ public class ExecuteDataTransfer implements Runnable{
 		this.srcPoolName = srcPoolName;
 		this.selectQuery = selectQuery;
 		this.outputFileName = outputFileName.replace("\"", "");
-		this.tableName = DevUtils.classifyString(outputFileName,ConfigInfo.SRC_CLASSIFY_STRING);
-		this.outputFileName = ConfigInfo.SRC_FILE_OUTPUT_PATH
+		this.outputFileName = ConfigInfo.SRC_FILE_OUTPUT_PATH+"data/"
 								+ DevUtils.classifyString(outputFileName,ConfigInfo.SRC_CLASSIFY_STRING).replace("$", "-")+".sql";
+		this.tableName = DevUtils.classifyString(outputFileName,ConfigInfo.SRC_CLASSIFY_STRING);
 		this.dbConfigInfo = dbConfigInfo;
 
 		//this.byteBuffer = ByteBuffer.allocateDirect(ConfigInfo.SRC_BUFFER_SIZE);
@@ -150,8 +152,9 @@ public class ExecuteDataTransfer implements Runnable{
 		DBWriter dbWriter = null;
 		
 		try {
-			stopWatch.start();
-			LogUtils.info(String.format("%s : %s", this.tableName, selectQuery),ExecuteQuery.class);
+			//stopWatch.start();
+			
+			LogUtils.debug(String.format("%s : %s", this.tableName, selectQuery),ExecuteQuery.class);
 			
 			SrcConn = DBCPPoolManager.getConnection(srcPoolName);
 			preSrcStmt = SrcConn.prepareStatement(selectQuery);
@@ -184,6 +187,8 @@ public class ExecuteDataTransfer implements Runnable{
 				LogUtils.debug(String.format(msgCode.getCode("C0133"),outputFileName),ExecuteQuery.class);
 				fileWriter = new FileWriter(this.tableName);
 			}
+			
+			beforeTime = System.currentTimeMillis();
 			
 			int intErrCnt = 0;
 			
@@ -226,6 +231,9 @@ public class ExecuteDataTransfer implements Runnable{
         		
         	}
         	
+        	afterTime = System.currentTimeMillis();
+        	this.migTime = (afterTime - beforeTime)/1000;
+        	
         	if (bf.length() != 0){
 	    		if(ConfigInfo.DB_WRITER_MODE) {
 	       			if(!(intErrCnt > ConfigInfo.TAR_LIMIT_ERROR)) {
@@ -241,10 +249,9 @@ public class ExecuteDataTransfer implements Runnable{
         	if(intErrCnt > 0) {
         		this.success = false;
         	}
-        	
-
-        	stopWatch.stop();
-        	this.migTime = stopWatch.getTime();
+        	     	
+        	//stopWatch.stop();
+        	//this.migTime = stopWatch.getTime();
         	LogUtils.debug(String.format(msgCode.getCode("C0134"),tableName,this.migTime),ExecuteQuery.class);
         	
 		} catch(Exception e) {
@@ -417,7 +424,8 @@ public class ExecuteDataTransfer implements Runnable{
 						bf.append("\\\\x");
 						if (blob.length() < ConfigInfo.SRC_LOB_BUFFER_SIZE){								
 							len = in.read(buffer);
-							buffeOutr.write(buffer, 0, len);
+							if(len > 0)
+								buffeOutr.write(buffer, 0, len);
 							buffeOutr.flush();
 							bf.append(DatatypeConverter.printHexBinary(buffeOutr.toByteArray()));								
 						}else{							

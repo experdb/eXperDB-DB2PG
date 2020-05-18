@@ -5,6 +5,15 @@
      
 <mapper namespace="com.k4m.experdb.db2pg.mapper.MetaExtractMapper">
 
+<resultMap id="getColumnListResult" type="com.k4m.experdb.db2pg.common.LowerKeyMap"> 
+<result property="ORDINAL_POSITION" column="ORDINAL_POSITION" /> 
+<result property="COLUMN_NAME" column="COLUMN_NAME" /> 
+<result property="COLUMN_TYPE" column="COLUMN_TYPE" /> 
+<result property="COLUMN_DEFAULT" column="COLUMN_DEFAULT" jdbcType="VARCHAR" javaType="java.lang.String" />
+<result property="IS_NULL" column="IS_NULL" />
+<result property="COLUMN_COMMENT" column="COLUMN_COMMENT" /> 
+<result property="NUMERIC_PRECISION" column="NUMERIC_PRECISION" />
+<result property="NUMERIC_SCALE" column="NUMERIC_SCALE" /> </resultMap>
 
 
 <resultMap id="getViewInformResult" type="com.k4m.experdb.db2pg.common.LowerKeyMap"> 
@@ -43,7 +52,7 @@
          AND UT.OBJECT_NAME NOT LIKE 'BIN$%'
 		ORDER BY SCHEMA_NAME, TABLE_NAME
 	</select>
-	<select id="getColumnInform" parameterType="map" resultType="com.k4m.experdb.db2pg.common.LowerKeyMap" databaseId="ORA"> 
+	<select id="getColumnInform" parameterType="map" resultType="com.k4m.experdb.db2pg.common.LowerKeyMap" resultMap="getColumnListResult" databaseId="ORA"> 
   			SELECT
   			A.ORDINAL_POSITION AS ORDINAL_POSITION,
   			A.COLUMN_NAME AS COLUMN_NAME,
