@@ -160,7 +160,7 @@ public class ConfigInfo {
 				ConfigInfo.LOG_LEVEL = (org.apache.log4j.Level)propertyCheck(trimCheck(prop.getProperty("LOG_LEVEL"))
 						,org.apache.log4j.Level.INFO,org.apache.log4j.Level.class);
 				ConfigInfo.SRC_IS_ASCII = (boolean)propertyCheck(trimCheck(prop.getProperty("SRC_IS_ASCII")),false,Boolean.class);
-				ConfigInfo.TAR_CONN_COUNT = (int)propertyCheck(trimCheck(prop.getProperty("TAR_CONN_COUNT")),1,Integer.class);
+				ConfigInfo.TAR_CONN_COUNT = 1+(int)propertyCheck(trimCheck(prop.getProperty("TAR_CONN_COUNT")),1,Integer.class);
 				ConfigInfo.TAR_TABLE_BAD_COUNT = (int)propertyCheck(trimCheck(prop.getProperty("TAR_TABLE_BAD_COUNT")),-1,Integer.class);
 				ConfigInfo.TAR_COPY_OPTIONS = (String)propertyCheck(trimCheck(prop.getProperty("TAR_COPY_OPTIONS")),null,String.class);
 				

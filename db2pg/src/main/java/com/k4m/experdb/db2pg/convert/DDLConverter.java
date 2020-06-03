@@ -399,14 +399,17 @@ public class DDLConverter {
 	
 	
 	private void oracleTableConvert(Table table) throws NotSupportDatabaseTypeException {
+		//System.out.println("table : "+table.getName()+" start!");
 		for (Column column : table.getColumns()) {
-			for (ConvertObject convertVO : convertMapper.getPatternList()) {			
+			//System.out.println("column : "+column.getName()+"("+column.getType()+")=>");
+			for (ConvertObject convertVO : convertMapper.getPatternList()) {
 				if(column.getDefaultValue() != null){
 					if(column.getDefaultValue().toUpperCase().contains("SYSDATE")){
 						column.setDefaultValue(column.getDefaultValue().toUpperCase().replaceAll("SYSDATE", "CURRENT_TIMESTAMP"));
 					}
 				}
 				if (convertVO.getPattern().matcher(column.getType()).find()) {
+					//System.out.println("matching VO value : "+convertVO.getPattern().toString()+":"+convertVO.getToValue());
 					 if (convertVO.getToValue().equals("VARCHAR")){
 						column.setType(String.format("%s(%d)", convertVO.getToValue(),column.getTypeLength()));	
 					}else if(convertVO.getToValue().equals("CHAR")){
@@ -415,14 +418,18 @@ public class DDLConverter {
 						if(column.getNumericPrecision() == null){
 							column.setType(String.format("%s", convertVO.getToValue()));
 						}else if(column.getNumericScale()!=null && column.getNumericScale()>0){
-							column.setType(String.format("%s(%d,%d)", convertVO.getToValue(),column.getNumericPrecision(), column.getNumericScale()));
+							column.setType(String.format("%s(%d,%d)", convertVO.getToValue(), column.getNumericScale(),column.getNumericPrecision()));
 						}else if(column.getNumericScale()!=null && column.getNumericScale()==0){
 							column.setType(String.format("%s(%d)", convertVO.getToValue(),column.getNumericPrecision()));
 						}else{
 							column.setType(String.format("%s(%d)", convertVO.getToValue(),column.getNumericPrecision()));
 						}
 					}else if(convertVO.getToValue().equals("TIMESTAMP WITHOUT TIME ZONE")){
-							column.setType(String.format("%s(%d)%s", "TIMESTAMP",column.getNumericScale(), " WITHOUT TIME ZONE"));
+						column.setType(String.format("%s(%d)%s", "TIMESTAMP",column.getNumericScale(), " WITHOUT TIME ZONE"));
+					}else if(convertVO.getToValue().equals("TIMESTAMP WITH TIME ZONE")){
+						column.setType(String.format("%s(%d)%s", "TIMESTAMP",column.getNumericScale(), " WITH TIME ZONE"));						
+					}else if(convertVO.getToValue().equals("INTERVAL DAY TO SECOND")){
+						column.setType(String.format("%s(%d)", "INTERVAL DAY TO SECOND ",column.getNumericScale()));
 					}else{
 						column.setType(convertVO.getToValue());
 					}
