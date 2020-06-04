@@ -417,8 +417,10 @@ public class DDLConverter {
 					}else if(convertVO.getToValue().equals("NUMERIC")){
 						if(column.getNumericPrecision() == null){
 							column.setType(String.format("%s", convertVO.getToValue()));
+						}else if(column.getNumericScale()!=null && column.getNumericScale()>0 && column.getNumericScale() >= column.getNumericPrecision()){
+							column.setType(String.format("%s(%d,%d)", convertVO.getToValue(), column.getNumericScale(), column.getNumericPrecision()));
 						}else if(column.getNumericScale()!=null && column.getNumericScale()>0){
-							column.setType(String.format("%s(%d,%d)", convertVO.getToValue(), column.getNumericScale(),column.getNumericPrecision()));
+							column.setType(String.format("%s(%d,%d)", convertVO.getToValue(), column.getNumericPrecision(), column.getNumericScale()));							
 						}else if(column.getNumericScale()!=null && column.getNumericScale()==0){
 							column.setType(String.format("%s(%d)", convertVO.getToValue(),column.getNumericPrecision()));
 						}else{
