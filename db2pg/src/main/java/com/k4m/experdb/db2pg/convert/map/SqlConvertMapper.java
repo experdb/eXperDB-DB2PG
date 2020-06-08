@@ -52,7 +52,7 @@ public class SqlConvertMapper extends ConvertMapper<SqlConvertMapper> {
 					if(asValue instanceof String) {
 						//System.out.println("ok 3");
 						ConvertObject convVal = new ConvertObject((String)asValue,toValue);
-						System.out.println("convVal : "+convVal);
+						//System.out.println("convVal : "+convVal);
 						if(convVal.getPattern() != null) {
 							convertPatternValues.add(convVal);
 							//System.out.println("convVal 1");
