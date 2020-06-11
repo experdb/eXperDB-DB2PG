@@ -117,7 +117,8 @@
 			"^(?i)FLOAT UNSIGNED$"
 		],
 		"ora" :[
-			"^(?i)BINARY_FLOAT$"
+			"^(?i)BINARY_FLOAT$",
+			"^(?i)BINARY_FLOAT\\s*\\(?[0-9]*\\)?$"
 		],
 		"tbr" :[
 			"^(?i)BINARY_FLOAT$"
@@ -137,6 +138,7 @@
 		],
 		"ora" :[
 			"^(?i)BINARY_DOUBLE$",
+			"^(?i)BINARY_DOUBLE\\s*\\(?[0-9]*\\)?$",
 			"^(?i)REAL$"
 		],
 		"tbr" :[
@@ -172,7 +174,8 @@
 		"ora" :[
 			"^(?i)CLOB$",
 			"^(?i)LONG$",
-			"^(?i)NCLOB$"
+			"^(?i)NCLOB$",
+			"^(?i)NCLOB\\s*\\(?[0-9]*\\)?$"
 		],
 		"tbr" :[
 			"^(?i)CLOB$",
@@ -214,13 +217,11 @@
 		"ora" :[
 			"^(?i)VARCHAR2\\s*\\(?[0-9]*\\)?$",
 			"^(?i)NVARCHAR2\\s*\\(?[0-9]*\\)?$",
-			"^(?i)UROWID\\s*\\(?[0-9]*\\)?$",
 			"^(?i)NCHAR VARYING\\s*\\(?[0-9]*\\)?$"
 		],
 		"tbr" :[
 			"^(?i)VARCHAR2\\s*\\(?[0-9]*\\)?$",
 			"^(?i)NVARCHAR2\\s*\\(?[0-9]*\\)?$",
-			"^(?i)UROWID\\s*\\(?[0-9]*\\)?$",
 			"^(?i)NCHAR VARYING\\s*\\(?[0-9]*\\)?$"
 		],
 		"alt": [
@@ -242,13 +243,23 @@
 			"^(?i)ROWID$"
 		],
 		"tbr": [
-			"^(?i)ROWID$"
+			"^(?i)ROWID$"			
 		]
-	},	
+	},
+	"char_case_41": {
+		"postgres": "VARCHAR(4000)",
+		"ora": [
+			"^(?i)UROWID\\s*\\(?[0-9]*\\)?$"			
+		],
+		"tbr": [
+			"^(?i)UROWID\\s*\\(?[0-9]*\\)?$"			
+		]
+	},		
 	"char_case_5": {
 		"postgres": "VARCHAR(255)",
 		"ora": [
-			"^(?i)BFILE$"
+			"^(?i)BFILE$",
+			"^(?i)BFILE\\s*\\(?[0-9]*\\)?$"
 		],
 		"tbr": [
 			"^(?i)BFILE$"
@@ -274,6 +285,7 @@
 		"ora" :[
 			"^(?i)BLOB$",
 			"^(?i)LONG RAW$",
+			"^(?i)LONG RAW\\s*\\(?[0-9]*\\)?$",
 			"^(?i)RAW\\s*\\(?[0-9]*\\)?$"
 		],
 		"tbr" :[
@@ -316,13 +328,24 @@
 		],
 		"ora" :[
 			"^(?i)TIMESTAMP\\s*\\(?[0-9]*\\)? WITH LOCAL TIME ZONE$",
-			"^(?i)TIMESTAMP\\s*\\(?[0-9]*\\)?$"
+			"^(?i)TIMESTAMP\\s*\\(?[0-9]*\\)?\\s*\\(?[0-9]*\\)? WITH LOCAL TIME ZONE$"
 		],
 		"tbr" :[
 			"^(?i)TIMESTAMP\\s*\\(?[0-9]*\\)? WITH LOCAL TIME ZONE$",
-			"^(?i)TIMESTAMP\\s*\\(?[0-9]*\\)?$"
+			"^(?i)TIMESTAMP\\s*\\(?[0-9]*\\)?\\s*\\(?[0-9]*\\)? WITH LOCAL TIME ZONE$"
 		]
 	},
+	"date_case_21": {
+		"postgres": "TIMESTAMP WITH TIME ZONE",
+		"ora" :[
+			"^(?i)TIMESTAMP\\s*\\(?[0-9]*\\)?$",
+			"^(?i)TIMESTAMP\\s*\\(?[0-9]*\\)?\\s*\\(?[0-9]*\\)?$"
+		],
+		"tbr" :[
+			"^(?i)TIMESTAMP\\s*\\(?[0-9]*\\)?$",
+			"^(?i)TIMESTAMP\\s*\\(?[0-9]*\\)?\\s*\\(?[0-9]*\\)?$"
+		]
+	},	
     "date_case_3": {
 		"postgres": "SMALLINT",
 		"mysql": [
@@ -368,10 +391,28 @@
             "^(?i)TIME$"
 		]
 	},
-	"date_case_9": {
+	"interval_case_1": {
 		"postgres": "INTERVAL YEAR TO MONTH",
 		"ora": [
-            "^(?i)INTERVAL YEAR\\s*\\(?[0-9]*\\)? TO MONTH$"
+            "^(?i)INTERVAL YEAR\\s*\\(?[0-9]*\\)? TO MONTH$",
+            "^(?i)INTERVAL YEAR\\s*\\(?[0-9]*\\)? TO MONTH\\s*\\(?[0-9]*\\)?$"
+		],
+		"tbr": [
+            "^(?i)INTERVAL YEAR\\s*\\(?[0-9]*\\)? TO MONTH$",
+            "^(?i)INTERVAL YEAR\\s*\\(?[0-9]*\\)? TO MONTH\\s*\\(?[0-9]*\\)?$"
+		]
+	},
+	"interval_case_2": {
+		"postgres": "INTERVAL DAY TO SECOND",
+		"ora": [
+            "^(?i)INTERVAL DAY\\s*\\(?[0-9]*\\)? TO SECOND$",
+            "^(?i)INTERVAL DAY\\s*\\(?[0-9]*\\)? TO SECOND\\s*\\(?[0-9]*\\)?$",
+            "^(?i)INTERVAL DAY\\s*\\(?[0-9]*\\)? TO SECOND\\s*\\(?[0-9]*\\)?\\s*\\(?[0-9]*\\)?$"            
+		],
+		"tbr": [
+            "^(?i)INTERVAL DAY\\s*\\(?[0-9]*\\)? TO SECOND$",
+            "^(?i)INTERVAL DAY\\s*\\(?[0-9]*\\)? TO SECOND\\s*\\(?[0-9]*\\)?$",
+            "^(?i)INTERVAL DAY\\s*\\(?[0-9]*\\)? TO SECOND\\s*\\(?[0-9]*\\)?\\s*\\(?[0-9]*\\)?$"            
 		]
 	},
 	"decimal_case_1": {
@@ -413,10 +454,12 @@
 	"xml_case": {
 		"postgres": "XML",
 	    "ora": [
-	        "^(?i)XMLTYPE$"
+	        "^(?i)XMLTYPE$",
+	        "^(?i)XMLTYPE\\s*\\(?[0-9]*\\)?$"
 	    ],
 	    "tbr": [
-	        "^(?i)XMLTYPE$"
+	        "^(?i)XMLTYPE$",
+	        "^(?i)XMLTYPE\\s*\\(?[0-9]*\\)?$"
 	    ]
 	}	
 }

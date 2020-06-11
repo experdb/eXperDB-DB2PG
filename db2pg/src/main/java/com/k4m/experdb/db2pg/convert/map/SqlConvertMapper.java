@@ -38,15 +38,30 @@ public class SqlConvertMapper extends ConvertMapper<SqlConvertMapper> {
 		convertPatternValues = new ArrayList<ConvertObject>(30);
 		convertDefaultValues = new ArrayList<ConvertObject>(5);
 		for(Object key : convMapObj.keySet().toArray()) {
+			//System.out.println("key : "+key.toString());
 			JSONObject jobj = (JSONObject)convMapObj.get(key);
 			String toValue = (String)jobj.get("postgres");
+			//System.out.println("postgres : "+toValue);
 			JSONArray asValues = (JSONArray) jobj.get(ConfigInfo.SRC_DB_CONFIG.DB_TYPE.toLowerCase());
+			//System.out.println("jobj : "+jobj);
+			//System.out.println("ora asValues : "+asValues);
 			if(toValue != null && asValues != null) {
+				//System.out.println("ok 1");
 				for (Object asValue : asValues) {
+					//System.out.println("ok 2");
 					if(asValue instanceof String) {
+						//System.out.println("ok 3");
 						ConvertObject convVal = new ConvertObject((String)asValue,toValue);
-						if(convVal.getPattern() != null) convertPatternValues.add(convVal);
-						else convertDefaultValues.add(convVal);
+						//System.out.println("convVal : "+convVal);
+						if(convVal.getPattern() != null) {
+							convertPatternValues.add(convVal);
+							//System.out.println("convVal 1");
+						}
+						else
+						{
+							convertDefaultValues.add(convVal);
+							//System.out.println("convVal 2");
+						}
 					}
 				}
 			}
@@ -54,6 +69,7 @@ public class SqlConvertMapper extends ConvertMapper<SqlConvertMapper> {
 	}
 	@Override
 	public List<ConvertObject> getDefaultList() {
+		System.out.println("convertDefaultValues :"+convertDefaultValues);
 		return convertDefaultValues;
 	}
 
