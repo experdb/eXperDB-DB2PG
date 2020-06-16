@@ -155,6 +155,7 @@ public class OracleConvertDBUtils {
 		return table;
 	}
 	
+	// XMLTYPE Check
 	public static Table checkColumnInform(Table table, String srcPoolName, DBConfigInfo dbConfigInfo) {
 		try {
 			Boolean checkColumn = false;

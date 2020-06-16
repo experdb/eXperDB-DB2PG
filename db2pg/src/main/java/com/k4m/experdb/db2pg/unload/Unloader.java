@@ -98,7 +98,6 @@ public class Unloader {
 		}
 	}
 	
-	@SuppressWarnings("null")
 	public void start() {
 		
 		ExecutorService executorService = Executors.newFixedThreadPool(ConfigInfo.SRC_SELECT_ON_PARALLEL);
@@ -109,16 +108,6 @@ public class Unloader {
 				LogUtils.error("SCHEMA_NAME NOT FOUND", Unloader.class);
 				System.exit(0);
 			}
-			
-
-			// Target DB Charset different vs config Charset
-//			if(ConfigInfo.DB_WRITER_MODE && ConfigInfo.SRC_INCLUDE_DATA_EXPORT) {
-//				String pgCharSet = getPgCharSet();
-//				if(pgCharSet != null && !pgCharSet.toUpperCase().equals(ConfigInfo.TAR_DB_CONFIG.CHARSET.toUpperCase())) {
-//					LogUtils.error("Target Database Charset is "+pgCharSet +". ", Unloader.class);
-//					System.exit(Constant.ERR_CD.FAIL_CHARSET);
-//				}
-//			}
 			
 			startTime = System.currentTimeMillis();
 			
@@ -156,6 +145,7 @@ public class Unloader {
 					table.setName(tableName);
 					ConvertDBUtils.checkColumnInform(table, Constant.POOLNAME.SOURCE.name(), ConfigInfo.SRC_DB_CONFIG);
 					
+					// XMLTYPE Check
 					String replaceTableName = getConvertObjectName(tableName);
 					String where = getWhere();
 					if(table.isCheckColumn()) {
@@ -171,9 +161,8 @@ public class Unloader {
 							
 							if(i < columns.size()) {
 								sql += ",";
-							}else {
-								i++;
 							}
+							i++;
 						}
 						selSqlList.add(String.format(sql+" FROM %s%s %s", schema, replaceTableName, where));
 					}else {
@@ -184,7 +173,7 @@ public class Unloader {
 				if(selSqlList != null) {
 					jobSize += selSqlList.size();
 				}
-				System.out.println(selSqlList.toString());
+				//System.out.println(selSqlList.toString());
 			}
 			
 			if(selectQuerys != null) {
