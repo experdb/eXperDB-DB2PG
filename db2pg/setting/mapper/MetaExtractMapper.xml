@@ -130,35 +130,21 @@
           			AND UC.R_CONSTRAINT_NAME=C.INDEX_NAME(+)
 					AND UC.CONSTRAINT_TYPE IN ('P', 'R', 'U')
 	</select>
-	<select id="getKeyInform" parameterType="map" resultType="com.k4m.experdb.db2pg.common.LowerKeyMap" databaseId="ORA"> 	
-		        SELECT        
-			        A.INDEX_SCHEMA,
-			        A.INDEX_NAME,
-			        A.TABLE_SCHEMA,
-			        A.TABLE_NAME,
-			        A.INDEX_TYPE,
-			        A.UNIQUENESS,
-			        C.COLUMN_NAME  AS COLUMN_NAME,
-					C.COLUMN_POSITION AS ORDINAL_POSITION
-			        FROM(
-				        SELECT 					
-				          A.OWNER AS INDEX_SCHEMA,
-									A.INDEX_NAME AS INDEX_NAME,   
-									A.TABLE_OWNER AS TABLE_SCHEMA,
-									A.TABLE_NAME AS TABLE_NAME,
-				          CASE WHEN A.INDEX_TYPE='NORMAL' THEN 'NORMAL'
-									WHEN A.INDEX_TYPE='BITMAP' THEN 'BITMAP'
-									WHEN A.INDEX_TYPE='FUNCTION-BASED NORMAL' THEN 'FUNCTION_BASED_NORMAL'
-									WHEN A.INDEX_TYPE='FUNCTION-BASED BITMAP' THEN 'FUNCTION_BASED_BITMAP'
-									WHEN A.INDEX_TYPE='DOMAIN' THEN 'NORMAL'
-									ELSE NULL END AS INDEX_TYPE,
-									A.UNIQUENESS AS UNIQUENESS   
-				          FROM ALL_INDEXES A LEFT  OUTER JOIN ALL_CONSTRAINTS B ON A.INDEX_NAME=B.INDEX_NAME
-				          WHERE A.TABLE_NAME = #{TABLE_NAME} AND A.TABLE_OWNER = #{TABLE_SCHEMA}
-				          AND B.INDEX_NAME IS NULL
-			          )A, USER_IND_COLUMNS C
-			          WHERE A.INDEX_NAME= C.INDEX_NAME
-                      ORDER BY C.COLUMN_POSITION ASC
+	<select id="getKeyInform" parameterType="map" resultType="com.k4m.experdb.db2pg.common.LowerKeyMap" databaseId="ORA"> 	      
+		        SELECT T.OWNER AS INDEX_SCHEMA, 
+		        T.INDEX_NAME AS INDEX_NAME,
+		        T.TABLE_OWNER AS TABLE_SCHEMA,
+		        T.TABLE_NAME AS TABLE_NAME, 
+		        T.INDEX_TYPE AS INDEX_TYPE, 
+		        T.UNIQUENESS AS UNIQUENESS, 
+		        Z.COLUMN_NAME AS COLUMN_NAME,
+		        Z.COLUMN_POSITION AS ORDINAL_POSITION
+		        FROM DBA_INDEXES T, DBA_IND_COLUMNS Z
+		        WHERE T.OWNER = Z.INDEX_OWNER
+		        AND T.INDEX_NAME = Z.INDEX_NAME
+		        AND T.OWNER = #{TABLE_SCHEMA}
+		        and T.TABLE_NAME= #{TABLE_NAME}
+		        ORDER BY Z.COLUMN_POSITION ASC
 	</select>
 	<select id="getViewInform" parameterType="map" resultMap="getViewInformResult" resultType="com.k4m.experdb.db2pg.common.LowerKeyMap"  databaseId="ORA">
 			SELECT VIEW_NAME, TEXT
