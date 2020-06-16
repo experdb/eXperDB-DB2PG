@@ -44,6 +44,10 @@ public class ArgsParser {
 		option.setRequired(false);
 		options.addOption(option);
 		
+		option = new Option("j", "json-file", false, "Column type mapping json file path");
+		option.setRequired(false);
+		options.addOption(option);
+		
 		option = new Option("h", "help", false, "db2pg help");
 		option.setRequired(false);
 		options.addOption(option);

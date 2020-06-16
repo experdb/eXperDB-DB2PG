@@ -172,7 +172,7 @@ public class OracleConvertDBUtils {
 				Column column = new Column();
 				
 				if(((String)result.get("column_type")).contains("XMLTYPE")) checkColumn=true;
-				//System.out.println("TYPE:"+result.get("column_type"));
+
 				obj = result.get("column_name");
 				column.setName(obj != null ? obj.toString() : null);
 
@@ -181,9 +181,8 @@ public class OracleConvertDBUtils {
 
 				table.getColumns().add(column);
 			}
-			Collections.sort(table.getColumns(), Column.getComparator());
-			
 			table.setCheckColumn(checkColumn);
+			//Collections.sort(table.getColumns(), Column.getComparator());
 			
 		} catch (Exception e) {
 			LogUtils.error(e.getMessage(), OracleConvertDBUtils.class);

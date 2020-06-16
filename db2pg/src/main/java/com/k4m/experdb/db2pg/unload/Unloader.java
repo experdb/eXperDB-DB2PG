@@ -148,6 +148,7 @@ public class Unloader {
 					// XMLTYPE Check
 					String replaceTableName = getConvertObjectName(tableName);
 					String where = getWhere();
+					
 					if(table.isCheckColumn()) {
 						String sql = "SELECT ";
 						List<Column> columns = table.getColumns();
@@ -173,7 +174,6 @@ public class Unloader {
 				if(selSqlList != null) {
 					jobSize += selSqlList.size();
 				}
-				//System.out.println(selSqlList.toString());
 			}
 			
 			if(selectQuerys != null) {
