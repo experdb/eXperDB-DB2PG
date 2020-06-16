@@ -14,6 +14,7 @@ public class Table {
 	private List<Sequence> sequence;
 	private List<Key<?>> keys;
 	private List<View> views;
+	private boolean checkColumn;
 
 	public Table() {
 		this.views = new LinkedList<View>();
@@ -21,6 +22,11 @@ public class Table {
 		this.sequence = new LinkedList<Sequence>();
 		this.keys = new LinkedList<Key<?>>();
 		this.alertComments = new LinkedList<String>();
+		this.checkColumn = false;
+	}
+
+	public boolean isCheckColumn() {
+		return checkColumn;
 	}
 
 	public List<View> getViews() {
@@ -69,6 +75,10 @@ public class Table {
 
 	public List<Key<?>> getKeys() {
 		return keys;
+	}
+	
+	public void setCheckColumn(boolean checkColumn) {
+		this.checkColumn = checkColumn;
 	}
 
 	@Override

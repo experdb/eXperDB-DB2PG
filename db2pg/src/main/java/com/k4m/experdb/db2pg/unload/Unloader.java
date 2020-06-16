@@ -28,6 +28,9 @@ import com.k4m.experdb.db2pg.common.DevUtils;
 import com.k4m.experdb.db2pg.common.LogUtils;
 import com.k4m.experdb.db2pg.config.ConfigInfo;
 import com.k4m.experdb.db2pg.config.MsgCode;
+import com.k4m.experdb.db2pg.convert.db.ConvertDBUtils;
+import com.k4m.experdb.db2pg.convert.table.Column;
+import com.k4m.experdb.db2pg.convert.table.Table;
 import com.k4m.experdb.db2pg.db.DBUtils;
 
 public class Unloader {
@@ -95,17 +98,28 @@ public class Unloader {
 		}
 	}
 	
+	@SuppressWarnings("null")
 	public void start() {
 		
 		ExecutorService executorService = Executors.newFixedThreadPool(ConfigInfo.SRC_SELECT_ON_PARALLEL);
 		
 		try {
 
-			
 			if (ConfigInfo.SRC_DB_CONFIG.SCHEMA_NAME==null && ConfigInfo.SRC_DB_CONFIG.SCHEMA_NAME.equals("")) {
 				LogUtils.error("SCHEMA_NAME NOT FOUND", Unloader.class);
 				System.exit(0);
 			}
+			
+
+			// Target DB Charset different vs config Charset
+//			if(ConfigInfo.DB_WRITER_MODE && ConfigInfo.SRC_INCLUDE_DATA_EXPORT) {
+//				String pgCharSet = getPgCharSet();
+//				if(pgCharSet != null && !pgCharSet.toUpperCase().equals(ConfigInfo.TAR_DB_CONFIG.CHARSET.toUpperCase())) {
+//					LogUtils.error("Target Database Charset is "+pgCharSet +". ", Unloader.class);
+//					System.exit(Constant.ERR_CD.FAIL_CHARSET);
+//				}
+//			}
+			
 			startTime = System.currentTimeMillis();
 			
 			LogUtils.debug(msgCode.getCode("C0144"), Unloader.class);
@@ -132,18 +146,45 @@ public class Unloader {
 				//Table Select
 				tableNameList = makeTableList();
 				for (String tableName : tableNameList) {
+					Table table = new Table();
+
 					String schema = ConfigInfo.SRC_DB_CONFIG.SCHEMA_NAME!=null && !ConfigInfo.SRC_DB_CONFIG.SCHEMA_NAME.equals("") 
 										? getConvertObjectName(ConfigInfo.SRC_DB_CONFIG.SCHEMA_NAME)+"." 
 										: "" ;
+
+					table.setSchemaName(ConfigInfo.SRC_DB_CONFIG.SCHEMA_NAME);
+					table.setName(tableName);
+					ConvertDBUtils.checkColumnInform(table, Constant.POOLNAME.SOURCE.name(), ConfigInfo.SRC_DB_CONFIG);
+					
 					String replaceTableName = getConvertObjectName(tableName);
 					String where = getWhere();
-	
-					selSqlList.add(String.format("SELECT * FROM %s%s %s", schema, replaceTableName, where));
+					if(table.isCheckColumn()) {
+						String sql = "SELECT ";
+						List<Column> columns = table.getColumns();
+						int i = 1;
+						for(Column column : columns) {
+							if( ((String)column.getType()).contains("XMLTYPE") ) {
+								sql += "XMLSERIALIZE(CONTENT "+column.getName()+")";
+							}else {
+								sql += column.getName();
+							}
+							
+							if(i < columns.size()) {
+								sql += ",";
+							}else {
+								i++;
+							}
+						}
+						selSqlList.add(String.format(sql+" FROM %s%s %s", schema, replaceTableName, where));
+					}else {
+						selSqlList.add(String.format("SELECT * FROM %s%s %s", schema, replaceTableName, where));
+					}
 				}
 
 				if(selSqlList != null) {
 					jobSize += selSqlList.size();
 				}
+				System.out.println(selSqlList.toString());
 			}
 			
 			if(selectQuerys != null) {
@@ -392,5 +433,18 @@ public class Unloader {
 		
 	}
 	
+	
+	/**
+	 * PG CharSet 조회
+	 * @throws Exception
+	 */
+	@SuppressWarnings("unused")
+	private String getPgCharSet() throws Exception {
+		String pgCharSet = null;
+		
+		pgCharSet = DBUtils.getCharSet(Constant.POOLNAME.TARGET.name(), ConfigInfo.TAR_DB_CONFIG);
+		
+		return pgCharSet;
+	}
 	
 }

@@ -108,7 +108,7 @@ public class OracleConvertDBUtils {
 			MetaExtractWorker mew = new MetaExtractWorker(srcPoolName, new MetaExtractWork(WORK_TYPE.GET_COLUMN_INFORM, params));
 			mew.run();
 			List<Map<String, Object>> results = (List<Map<String, Object>>) mew.getListResult();
-			LogUtils.info(msgCode.getCode("C0036") + results, OracleConvertDBUtils.class);
+			//LogUtils.info(msgCode.getCode("C0036") + results, OracleConvertDBUtils.class);
 			Object obj = null;
 			for (Map<String, Object> result : results) {
 				Column column = new Column();
@@ -149,6 +149,41 @@ public class OracleConvertDBUtils {
 			}
 			Collections.sort(table.getColumns(), Column.getComparator());
 			LogUtils.info(msgCode.getCode("C0037"), OracleConvertDBUtils.class);
+		} catch (Exception e) {
+			LogUtils.error(e.getMessage(), OracleConvertDBUtils.class);
+		}
+		return table;
+	}
+	
+	public static Table checkColumnInform(Table table, String srcPoolName, DBConfigInfo dbConfigInfo) {
+		try {
+			Boolean checkColumn = false;
+			Map<String, Object> params = new HashMap<String, Object>();
+			params.put("TABLE_SCHEMA", table.getSchemaName());
+			params.put("TABLE_NAME", table.getName());
+			
+			MetaExtractWorker mew = new MetaExtractWorker(srcPoolName, new MetaExtractWork(WORK_TYPE.GET_COLUMN_INFORM, params));
+			mew.run();
+
+			List<Map<String, Object>> results = (List<Map<String, Object>>) mew.getListResult();
+			Object obj = null;
+			for (Map<String, Object> result : results) {
+				Column column = new Column();
+				
+				if(((String)result.get("column_type")).contains("XMLTYPE")) checkColumn=true;
+				//System.out.println("TYPE:"+result.get("column_type"));
+				obj = result.get("column_name");
+				column.setName(obj != null ? obj.toString() : null);
+
+				obj = result.get("column_type");
+				column.setType(obj != null ? obj.toString() : null);
+
+				table.getColumns().add(column);
+			}
+			Collections.sort(table.getColumns(), Column.getComparator());
+			
+			table.setCheckColumn(checkColumn);
+			
 		} catch (Exception e) {
 			LogUtils.error(e.getMessage(), OracleConvertDBUtils.class);
 		}

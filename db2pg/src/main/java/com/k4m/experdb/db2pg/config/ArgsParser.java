@@ -90,6 +90,7 @@ public class ArgsParser {
 		boolean summarized = false;
 		if (cmd.hasOption("make-templates")) {
 			try {
+				// Configuration file sample
 				InputStream is = SampleFileLoader.getResourceInputStream("com/k4m/experdb/db2pg/sample/db2pg.config");
 				OutputStream out = new FileOutputStream(new File("db2pg.config"));
 
@@ -101,6 +102,7 @@ public class ArgsParser {
 				is.close();
 				out.close();
 
+				// SQL Query xml file sample
 				is = SampleFileLoader.getResourceInputStream("com/k4m/experdb/db2pg/sample/queries.xml");
 				out = new FileOutputStream(new File("queries.xml"));
 
@@ -111,6 +113,20 @@ public class ArgsParser {
 
 				is.close();
 				out.close();
+				
+//				// convert json file sample
+//				is = SampleFileLoader.getResourceInputStream("convert_map.json");
+//				out = new FileOutputStream(new File("convert_map.json"));
+//
+//				r = -1;
+//				while ((r = is.read()) != -1) {
+//					out.write(r);
+//				}
+//
+//				is.close();
+//				out.close();
+//				System.out.println("Sample file(db2pg.config, fqueries.xml, convert_map.json) create.");
+				System.out.println("Sample file(db2pg.config, fqueries.xml) create.");
 
 			} catch (Exception e) {
 				LogUtils.error(e.getMessage(), ArgsParser.class);
@@ -152,6 +168,9 @@ public class ArgsParser {
 		if (cmd.hasOption("query-file")) {
 			ConfigInfo.SRC_FILE_QUERY_DIR_PATH = cmd.getOptionValue("query-file");
 		}
+//		if (cmd.hasOption("json-file")) {
+//			ConfigInfo.SRC_FILE_JSON_DIR_PATH = cmd.getOptionValue("json-file");
+//		}
 		if (cmd.hasOption("src-include-data-export")) {
 			ConfigInfo.SRC_INCLUDE_DATA_EXPORT = true;
 		}

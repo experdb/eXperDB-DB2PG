@@ -44,6 +44,7 @@ public class Constant {
     	public static final int METHOD_NOT_ALLOWD_ERR = 405;
     	public static final int SUCCESS = 0;
     	public static final int CONFIG_NOT_FOUND = 406;
+    	public static final int FAIL_CHARSET = 407;
     }
     
 

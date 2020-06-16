@@ -22,7 +22,8 @@
 		"mysql": [
 			"^(?i)TINYINT\\s*\\(?[0-9]*\\)\\s*UNSIGNED?$",
 			"^(?i)SMALLINT$\\(?[0-9]*\\)?$",
-            "^(?i)TINYINT\\s*\\(?[0-9]*\\)?$"
+            "^(?i)TINYINT\\s*\\(?[0-9]*\\)?$",
+            "^(?i)SMALLINT\\s*\\(?[0-9]*\\)?$"
 		],
 		"mss": [
             "^(?i)TINYINT$"
@@ -68,13 +69,13 @@
 	       "^(?i)BIGINT\\s*\\(?[0-9]*\\)?$"
 	    ]
 	},
-	"integer_case_4": {
+	"numeric_case_1": {
 		"postgres": "NUMERIC(20)",
 		"mysql": [
 			"^(?i)BIGINT\\s*\\(?[0-9]*\\)\\s*UNSIGNED?$"
 		]
 	},
-	"integer_case_5": {
+	"numeric_case_2": {
 		"postgres": "NUMERIC",
 		"mss": [
 			"^(?i)NUMERIC$"
@@ -101,7 +102,7 @@
 			"^(?i)DECIMAL$"
 		]
 	},
-	"integer_case_6": {
+	"numeric_case_3": {
 		"postgres": "NUMERIC(38)",
 		"ora": [
 			"^(?i)SMALLINT$"
@@ -246,7 +247,7 @@
 			"^(?i)ROWID$"			
 		]
 	},
-	"char_case_41": {
+	"char_case_5": {
 		"postgres": "VARCHAR(4000)",
 		"ora": [
 			"^(?i)UROWID\\s*\\(?[0-9]*\\)?$"			
@@ -255,7 +256,7 @@
 			"^(?i)UROWID\\s*\\(?[0-9]*\\)?$"			
 		]
 	},		
-	"char_case_5": {
+	"char_case_6": {
 		"postgres": "VARCHAR(255)",
 		"ora": [
 			"^(?i)BFILE$",
@@ -335,7 +336,7 @@
 			"^(?i)TIMESTAMP\\s*\\(?[0-9]*\\)?\\s*\\(?[0-9]*\\)? WITH LOCAL TIME ZONE$"
 		]
 	},
-	"date_case_21": {
+	"date_case_3": {
 		"postgres": "TIMESTAMP WITH TIME ZONE",
 		"ora" :[
 			"^(?i)TIMESTAMP\\s*\\(?[0-9]*\\)?$",
@@ -346,12 +347,6 @@
 			"^(?i)TIMESTAMP\\s*\\(?[0-9]*\\)?\\s*\\(?[0-9]*\\)?$"
 		]
 	},	
-    "date_case_3": {
-		"postgres": "SMALLINT",
-		"mysql": [
-            "^(?i)SMALLINT\\s*\\(?[0-9]*\\)?$"
-		]
-	},
     "date_case_4": {
 		"postgres": "DATE",
 		"mysql": [

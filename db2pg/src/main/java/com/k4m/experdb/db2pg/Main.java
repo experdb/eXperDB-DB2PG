@@ -10,6 +10,7 @@ import com.k4m.experdb.db2pg.config.ArgsParser;
 import com.k4m.experdb.db2pg.config.ConfigInfo;
 import com.k4m.experdb.db2pg.convert.DDLConverter;
 import com.k4m.experdb.db2pg.db.DBCPPoolManager;
+import com.k4m.experdb.db2pg.db.DBUtils;
 import com.k4m.experdb.db2pg.rebuild.MakeSqlFile;
 import com.k4m.experdb.db2pg.rebuild.TargetPgDDL;
 import com.k4m.experdb.db2pg.unload.ManagementConstraint;
@@ -70,6 +71,15 @@ public class Main {
 		// checkDirectory(ConfigInfo.SRC_FILE_OUTPUT_PATH);
 		makeDirectory();
 		
+		// Target DB Charset different vs config Charset
+		String pgCharSet = DBUtils.getCharSet(Constant.POOLNAME.TARGET.name(), ConfigInfo.TAR_DB_CONFIG);
+		if( (ConfigInfo.DB_WRITER_MODE || ConfigInfo.FILE_WRITER_MODE) && ConfigInfo.SRC_INCLUDE_DATA_EXPORT) {
+			if(pgCharSet != null && !pgCharSet.toUpperCase().equals(ConfigInfo.TAR_DB_CONFIG.CHARSET.toUpperCase())) {
+				LogUtils.error("Target Database Charset is "+pgCharSet +". Exit.", Unloader.class);
+				System.exit(Constant.ERR_CD.FAIL_CHARSET);
+			}
+		}
+		
 		if(ConfigInfo.SRC_DDL_EXPORT) {
 			LogUtils.debug(msgCode.getCode("M0002"),Main.class);
 			DDLConverter ddlConv = DDLConverter.getInstance();
@@ -77,7 +87,7 @@ public class Main {
 			LogUtils.debug(msgCode.getCode("M0003"),Main.class);
 		}
 		
-		if(ConfigInfo.TAR_CONSTRAINT_DDL) {
+		if(ConfigInfo.TAR_CONSTRAINT_DDL && ConfigInfo.DB_WRITER_MODE && ConfigInfo.SRC_INCLUDE_DATA_EXPORT) {
 			TargetPgDDL targetPgDDL = new TargetPgDDL();
 			makeSqlFile(targetPgDDL);
 		}

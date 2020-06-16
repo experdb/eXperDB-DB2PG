@@ -16,4 +16,5 @@ public interface MetaExtractMapper {
 	public String getPgCurrentSchema();
 	public List<Map<String,Object>> getViewInform(Map<String,Object> params);
 	public List<Map<String,Object>> getSequencesInform(Map<String,Object> params);
+	public String getPgCharSet(Map<String,Object> params);
 }

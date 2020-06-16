@@ -82,6 +82,27 @@ public class ConvertDBUtils {
 		return table;
 	}
 
+	public static Table checkColumnInform(Table table, String srcPoolName, DBConfigInfo dbConfigInfo) {
+		try {
+			String dbtype = dbConfigInfo.DB_TYPE;
+			if (dbtype.equals(Constant.DB_TYPE.ORA)) {
+				table = OracleConvertDBUtils.checkColumnInform(table, srcPoolName, dbConfigInfo);
+			} else if (dbtype.equals(Constant.DB_TYPE.TBR)) {
+				
+			} else if (dbtype.equals(Constant.DB_TYPE.MSS)) {
+				
+			} else if (dbtype.equals(Constant.DB_TYPE.MYS)) {
+				
+			} else if (dbtype.equals(Constant.DB_TYPE.ALT)) {
+				
+			} else {
+
+			}
+		} catch (Exception e) {
+			LogUtils.error(e.getMessage(), ConvertDBUtils.class);
+		} 
+		return table;
+	}
 	/**
 	 * <br>
 	 * Constraint's schema name : constraint_schema (string) <br>
