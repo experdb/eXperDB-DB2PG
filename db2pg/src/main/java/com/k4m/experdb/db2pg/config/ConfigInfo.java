@@ -60,14 +60,12 @@ public class ConfigInfo {
 			;
 	//endregion
 	
-	//region INPUT
 	public static String SRC_FILE_QUERY_DIR_PATH = null;
-	//endregion
 	
-	//region OUTPUT
-	//buffer size
+	//public static String SRC_FILE_JSON_DIR_PATH = null;
+	
 	public static int SRC_BUFFER_SIZE; //10*1024*1024
-	//endregion
+
 	
 	public static org.apache.log4j.Level LOG_LEVEL;
 	

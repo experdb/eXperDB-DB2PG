@@ -78,6 +78,8 @@ public final class MetaExtractWorker extends DBWorker {
 			case GET_SOURCE_TABLE_DATA:
 				result = mapper.getSourceTableData(work.params);
 				break;
+			case GET_PG_CHARSET:
+				result = mapper.getPgCharSet(work.params);
 			}
 			stop();
 		} catch (Exception e) {

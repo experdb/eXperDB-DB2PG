@@ -47,4 +47,29 @@ public class DBUtils {
 		return tableNames;
 	}
 	
+	public static String getCharSet(String srcPoolName, DBConfigInfo dbConfigInfo) {
+		String dbCharSet = null;
+		
+		try {
+			Map<String,Object> params = new HashMap<String,Object>();
+			
+			params.put("DBNAME", dbConfigInfo.DBNAME);
+			
+			if(dbConfigInfo.DB_TYPE.equals("POG")){
+			
+				MetaExtractWorker mew = new MetaExtractWorker(srcPoolName,new MetaExtractWork(WORK_TYPE.GET_PG_CHARSET, params));
+				mew.run();
+			
+				dbCharSet = (String)mew.getResult();
+			}
+		} catch(Exception e){
+			System.out.println("error");
+			LogUtils.error(e.getMessage(),DBUtils.class);
+		} finally {
+			LogUtils.info(msgCode.getCode("C0090"),DBUtils.class);
+		}
+		
+		return dbCharSet;		
+	}
+	
 }
