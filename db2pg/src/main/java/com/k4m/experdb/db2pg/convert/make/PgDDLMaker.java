@@ -169,7 +169,7 @@ public class PgDDLMaker<T> {
 			for(Sequence sequence : table.getSequence()) {
 				tmpsb.append("CREATE SEQUENCE ");
 				tmpsb.append(DevUtils.classifyString(sequence.getSeqName(),ConfigInfo.SRC_CLASSIFY_STRING));
-				tmpsb.append(String.format(" INCREMENT %d MINVALUE %d START %d", sequence.getSeqIncValue(), sequence.getSeqMinValue(), sequence.getSeqStart()));
+				tmpsb.append(String.format(" INCREMENT %d MINVALUE %d START %d;", sequence.getSeqIncValue(), sequence.getSeqMinValue(), sequence.getSeqStart()));
 				
 				tmpsb.append("\nALTER SEQUENCE ");
 				tmpsb.append(DevUtils.classifyString(sequence.getSeqName(),ConfigInfo.SRC_CLASSIFY_STRING));
