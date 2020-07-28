@@ -40,7 +40,7 @@ public class DBUtils {
 
 		} catch(Exception e){
 			System.out.println("error");
-			LogUtils.error(e.getMessage(),DBUtils.class);
+			LogUtils.error(e.toString(),DBUtils.class);
 		} finally {
 			LogUtils.info(msgCode.getCode("C0090"),DBUtils.class);
 		}
