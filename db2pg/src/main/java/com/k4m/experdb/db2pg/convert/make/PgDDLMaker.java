@@ -211,8 +211,13 @@ public class PgDDLMaker<T> {
 					tmpsb.append(columns.substring(columns.indexOf("[")+1,columns.indexOf("]")));
 					tmpsb.append(") REFERENCES ");
 					if(ConfigInfo.SRC_DB_CONFIG.DB_TYPE.equals(Constant.DB_TYPE.MSS)){
-						String[] values = fkey.getName().split("_");
-						tmpsb.append(values[1]);
+
+						//System.out.println(fkey.getRefTable());
+
+						/*String[] values = fkey.getRefTable().split("_");
+						tmpsb.append(values[1])*/;
+						
+						tmpsb.append(fkey.getRefTable());
 						tmpsb.append(" (");
 						columns = fkey.getRefColumns().toString();
 					}else{

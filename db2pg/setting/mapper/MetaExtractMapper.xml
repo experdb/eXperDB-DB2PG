@@ -407,7 +407,69 @@
 	</select>
 	
 	<select id="getConstraintInform" parameterType="map" resultType="map" databaseId="MSS">
-					SELECT 
+	
+				SELECT 
+							 LOWER(CON.CONSTRAINT_SCHEMA) AS constraint_schema
+							,  LOWER(CON.CONSTRAINT_NAME) AS constraint_name
+							,  LOWER(CON.TABLE_SCHEMA) AS table_schema
+							,  LOWER(CON.TABLE_NAME) AS	table_name
+							,CASE WHEN con.constraint_type='PRIMARY KEY' THEN 'P'
+								WHEN con.constraint_type='FOREIGN KEY' THEN 'F'
+								WHEN con.constraint_type='UNIQUE' THEN 'U'
+								ELSE NULL						END AS constraint_type
+							, LOWER(CU.COLUMN_NAME) AS column_name
+							, LOWER(CU.ORDINAL_POSITION) AS ordinal_position
+							,NULL AS ref_table_schema
+							,NULL AS ref_table_name
+							,NULL AS ref_column_name
+							,NULL AS match_option
+							,NULL AS update_rule
+							,NULL AS delete_rule
+						FROM information_schema.table_constraints CON
+						INNER JOIN information_schema.key_column_usage AS CU 
+							ON CON.constraint_name = CU.constraint_name 
+						WHERE CON.TABLE_SCHEMA = #{TABLE_SCHEMA}
+						AND CON.TABLE_NAME = #{TABLE_NAME}
+						AND CON.CONSTRAINT_TYPE IN ('PRIMARY KEY', 'UNIQUE')
+	
+				 UNION ALL
+
+				SELECT
+				   LOWER(TC.CONSTRAINT_SCHEMA) AS constraint_schema
+					,  LOWER(TC.CONSTRAINT_NAME) AS constraint_name		
+					,  LOWER(TC.TABLE_SCHEMA) AS table_schema
+					,  LOWER(TC.TABLE_NAME) AS	table_name
+					,CASE WHEN TC.constraint_type='PRIMARY KEY' THEN 'P'
+						WHEN TC.constraint_type='FOREIGN KEY' THEN 'F'
+						WHEN TC.constraint_type='UNIQUE' THEN 'U'
+						ELSE NULL						END AS constraint_type
+					,  LOWER(CU.COLUMN_NAME) AS column_name
+					,  LOWER(CU.ORDINAL_POSITION) AS ordinal_position	
+					,  LOWER(RC.UNIQUE_CONSTRAINT_SCHEMA) AS ref_table_schema
+					,  LOWER(OBJECT_NAME (f.referenced_object_id)) AS ref_table_name
+					,  LOWER(CU.COLUMN_NAME) AS ref_column_name
+					,  LOWER(RC.MATCH_OPTION) AS match_option
+					,  LOWER(RC.UPDATE_RULE) AS update_rule
+					,  LOWER(RC.DELETE_RULE) AS delete_rule	  
+				FROM sys.foreign_keys AS f
+				INNER JOIN sys.foreign_key_columns AS fc 
+				   ON f.object_id = fc.constraint_object_id 
+				INNER JOIN information_schema.referential_constraints AS RC
+							            ON F.name = RC.constraint_name   
+				INNER JOIN information_schema.key_column_usage AS CU 
+							            ON F.name = CU.constraint_name 
+				INNER JOIN information_schema.table_constraints AS TC 
+				    ON F.name = TC.constraint_name    
+				JOIN (
+				    SELECT object_id
+				    FROM   sys.objects 
+				    WHERE  type_desc = 'USER_TABLE'
+				)tsp
+				ON f.parent_object_id = tsp.object_id
+				WHERE TC.TABLE_SCHEMA = #{TABLE_SCHEMA}
+				AND TC.TABLE_NAME = #{TABLE_NAME}
+
+					<!-- SELECT 
 							 LOWER(CON.CONSTRAINT_SCHEMA) AS constraint_schema
 							,  LOWER(CON.CONSTRAINT_NAME) AS constraint_name
 							,  LOWER(CON.TABLE_SCHEMA) AS table_schema
@@ -457,7 +519,7 @@
 			            ON RC.constraint_name = TC.constraint_name 
 					WHERE TC.TABLE_SCHEMA = #{TABLE_SCHEMA}
 					AND TC.TABLE_NAME = #{TABLE_NAME}
-	
+	 -->
 
 			<!-- SELECT 
 			     LOWER(c.table_schema) AS table_schema
