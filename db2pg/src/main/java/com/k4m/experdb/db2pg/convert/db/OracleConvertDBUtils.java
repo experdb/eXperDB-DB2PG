@@ -1,5 +1,6 @@
 package com.k4m.experdb.db2pg.convert.db;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -683,6 +684,9 @@ public class OracleConvertDBUtils {
 				obj = result.get("seq_min_value");
 				if (obj != null)
 					sequence.setSeqMinValue(Long.valueOf(obj.toString()));
+				obj = result.get("seq_max_value");
+				if (obj != null)
+					sequence.setSeqMaxalue(new BigDecimal(obj.toString()));
 				obj = result.get("seq_inc_value");
 				if (obj != null)
 					sequence.setSeqIncValue(Long.valueOf(obj.toString()));

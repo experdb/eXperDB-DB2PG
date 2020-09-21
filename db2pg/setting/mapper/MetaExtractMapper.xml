@@ -151,7 +151,7 @@
 			FROM USER_VIEWS
 	</select>
 	<select id="getSequencesInform" parameterType="map" resultType="com.k4m.experdb.db2pg.common.LowerKeyMap"  databaseId="ORA">
-	 SELECT SEQUENCE_NAME as EXTRA, MIN_VALUE AS SEQ_MIN_VALUE, MAX_VALUE, INCREMENT_BY AS SEQ_INC_VALUE, LAST_NUMBER AS SEQ_START FROM USER_SEQUENCES
+	 SELECT SEQUENCE_NAME as EXTRA, MIN_VALUE AS SEQ_MIN_VALUE, MAX_VALUE AS SEQ_MAX_VALUE, INCREMENT_BY AS SEQ_INC_VALUE, LAST_NUMBER AS SEQ_START FROM USER_SEQUENCES
 	</select>
 	
 	<select id="getTableNames" parameterType="map" resultType="java.lang.String" databaseId="TBR">
