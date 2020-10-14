@@ -18,7 +18,7 @@ import com.k4m.experdb.db2pg.unload.Unloader;
 import com.k4m.experdb.db2pg.config.MsgCode;
 
 
-public class Main {
+public class Main {  
 	static MsgCode msgCode = new MsgCode();
 
 	public static void main(String[] args) throws Exception {
