@@ -1,25 +1,25 @@
 {
 	"comment": {
 		"postgres": "#",
-		"mysql": [
+		"mys": [
 			"--"
 		]
 	},
 	"string": {
 		"postgres": "'",
-		"mysql": [
+		"mys": [
 			"\""
 		]
 	},
 	"classify_string": {
 		"postgres": "\"",
-		"mysql": [
+		"mys": [
 			"`"
 		]
 	},
 	"integer_case_1": {
 		"postgres": "SMALLINT",
-		"mysql": [
+		"mys": [
 			"^(?i)TINYINT\\s*\\(?[0-9]*\\)\\s*UNSIGNED?$",
 			"^(?i)SMALLINT$\\(?[0-9]*\\)?$",
             "^(?i)TINYINT\\s*\\(?[0-9]*\\)?$",
@@ -34,7 +34,7 @@
 	},
 	"integer_case_2": {
 		"postgres": "INTEGER",
-		"mysql": [
+		"mys": [
 			"^(?i)MEDIUMINT\\s*\\(?[0-9]*\\)?$",
 			"^(?i)SMALLINT\\s*\\(?[0-9]*\\)\\s*UNSIGNED?$",
 			"^(?i)MEDIUMINT\\s*\\(?[0-9]*\\)\\s*UNSIGNED?$",
@@ -60,7 +60,7 @@
 	},
 	"integer_case_3": {
 		"postgres": "BIGINT",
-		"mysql": [
+		"mys": [
 			"^(?i)INT\\s*\\(?[0-9]*\\)\\s*UNSIGNED?$",
             "^(?i)INTEGER\\s*\\(?[0-9]*\\)\\s*UNSIGNED?$",
             "^(?i)BIGINT\\s*\\(?[0-9]*\\)?$"
@@ -71,12 +71,16 @@
 	},
 	"numeric_case_1": {
 		"postgres": "NUMERIC(20)",
-		"mysql": [
+		"mys": [
 			"^(?i)BIGINT\\s*\\(?[0-9]*\\)\\s*UNSIGNED?$"
 		]
 	},
 	"numeric_case_2": {
 		"postgres": "NUMERIC",
+		"mys": [
+			"^(?i)NUMERIC$",
+	        "^(?i)NUMERIC\\s*\\(?[0-9]*,[0-9]*\\)?$"
+	    ],
 		"mss": [
 			"^(?i)NUMERIC$"
 		],
@@ -113,7 +117,7 @@
 	},
 	"real_case_1": {
 		"postgres": "REAL",
-		"mysql": [
+		"mys": [
 			"^(?i)FLOAT$",
 			"^(?i)FLOAT UNSIGNED$"
 		],
@@ -122,7 +126,8 @@
 			"^(?i)BINARY_FLOAT\\s*\\(?[0-9]*\\)?$"
 		],
 		"tbr" :[
-			"^(?i)BINARY_FLOAT$"
+			"^(?i)BINARY_FLOAT$",
+			"^(?i)BINARY_FLOAT\\s*\\(?[0-9]*\\)?$"
 		],
 		"alt" :[
 			"^(?i)REAL$"
@@ -130,12 +135,11 @@
 	},
 	"real_case_2": {
 		"postgres": "DOUBLE PRECISION",
-		"mysql": [
+		"mys": [
 			"^(?i)DOUBLE$"
 		],
 		"mss": [
-			"^(?i)DOUBLE PRECISION$",
-			"^(?i)FLOAT$"
+			"^(?i)DOUBLE PRECISION$"
 		],
 		"ora" :[
 			"^(?i)BINARY_DOUBLE$",
@@ -144,6 +148,7 @@
 		],
 		"tbr" :[
 			"^(?i)BINARY_DOUBLE$",
+			"^(?i)BINARY_DOUBLE\\s*\\(?[0-9]*\\)?$",
 			"^(?i)REAL$"
 		],
 		"alt": [
@@ -152,7 +157,7 @@
 	},
 	"bool_case": {
 		"postgres": "BOOLEAN",
-		"mysql": [
+		"mys": [
 			"^(?i)BOOL$",
 			"^(?i)BIT\\s*\\(1\\)$",
 			"^(?i)TINYINT\\s*\\(1\\)$",
@@ -164,7 +169,7 @@
 	},
 	"text_case": {
 		"postgres": "TEXT",
-		"mysql": [
+		"mys": [
 			"^(?i)TINYTEXT$",
 			"^(?i)MEDIUMTEXT$",
 			"^(?i)LONGTEXT$"
@@ -181,7 +186,8 @@
 		"tbr" :[
 			"^(?i)CLOB$",
 			"^(?i)LONG$",
-			"^(?i)NCLOB$"
+			"^(?i)NCLOB$",
+			"^(?i)NCLOB\\s*\\(?[0-9]*\\)?$"
 		],
 		"alt" :[
 			"^(?i)CLOB$",
@@ -191,12 +197,11 @@
 	},
 	"char_case_1": {
 		"postgres": "CHAR",
-		"mysql": [
+		"mys": [
 			"^(?i)UNIQUEIDENTIFIER$\\(?[0-9]*\\)?$"
 		],
 		"mss": [
-			"^(?i)CHAR$",
-			"^(?i)NCHAR$"
+			"^(?i)CHAR$"
 		],
 		"ora" :[
 			"^(?i)NCHAR\\s*\\(?[0-9]*\\)?$"
@@ -213,15 +218,18 @@
 		"postgres": "VARCHAR",
 		"mss": [
 			"^(?i)NVARCHAR$",
-			"^(?i)VARCHAR$"
+			"^(?i)VARCHAR$",
+			"^(?i)NCHAR$"
 		],
 		"ora" :[
 			"^(?i)VARCHAR2\\s*\\(?[0-9]*\\)?$",
 			"^(?i)NVARCHAR2\\s*\\(?[0-9]*\\)?$",
+			"^(?i)NVARCHAR\\s*\\(?[0-9]*\\)?$",
 			"^(?i)NCHAR VARYING\\s*\\(?[0-9]*\\)?$"
 		],
 		"tbr" :[
 			"^(?i)VARCHAR2\\s*\\(?[0-9]*\\)?$",
+			"^(?i)NVARCHAR\\s*\\(?[0-9]*\\)?$",
 			"^(?i)NVARCHAR2\\s*\\(?[0-9]*\\)?$",
 			"^(?i)NCHAR VARYING\\s*\\(?[0-9]*\\)?$"
 		],
@@ -268,7 +276,7 @@
 	},		
 	"bytea_case": {
 		"postgres": "BYTEA",
-		"mysql": [
+		"mys": [
 			"^(?i)BINARY\\s*\\(?[0-9]*\\)?$",
 			"^(?i)VARBINARY\\s*\\(?[0-9]*\\)?$",
 			"^(?i)TINYBLOB$",
@@ -284,14 +292,17 @@
 			"^(?i)TIMESTAMP$"
 		],
 		"ora" :[
+			"^(?i)BINARY$",
 			"^(?i)BLOB$",
 			"^(?i)LONG RAW$",
 			"^(?i)LONG RAW\\s*\\(?[0-9]*\\)?$",
 			"^(?i)RAW\\s*\\(?[0-9]*\\)?$"
 		],
 		"tbr" :[
+			"^(?i)BINARY$",
 			"^(?i)BLOB$",
 			"^(?i)LONG RAW$",
+			"^(?i)LONG RAW\\s*\\(?[0-9]*\\)?$",
 			"^(?i)RAW\\s*\\(?[0-9]*\\)?$"
 		],
 		"alt" :[
@@ -315,13 +326,13 @@
 	},
 	"date_case_1": {
 		"postgres": "TIME WITHOUT TIME ZONE",
-		"mysql": [
+		"mys": [
 			"^(?i)TIME$"
 		]
 	},
 	"date_case_2": {
 		"postgres": "TIMESTAMP WITHOUT TIME ZONE",
-		"mysql": [
+		"mys": [
 			"^(?i)DATETIME$"
 		],
 		"mss": [
@@ -344,12 +355,13 @@
 		],
 		"tbr" :[
 			"^(?i)TIMESTAMP\\s*\\(?[0-9]*\\)?$",
-			"^(?i)TIMESTAMP\\s*\\(?[0-9]*\\)?\\s*\\(?[0-9]*\\)?$"
+			"^(?i)TIMESTAMP\\s*\\(?[0-9]*\\)?\\s*\\(?[0-9]*\\)?$",
+			"^(?i)TIMESTAMP\\s*\\(?[0-9]*\\)? WITH TIME ZONE ?\\s*\\(?[0-9]*\\)?$"
 		]
 	},	
     "date_case_4": {
 		"postgres": "DATE",
-		"mysql": [
+		"mys": [
             "^(?i)YEAR\\s*\\(?[0-9]*\\)?$"
 		]	
 	},
@@ -359,10 +371,12 @@
             "^(?i)DATETIME2$"
 		],
 		"ora": [
-            "^(?i)DATE\\s*\\(?[0-9]*\\)?$"
+            "^(?i)DATE\\s*\\(?[0-9]*\\)?$",
+            "^(?i)TIMESTAMP\\s*\\(?[0-9]*\\)?$"
 		],
 		"tbr": [
-            "^(?i)DATE\\s*\\(?[0-9]*\\)?$"
+            "^(?i)DATE\\s*\\(?[0-9]*\\)?$",
+            "^(?i)TIMESTAMP\\s*\\(?[0-9]*\\)?$"
 		],
 		"alt": [
             "^(?i)DATE\\s*\\(?[0-9]*\\)?$"
@@ -384,6 +398,16 @@
 		"postgres": "TIME",
 		"mss": [
             "^(?i)TIME$"
+		],
+		"ora": [
+			"^(?i)TIME$",
+            "^(?i)TIME\\s*\\(?[0-9]*\\)?$",
+			"^(?i)TIME\\s*\\(?[0-9]*\\)?\\s*\\(?[0-9]*\\)?$"
+		],
+		"tbr": [
+			"^(?i)TIME$",			
+            "^(?i)TIME\\s*\\(?[0-9]*\\)?$",
+            "^(?i)TIME\\s*\\(?[0-9]*\\)?\\s*\\(?[0-9]*\\)?$"
 		]
 	},
 	"interval_case_1": {
@@ -412,10 +436,9 @@
 	},
 	"decimal_case_1": {
 	    "postgres": "DECIMAL",
-	    "mysql": [
+	    "mys": [
 	        "^(?i)DEC\\s*\\(?[0-9]*,[0-9]*\\)?$",
-	        "^(?i)DECIMAL\\s*\\(?[0-9]*,[0-9]*\\)?$",
-	        "^(?i)NUMERIC\\s*\\(?[0-9]*,[0-9]*\\)?$"
+	        "^(?i)DECIMAL\\s*\\(?[0-9]*,[0-9]*\\)?$"
 	    ],
 	    "mss": [
 	       "^(?i)DECIMAL$"
@@ -429,7 +452,7 @@
 	},
 	"fixed_case": {
 		"postgres": "DECIMAL",
-	    "mysql": [
+	    "mys": [
 	        "^(?i)FIXED\\s*\\(?[0-9]*,[0-9]*\\)?$"
 	    ]
 	},
