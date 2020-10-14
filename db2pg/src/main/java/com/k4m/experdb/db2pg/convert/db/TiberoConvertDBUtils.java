@@ -1,5 +1,6 @@
 package com.k4m.experdb.db2pg.convert.db;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -37,7 +38,7 @@ public class TiberoConvertDBUtils {
 	public static List<Table> getTableInform(List<String> tableNames, boolean tableOnly, String srcPoolName, DBConfigInfo dbConfigInfo) {
 		List<Table> tables = new ArrayList<Table>();
 		try {
-			LogUtils.info(msgCode.getCode("C0031"), OracleConvertDBUtils.class);
+			LogUtils.info(msgCode.getCode("C0031"), TiberoConvertDBUtils.class);
 			Map<String, Object> params = new HashMap<String, Object>();
 			params.put("TABLE_SCHEMA", dbConfigInfo.SCHEMA_NAME);
 
@@ -57,8 +58,8 @@ public class TiberoConvertDBUtils {
 					new MetaExtractWork(WORK_TYPE.GET_TABLE_INFORM, params));
 			mew.run();
 			List<Map<String, Object>> results = (List<Map<String, Object>>) mew.getListResult();
-			LogUtils.info(msgCode.getCode("C0032") + results, OracleConvertDBUtils.class);
-			LogUtils.info(msgCode.getCode("C0033") + results, OracleConvertDBUtils.class);
+			LogUtils.info(msgCode.getCode("C0032") + results, TiberoConvertDBUtils.class);
+			LogUtils.info(msgCode.getCode("C0033") + results, TiberoConvertDBUtils.class);
 			Object obj = null;
 			for (Map<String, Object> result : results) {
 				Table table = new Table();
@@ -74,9 +75,9 @@ public class TiberoConvertDBUtils {
 				tables.add(table);
 			}
 		} catch (Exception e) {
-			LogUtils.error(e.getMessage(), OracleConvertDBUtils.class);
+			LogUtils.error(e.getMessage(), TiberoConvertDBUtils.class);
 		} finally {
-			LogUtils.info(msgCode.getCode("C0034"), OracleConvertDBUtils.class);
+			LogUtils.info(msgCode.getCode("C0034"), TiberoConvertDBUtils.class);
 		}
 		return tables;
 	}
@@ -101,14 +102,21 @@ public class TiberoConvertDBUtils {
 	 */
 	public static Table setColumnInform(Table table, String srcPoolName, DBConfigInfo dbConfigInfo) {
 		try {
-			LogUtils.info(msgCode.getCode("C0035"), OracleConvertDBUtils.class);
+			LogUtils.info(msgCode.getCode("C0035"), TiberoConvertDBUtils.class);
 			Map<String, Object> params = new HashMap<String, Object>();
+			
 			params.put("TABLE_SCHEMA", table.getSchemaName());
 			params.put("TABLE_NAME", table.getName());
+			
+			LogUtils.info("TABLE_SCHEMA  == "+table.getSchemaName(), TiberoConvertDBUtils.class);
+			LogUtils.info("TABLE_NAME  == "+table.getName(), TiberoConvertDBUtils.class);
+
 			MetaExtractWorker mew = new MetaExtractWorker(srcPoolName, new MetaExtractWork(WORK_TYPE.GET_COLUMN_INFORM, params));
 			mew.run();
+			
 			List<Map<String, Object>> results = (List<Map<String, Object>>) mew.getListResult();
-			LogUtils.info(msgCode.getCode("C0036") + results, OracleConvertDBUtils.class);
+
+			LogUtils.info(msgCode.getCode("C0036") + results, TiberoConvertDBUtils.class);
 			Object obj = null;
 			for (Map<String, Object> result : results) {
 				Column column = new Column();
@@ -148,13 +156,14 @@ public class TiberoConvertDBUtils {
 				table.getColumns().add(column);
 			}
 			Collections.sort(table.getColumns(), Column.getComparator());
-			LogUtils.info(msgCode.getCode("C0037"), OracleConvertDBUtils.class);
+			LogUtils.info(msgCode.getCode("C0037"), TiberoConvertDBUtils.class);
 		} catch (Exception e) {
-			LogUtils.error(e.getMessage(), OracleConvertDBUtils.class);
+			LogUtils.error(e.getMessage(), TiberoConvertDBUtils.class);
 		}
 		return table;
 	}
 
+	
 	/**
 	 * <br>
 	 * Constraint's schema name : constraint_schema (string) <br>
@@ -195,7 +204,7 @@ public class TiberoConvertDBUtils {
 	 */
 	public static Table setConstraintInform(Table table, String srcPoolName, DBConfigInfo dbConfigInfo) {
 		try {
-			LogUtils.info(msgCode.getCode("C0038"), OracleConvertDBUtils.class);
+			LogUtils.info(msgCode.getCode("C0038"), TiberoConvertDBUtils.class);
 			Map<String, Object> params = new HashMap<String, Object>();
 			params.put("TABLE_SCHEMA", table.getSchemaName());	
 			params.put("TABLE_NAME", table.getName());
@@ -213,6 +222,7 @@ public class TiberoConvertDBUtils {
 					String tableSchema = (obj = result.get("table_schema")) != null ? obj.toString() : null;
 					String tableName = (obj = result.get("table_name")) != null ? obj.toString() : null;
 					String columnName = (obj = result.get("column_name")) != null ? obj.toString() : null;
+					String indexName = (obj = result.get("index_name")) != null ? obj.toString() : null;
 					obj = result.get("ordinal_position");
 					int ordinalPosition = -1;
 					if (obj != null)
@@ -249,6 +259,7 @@ public class TiberoConvertDBUtils {
 					pkey.setTableName(tableName);
 					pkey.setKeySchema(keySchema);
 					pkey.setName(keyName);
+					pkey.setIndexName(indexName);
 					
 					if (indexType == null) {
 						pkey.setIndexType(IndexType.NORMAL);
@@ -423,9 +434,9 @@ public class TiberoConvertDBUtils {
 
 			}
 			Collections.sort(table.getColumns(), Column.getComparator());
-			LogUtils.info(msgCode.getCode("C0040"), OracleConvertDBUtils.class);
+			LogUtils.info(msgCode.getCode("C0040"), TiberoConvertDBUtils.class);
 		} catch (Exception e) {
-			LogUtils.error(e.getMessage(), OracleConvertDBUtils.class);
+			LogUtils.error(e.getMessage(), TiberoConvertDBUtils.class);
 		}
 		return table;
 	}
@@ -444,7 +455,7 @@ public class TiberoConvertDBUtils {
 	 */
 	public static Table setKeyInform(Table table, String srcPoolName, DBConfigInfo dbConfigInfo) {
 		try {
-			LogUtils.info(msgCode.getCode("C0041"), OracleConvertDBUtils.class);
+			LogUtils.info(msgCode.getCode("C0041"), TiberoConvertDBUtils.class);
 			Map<String, Object> params = new HashMap<String, Object>();
 
 			params.put("TABLE_SCHEMA", table.getSchemaName());
@@ -573,9 +584,9 @@ public class TiberoConvertDBUtils {
 			}
 
 			Collections.sort(table.getColumns(), Column.getComparator());
-			LogUtils.info(msgCode.getCode("C0043"), OracleConvertDBUtils.class);
+			LogUtils.info(msgCode.getCode("C0043"), TiberoConvertDBUtils.class);
 		} catch (Exception e) {
-			LogUtils.error(e.getMessage(), OracleConvertDBUtils.class);
+			LogUtils.error(e.getMessage(), TiberoConvertDBUtils.class);
 		}
 		return table;
 	}
@@ -583,7 +594,7 @@ public class TiberoConvertDBUtils {
 	public static List<View> setViewInform(String Schema, String srcPoolName, DBConfigInfo dbConfigInfo) {
 		List<View> views = new ArrayList<View>();
 		try {
-			LogUtils.info(msgCode.getCode("C0044"),OracleConvertDBUtils.class);
+			LogUtils.info(msgCode.getCode("C0044"),TiberoConvertDBUtils.class);
 			Map<String,Object> params = new HashMap<String,Object>();
 			
 //			params.put("TABLE_SCHEMA", Schema);
@@ -591,7 +602,7 @@ public class TiberoConvertDBUtils {
 			MetaExtractWorker mew = new MetaExtractWorker(srcPoolName, new MetaExtractWork(WORK_TYPE.GET_VIEW_INFORM, params));
 			mew.run();
 			List<Map<String,Object>> results = (List<Map<String,Object>>)mew.getListResult();
-			LogUtils.info(msgCode.getCode("C0045")+results,OracleConvertDBUtils.class);
+			LogUtils.info(msgCode.getCode("C0045")+results,TiberoConvertDBUtils.class);
 			
 			Object obj = null;
         	for (Map<String,Object> result : results) {
@@ -624,21 +635,21 @@ public class TiberoConvertDBUtils {
     			
     			views.add(view);
         	}       	
-			LogUtils.info(msgCode.getCode("C0046"),OracleConvertDBUtils.class);
+			LogUtils.info(msgCode.getCode("C0046"),TiberoConvertDBUtils.class);
 		} catch(Exception e){
-			LogUtils.error(e.getMessage(),OracleConvertDBUtils.class);
+			LogUtils.error(e.getMessage(),TiberoConvertDBUtils.class);
 		}
 		return views;
 	}
 	
 	public static Table setSequencesInform(Table table, String srcPoolName, DBConfigInfo dbConfigInfo) {
 		try {
-			LogUtils.info(msgCode.getCode("C0047"), OracleConvertDBUtils.class);
+			LogUtils.info(msgCode.getCode("C0047"), TiberoConvertDBUtils.class);
 			Map<String, Object> params = new HashMap<String, Object>();
 			MetaExtractWorker mew = new MetaExtractWorker(srcPoolName, new MetaExtractWork(WORK_TYPE.GET_SEQUENCE_INFORM, params));
 			mew.run();
 			List<Map<String, Object>> results = (List<Map<String, Object>>) mew.getListResult();
-			LogUtils.info(msgCode.getCode("C0048") + results, OracleConvertDBUtils.class);
+			LogUtils.info(msgCode.getCode("C0048") + results, TiberoConvertDBUtils.class);
 			Object obj = null;
 			for (Map<String, Object> result : results) {
 				Sequence sequence = new Sequence();
@@ -648,6 +659,9 @@ public class TiberoConvertDBUtils {
 				obj = result.get("seq_min_value");
 				if (obj != null)
 					sequence.setSeqMinValue(Long.valueOf(obj.toString()));
+				obj = result.get("seq_max_value");
+				if (obj != null)
+					sequence.setSeqMaxalue(new BigDecimal(obj.toString()));
 				obj = result.get("seq_inc_value");
 				if (obj != null)
 					sequence.setSeqIncValue(Long.valueOf(obj.toString()));
@@ -656,9 +670,9 @@ public class TiberoConvertDBUtils {
 				table.getSequence().add(sequence);
 			}
 			Collections.sort(table.getColumns(), Column.getComparator());
-			LogUtils.info(msgCode.getCode("C0049"), OracleConvertDBUtils.class);
+			LogUtils.info(msgCode.getCode("C0049"), TiberoConvertDBUtils.class);
 		} catch (Exception e) {
-			LogUtils.error(e.getMessage(), OracleConvertDBUtils.class);
+			LogUtils.error(e.getMessage(), TiberoConvertDBUtils.class);
 		}
 		return table;
 	}

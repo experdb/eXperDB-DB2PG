@@ -1,11 +1,13 @@
 package com.k4m.experdb.db2pg.work.db.impl;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import org.apache.ibatis.session.SqlSession;
 
+import com.k4m.experdb.db2pg.config.ConfigInfo;
 import com.k4m.experdb.db2pg.db.DBCPPoolManager;
 import com.k4m.experdb.db2pg.db.datastructure.DBConfigInfo;
 import com.k4m.experdb.db2pg.mapper.MetaExtractMapper;
@@ -37,15 +39,16 @@ public final class MetaExtractWorker extends DBWorker {
 				work.params = new HashMap<String, Object>();
 			}
 			DBConfigInfo dbconf = DBCPPoolManager.getConfigInfo(poolName);
+			
 			work.params.put("DB_VER", dbconf.DB_VER);
 			work.params.put("DB_MAJOR_VER", dbconf.DB_MAJOR_VER);
 			work.params.put("DB_MINOR_VER", dbconf.DB_MINOR_VER);
-
+			
 			switch (work.type) {
 			case GET_AUTOINCREMENT_INFORM:
 				result = mapper.getAutoincrementInform(work.params);
 				break;
-			case GET_COLUMN_INFORM:
+			case GET_COLUMN_INFORM:			
 				result = mapper.getColumnInform(work.params);
 				break;
 			case GET_CONSTRAINT_INFORM:
@@ -55,6 +58,7 @@ public final class MetaExtractWorker extends DBWorker {
 				result = mapper.getKeyInform(work.params);
 				break;
 			case GET_TABLE_INFORM:
+				System.out.println(work.params);
 				result = mapper.getTableInform(work.params);
 				break;
 			case GET_TABLE_NAMES:
@@ -69,11 +73,42 @@ public final class MetaExtractWorker extends DBWorker {
 			case GET_PG_CURRENT_SCHEMA:
 				result = mapper.getPgCurrentSchema();
 				break;
-			case GET_PG_FK_DDL:
-				result = mapper.getPgFkDdl();
+			case GET_PG_FK_DDL:			
+				/*테이블 별 GET_PG_IDX_DDL*/
+				Map<String, Object> fkParam = new HashMap<String, Object>();
+	
+				if(ConfigInfo.SRC_INCLUDE_TABLES == null){
+					result = mapper.getPgFkDdl();
+				}else{
+					List<String> tables = ConfigInfo.SRC_INCLUDE_TABLES;	
+					
+					List<String> indexTables = new ArrayList<String>();
+					for(int i=0; i<tables.size(); i++){
+						indexTables.add(tables.get(i).toString().toLowerCase());
+					}
+					fkParam.put("indexTable", indexTables);
+					result = mapper.getPgFkDdlTable(fkParam);
+				}
+
 				break;
-			case GET_PG_IDX_DDL:
-				result = mapper.getPgIdxDdl();
+			case GET_PG_IDX_DDL:					
+				
+				/*테이블 별 GET_PG_IDX_DDL*/
+				Map<String, Object> idxParam = new HashMap<String, Object>();
+	
+				if(ConfigInfo.SRC_INCLUDE_TABLES == null){
+					result = mapper.getPgIdxDdl();
+				}else{
+					List<String> tables = ConfigInfo.SRC_INCLUDE_TABLES;	
+					
+					List<String> indexTables = new ArrayList<String>();
+					for(int i=0; i<tables.size(); i++){
+						indexTables.add(tables.get(i).toString().toLowerCase());
+					}
+					idxParam.put("indexTable", indexTables);
+					result = mapper.getPgIdxDdlTable(idxParam);
+				}
+				
 				break;
 			case GET_SOURCE_TABLE_DATA:
 				result = mapper.getSourceTableData(work.params);

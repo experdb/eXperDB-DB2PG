@@ -11,8 +11,8 @@ public class PrimaryKey extends Key<PrimaryKey> {
 		type = Key.Type.PRIMARY;
 	}
 	
-	public PrimaryKey(String tableSchema, String table,String keySchema, String name, ArrayList<String> columns) {
-		super(tableSchema, table,keySchema,name,columns);
+	public PrimaryKey(String tableSchema, String table,String keySchema, String name, ArrayList<String> columns, String indexName) {
+		super(tableSchema, table,keySchema,name,columns,indexName);
 		type = Key.Type.PRIMARY;
 	}
 

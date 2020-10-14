@@ -16,8 +16,8 @@ public class ForeignKey extends Key<ForeignKey> {
 		super();
 		type = Key.Type.FOREIGN;
 	}
-	public ForeignKey(String tableSchema, String table,String keySchema, String name, ArrayList<String> columns,String refTable, String refTableSchema, ArrayList<String> refColumns) {
-		super(tableSchema, table,keySchema ,name,columns);
+	public ForeignKey(String tableSchema, String table,String keySchema, String name, ArrayList<String> columns,String refTable, String refTableSchema, ArrayList<String> refColumns,String indexName) {
+		super(tableSchema, table,keySchema ,name,columns,indexName);
 		this.refTableSchema = refTableSchema;
 		this.refTable = refTable;
 		this.refColumns = refColumns;

@@ -17,18 +17,29 @@ public abstract class Key<T> {
 	protected Type type;
 	protected String deferrable;
 	protected String deferred;
+	protected String indexName;
 	
 	protected Key() {
 	}
 	
-	protected Key(String tableSchema, String table,String keySchema, String name, ArrayList<String> columns) {
+	protected Key(String tableSchema, String table,String keySchema, String name, ArrayList<String> columns, String indexName) {
 		this.tableSchema = tableSchema;
 		this.keySchema = keySchema;
 		this.tableName = table;
 		this.keyName = name;
 		this.columns = columns;
+		this.indexName=indexName;
 	}
 	
+	
+	public String getIndexName() {
+		return indexName;
+	}
+
+	public void setIndexName(String indexName) {
+		this.indexName = indexName;
+	}
+
 	public List<Integer> getOrdinalPositions() {
 		return ordinalPositions;
 	}

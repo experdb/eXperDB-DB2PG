@@ -17,4 +17,9 @@ public interface MetaExtractMapper {
 	public List<Map<String,Object>> getViewInform(Map<String,Object> params);
 	public List<Map<String,Object>> getSequencesInform(Map<String,Object> params);
 	public String getPgCharSet(Map<String,Object> params);
+	
+	
+	public List<Map<String,Object>> getPgIdxDdlTable(Map<String, Object> param);
+	public List<Map<String,Object>> getPgFkDdlTable(Map<String, Object> param);
+
 }
