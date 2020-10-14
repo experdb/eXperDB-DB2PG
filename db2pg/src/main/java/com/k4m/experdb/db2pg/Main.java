@@ -62,6 +62,8 @@ public class Main {
 			}
 		}
 
+		
+		
 		// create pool
 		createPool();
 		
@@ -73,6 +75,7 @@ public class Main {
 		
 		// Target DB Charset different vs config Charset
 		String pgCharSet = DBUtils.getCharSet(Constant.POOLNAME.TARGET.name(), ConfigInfo.TAR_DB_CONFIG);
+	
 		if( (ConfigInfo.DB_WRITER_MODE || ConfigInfo.FILE_WRITER_MODE) && ConfigInfo.SRC_INCLUDE_DATA_EXPORT) {
 			if(pgCharSet != null && !pgCharSet.toUpperCase().equals(ConfigInfo.TAR_DB_CONFIG.CHARSET.toUpperCase())) {
 				LogUtils.error("Target Database Charset is "+pgCharSet +". Exit.", Unloader.class);
@@ -80,31 +83,33 @@ public class Main {
 			}
 		}
 		
-		if(ConfigInfo.SRC_DDL_EXPORT) {
+		if(ConfigInfo.SRC_DDL_EXPORT) {	
 			LogUtils.debug(msgCode.getCode("M0002"),Main.class);
 			DDLConverter ddlConv = DDLConverter.getInstance();
 			ddlConv.start();
 			LogUtils.debug(msgCode.getCode("M0003"),Main.class);
 		}
 		
+	
+		
 		if(ConfigInfo.TAR_CONSTRAINT_DDL && ConfigInfo.DB_WRITER_MODE && ConfigInfo.SRC_INCLUDE_DATA_EXPORT) {
 			TargetPgDDL targetPgDDL = new TargetPgDDL();
 			makeSqlFile(targetPgDDL);
 		}
 		
+		
 		if( (ConfigInfo.SRC_INCLUDE_DATA_EXPORT || checkQueryXml()) && (ConfigInfo.DB_WRITER_MODE || ConfigInfo.FILE_WRITER_MODE)) {
+
 			TargetPgDDL dbInform = null ;
-			if(ConfigInfo.DB_WRITER_MODE ) dbInform = new TargetPgDDL();
-			
 			ManagementConstraint managementConstraint = new ManagementConstraint();
 			
-			if(ConfigInfo.DB_WRITER_MODE ) {
+			if(ConfigInfo.DB_WRITER_MODE && ConfigInfo.TAR_CONSTRAINT_REBUILD) {
+				dbInform = new TargetPgDDL();
+
 				LogUtils.debug(msgCode.getCode("M0004"),Main.class);
 				makeSqlFile(dbInform);
 				LogUtils.debug(msgCode.getCode("M0005"),Main.class);
-			}
-
-			if(ConfigInfo.DB_WRITER_MODE && ConfigInfo.TAR_CONSTRAINT_REBUILD) {
+	
 				LogUtils.debug(msgCode.getCode("M0006"),Main.class);
 				managementConstraint.dropFk(dbInform);
 				LogUtils.debug(msgCode.getCode("M0007"),Main.class);
@@ -114,12 +119,12 @@ public class Main {
 				LogUtils.debug(msgCode.getCode("M0009"),Main.class);
 			}
 
-			LogUtils.debug(msgCode.getCode("M0010"),Main.class);
-			Unloader loader = new Unloader();
-			loader.start();	
-			LogUtils.debug(msgCode.getCode("M0011"),Main.class);
-
-			if(ConfigInfo.DB_WRITER_MODE && ConfigInfo.TAR_CONSTRAINT_REBUILD) {					
+				LogUtils.debug(msgCode.getCode("M0010"),Main.class);
+				Unloader loader = new Unloader();
+				loader.start();	
+				LogUtils.debug(msgCode.getCode("M0011"),Main.class);
+		
+			if(ConfigInfo.DB_WRITER_MODE && ConfigInfo.TAR_CONSTRAINT_REBUILD) {		
 				LogUtils.debug(msgCode.getCode("M0012"),Main.class);
 				managementConstraint.createIndex(dbInform);
 				LogUtils.debug(msgCode.getCode("M0013"),Main.class);
@@ -128,6 +133,7 @@ public class Main {
 				managementConstraint.createFk(dbInform);
 				LogUtils.debug(msgCode.getCode("M0015"),Main.class);
 			}	
+			
 		}
 		
 
@@ -181,7 +187,7 @@ public class Main {
 	
 	private static File checkDirectory(String strDirectory) throws Exception {
 		File dir = new File(strDirectory);
-		if(!dir.exists()){
+		if(!dir.exists()){			
 			LogUtils.info(String.format(msgCode.getCode("C0025"), dir.getPath()), Main.class);
 			if(dir.mkdirs()) {
 				LogUtils.info(String.format(msgCode.getCode("C0026"), dir.getPath()), Main.class);
@@ -204,6 +210,11 @@ public class Main {
 		MakeSqlFile.listToSqlFile(ConfigInfo.SRC_FILE_OUTPUT_PATH + "rebuild/idx_drop.sql", dbInform.getIdxDropList());
 		MakeSqlFile.listToSqlFile(ConfigInfo.SRC_FILE_OUTPUT_PATH + "rebuild/idx_create.sql", dbInform.getIdxCreateList());
 		MakeSqlFile.listToSqlFile(ConfigInfo.SRC_FILE_OUTPUT_PATH + "rebuild/fk_create.sql", dbInform.getFkCreateList());
+		
+		/*MakeSqlFile.listToSqlFile( "C:\\logs\\fk_drop.sql", dbInform.getFkDropList());
+		MakeSqlFile.listToSqlFile(" C:\\logs\\idx_drop.sql", dbInform.getIdxDropList());
+		MakeSqlFile.listToSqlFile( "C:\\logs\\idx_create.sql", dbInform.getIdxCreateList());
+		MakeSqlFile.listToSqlFile( "C:\\logs\\fk_create.sql", dbInform.getFkCreateList());*/
 	}
 	
 	private static Boolean checkQueryXml() throws Exception {
