@@ -114,6 +114,7 @@
 					WHEN UC.CONSTRAINT_TYPE='U' THEN 'U'
 					WHEN UC.CONSTRAINT_TYPE='C' THEN 'C'
 					ELSE NULL	END AS CONSTRAINT_TYPE,
+					UC.INDEX_NAME AS INDEX_NAME,
 					CASE WHEN (SELECT INDEX_TYPE FROM ALL_INDEXES WHERE  INDEX_NAME = UC.INDEX_NAME)='NORMAL' THEN 'NORMAL'
 					WHEN (SELECT INDEX_TYPE FROM ALL_INDEXES WHERE  INDEX_NAME = UC.INDEX_NAME)='BITMAP' THEN 'BITMAP'
 					WHEN (SELECT INDEX_TYPE FROM ALL_INDEXES WHERE  INDEX_NAME = UC.INDEX_NAME)='FUNCTION-BASED NORMAL' THEN 'FUNCTION_BASED_NORMAL'
@@ -151,7 +152,7 @@
 			FROM USER_VIEWS
 	</select>
 	<select id="getSequencesInform" parameterType="map" resultType="com.k4m.experdb.db2pg.common.LowerKeyMap"  databaseId="ORA">
-	 SELECT SEQUENCE_NAME as EXTRA, MIN_VALUE AS SEQ_MIN_VALUE, MAX_VALUE, INCREMENT_BY AS SEQ_INC_VALUE, LAST_NUMBER AS SEQ_START FROM USER_SEQUENCES
+	 SELECT SEQUENCE_NAME as EXTRA, MIN_VALUE AS SEQ_MIN_VALUE, MAX_VALUE AS SEQ_MAX_VALUE, INCREMENT_BY AS SEQ_INC_VALUE, LAST_NUMBER AS SEQ_START FROM USER_SEQUENCES
 	</select>
 	
 	<select id="getTableNames" parameterType="map" resultType="java.lang.String" databaseId="TBR">
@@ -185,7 +186,7 @@
          AND UT.OBJECT_NAME NOT LIKE 'BIN$%'
 		ORDER BY SCHEMA_NAME, TABLE_NAME
 	</select>
-	<select id="getColumnInform" parameterType="map" resultType="com.k4m.experdb.db2pg.common.LowerKeyMap" databaseId="TBR"> 
+	<select id="getColumnInform" parameterType="map" resultType="com.k4m.experdb.db2pg.common.LowerKeyMap" resultMap="getColumnListResult"  databaseId="TBR"> 
   			SELECT
   			A.ORDINAL_POSITION AS ORDINAL_POSITION,
   			A.COLUMN_NAME AS COLUMN_NAME,
@@ -253,6 +254,7 @@
 					WHEN (SELECT INDEX_TYPE FROM ALL_INDEXES WHERE  INDEX_NAME = UC.INDEX_NAME)='FUNCTION-BASED BITMAP' THEN 'FUNCTION_BASED_BITMAP'
 					WHEN (SELECT INDEX_TYPE FROM ALL_INDEXES WHERE  INDEX_NAME = UC.INDEX_NAME)='DOMAIN' THEN 'NORMAL'
 					ELSE NULL END AS INDEX_TYPE,
+					UC.INDEX_NAME,
 					UC.DELETE_RULE AS DELETE_RULE,
 					NULL AS DEFERRABLE,
 					NULL AS DEFERRED
@@ -288,7 +290,7 @@
 									A.UNIQUENESS AS UNIQUENESS   
 				          FROM ALL_INDEXES A LEFT  OUTER JOIN ALL_CONSTRAINTS B ON A.INDEX_NAME=B.INDEX_NAME
 				          WHERE A.TABLE_NAME = #{TABLE_NAME} AND A.TABLE_OWNER = #{TABLE_SCHEMA}
-				          AND B.INDEX_NAME IS NULL
+				          <!-- AND B.INDEX_NAME IS NULL -->
 			          )A, USER_IND_COLUMNS C
 			          WHERE A.INDEX_NAME= C.INDEX_NAME
                       ORDER BY C.COLUMN_POSITION ASC
@@ -298,7 +300,7 @@
 			FROM USER_VIEWS
 	</select>
 	<select id="getSequencesInform" parameterType="map" resultType="com.k4m.experdb.db2pg.common.LowerKeyMap"  databaseId="TBR">
-	 SELECT SEQUENCE_NAME as EXTRA, MIN_VALUE AS SEQ_MIN_VALUE, MAX_VALUE, INCREMENT_BY AS SEQ_INC_VALUE, LAST_NUMBER AS SEQ_START FROM USER_SEQUENCES
+	 SELECT SEQUENCE_NAME as EXTRA, MIN_VALUE AS SEQ_MIN_VALUE, MAX_VALUE AS SEQ_MAX_VALUE, INCREMENT_BY AS SEQ_INC_VALUE, LAST_NUMBER AS SEQ_START FROM USER_SEQUENCES
 	</select>
 	
 	<select id="getTableNames" parameterType="map" resultType="java.lang.String" databaseId="MSS">
@@ -407,7 +409,69 @@
 	</select>
 	
 	<select id="getConstraintInform" parameterType="map" resultType="map" databaseId="MSS">
-					SELECT 
+	
+				SELECT 
+							 LOWER(CON.CONSTRAINT_SCHEMA) AS constraint_schema
+							,  LOWER(CON.CONSTRAINT_NAME) AS constraint_name
+							,  LOWER(CON.TABLE_SCHEMA) AS table_schema
+							,  LOWER(CON.TABLE_NAME) AS	table_name
+							,CASE WHEN con.constraint_type='PRIMARY KEY' THEN 'P'
+								WHEN con.constraint_type='FOREIGN KEY' THEN 'F'
+								WHEN con.constraint_type='UNIQUE' THEN 'U'
+								ELSE NULL						END AS constraint_type
+							, LOWER(CU.COLUMN_NAME) AS column_name
+							, LOWER(CU.ORDINAL_POSITION) AS ordinal_position
+							,NULL AS ref_table_schema
+							,NULL AS ref_table_name
+							,NULL AS ref_column_name
+							,NULL AS match_option
+							,NULL AS update_rule
+							,NULL AS delete_rule
+						FROM information_schema.table_constraints CON
+						INNER JOIN information_schema.key_column_usage AS CU 
+							ON CON.constraint_name = CU.constraint_name 
+						WHERE CON.TABLE_SCHEMA = #{TABLE_SCHEMA}
+						AND CON.TABLE_NAME = #{TABLE_NAME}
+						AND CON.CONSTRAINT_TYPE IN ('PRIMARY KEY', 'UNIQUE')
+	
+				 UNION ALL
+
+				SELECT
+				   LOWER(TC.CONSTRAINT_SCHEMA) AS constraint_schema
+					,  LOWER(TC.CONSTRAINT_NAME) AS constraint_name		
+					,  LOWER(TC.TABLE_SCHEMA) AS table_schema
+					,  LOWER(TC.TABLE_NAME) AS	table_name
+					,CASE WHEN TC.constraint_type='PRIMARY KEY' THEN 'P'
+						WHEN TC.constraint_type='FOREIGN KEY' THEN 'F'
+						WHEN TC.constraint_type='UNIQUE' THEN 'U'
+						ELSE NULL						END AS constraint_type
+					,  LOWER(CU.COLUMN_NAME) AS column_name
+					,  LOWER(CU.ORDINAL_POSITION) AS ordinal_position	
+					,  LOWER(RC.UNIQUE_CONSTRAINT_SCHEMA) AS ref_table_schema
+					,  LOWER(OBJECT_NAME (f.referenced_object_id)) AS ref_table_name
+					,  LOWER(CU.COLUMN_NAME) AS ref_column_name
+					,  LOWER(RC.MATCH_OPTION) AS match_option
+					,  LOWER(RC.UPDATE_RULE) AS update_rule
+					,  LOWER(RC.DELETE_RULE) AS delete_rule	  
+				FROM sys.foreign_keys AS f
+				INNER JOIN sys.foreign_key_columns AS fc 
+				   ON f.object_id = fc.constraint_object_id 
+				INNER JOIN information_schema.referential_constraints AS RC
+							            ON F.name = RC.constraint_name   
+				INNER JOIN information_schema.key_column_usage AS CU 
+							            ON F.name = CU.constraint_name 
+				INNER JOIN information_schema.table_constraints AS TC 
+				    ON F.name = TC.constraint_name    
+				JOIN (
+				    SELECT object_id
+				    FROM   sys.objects 
+				    WHERE  type_desc = 'USER_TABLE'
+				)tsp
+				ON f.parent_object_id = tsp.object_id
+				WHERE TC.TABLE_SCHEMA = #{TABLE_SCHEMA}
+				AND TC.TABLE_NAME = #{TABLE_NAME}
+
+					<!-- SELECT 
 							 LOWER(CON.CONSTRAINT_SCHEMA) AS constraint_schema
 							,  LOWER(CON.CONSTRAINT_NAME) AS constraint_name
 							,  LOWER(CON.TABLE_SCHEMA) AS table_schema
@@ -457,7 +521,7 @@
 			            ON RC.constraint_name = TC.constraint_name 
 					WHERE TC.TABLE_SCHEMA = #{TABLE_SCHEMA}
 					AND TC.TABLE_NAME = #{TABLE_NAME}
-	
+	 -->
 
 			<!-- SELECT 
 			     LOWER(c.table_schema) AS table_schema
@@ -627,7 +691,11 @@
 			c.column_name AS column_name,
 			c.ordinal_position AS ordinal_position,
 			c.column_default AS column_default,
-			c.is_nullable AS is_null ,
+			<!-- c.is_nullable AS is_null , -->
+			CASE
+				WHEN c.is_nullable != 'NO' THEN 'true'
+				ELSE 'false'
+			END AS is_null ,
 			c.numeric_precision AS numeric_precision ,
 			c.numeric_scale AS numeric_scale,
 			c.column_type AS column_type ,
@@ -773,8 +841,8 @@
 			  t.table_schema = s.table_schema
 			  AND t.table_name = s.table_name
 			  AND s.index_name = t.constraint_name
-		WHERE
-			  t.constraint_name IS NULL
+		WHERE 1 = 1
+			  <!-- AND t.constraint_name IS NULL -->
 		      AND s.table_schema=#{TABLE_SCHEMA}
 		      AND s.table_name=#{TABLE_NAME}
 	</select>
@@ -956,6 +1024,28 @@
 			JOIN pg_stat_all_tables psat1 ON psat1.relid = pc.conrelid
 			JOIN pg_stat_all_tables psat2 ON psat2.relid = pc.confrelid
 	</select>
+	
+	<select id="getPgFkDdlTable" resultType="map" databaseId="POG">
+		SELECT psat1.schemaname AS "SCHEMA_NM",
+			pc.conname AS "CONSTRAINT_NAME",
+			'R' AS "CONSTRAINT_TYPE",
+			psat1.relname AS "TABLE_NAME",
+			psat2.relname AS "R_TABLE_NAME",
+            'ALTER TABLE "' || psat1.schemaname || '"."' || psat1.relname || '" DROP CONSTRAINT "' || pc.conname || '";' AS DROP_DDL_SCRIPT,
+            'ALTER TABLE "' || psat1.schemaname || '"."' || psat1.relname || '" ADD CONSTRAINT "' || pc.conname || '" ' || pg_get_constraintdef(pc.oid) || ';' AS CREATE_DDL_SCRIPT
+		FROM pg_constraint pc
+			JOIN pg_stat_all_tables psat1 ON psat1.relid = pc.conrelid
+			JOIN pg_stat_all_tables psat2 ON psat2.relid = pc.confrelid
+		<choose>
+            <when test="indexTable.size != 0">
+			WHERE psat1.relname in
+				<foreach collection="indexTable" item="item" index="index" separator="," open="(" close=")">
+						 #{item}
+			   </foreach> 
+	   		</when>
+	   </choose>
+	</select>
+	
 	<select id="getPgIdxDdl" resultType="map" databaseId="POG">
 		SELECT CASE WHEN EXISTS (SELECT oid FROM pg_constraint pc WHERE pc.conindid = pi.indexrelid)
 					THEN 'ALTER TABLE "' || psat.schemaname || '"."'|| psat.relname || '" ADD CONSTRAINT "' || i.relname || '" ' 
@@ -974,6 +1064,35 @@
 				LEFT JOIN pg_namespace n ON n.oid = c.relnamespace
 				LEFT JOIN pg_tablespace t ON t.oid = CASE WHEN i.reltablespace = 0::oid THEN (SELECT dattablespace FROM pg_database WHERE datname=current_database()) ELSE i.reltablespace END
 		WHERE rtg.privilege_type = 'SELECT' AND rtg.table_schema = current_schema()
+		ORDER BY psat.relname, i.relname
+	</select>
+	
+	<select id="getPgIdxDdlTable" parameterType="java.util.HashMap"  resultType="map" databaseId="POG">
+		SELECT CASE WHEN EXISTS (SELECT oid FROM pg_constraint pc WHERE pc.conindid = pi.indexrelid)
+					THEN 'ALTER TABLE "' || psat.schemaname || '"."'|| psat.relname || '" ADD CONSTRAINT "' || i.relname || '" ' 
+						|| pg_get_constraintdef((SELECT oid FROM pg_constraint pc WHERE pc.conrelid = pi.indrelid AND pc.conindid = pi.indexrelid)) 
+						|| CASE WHEN i.reltablespace != 0::oid THEN ' USING INDEX TABLESPACE "' || t.spcname || '"' ELSE '' END
+					ELSE CASE WHEN strpos(pg_get_indexdef(pi.indexrelid), 'WHERE') > 0 THEN regexp_replace(pg_get_indexdef(pi.indexrelid), 'WHERE', 'TABLESPACE "' || t.spcname || '" WHERE' ) 
+						ELSE pg_get_indexdef(pi.indexrelid) || ' TABLESPACE "' || t.spcname || '"' END 
+				END || ';' AS "CREATE_DDL_SCRIPT",
+				CASE WHEN EXISTS (SELECT oid FROM pg_constraint pc WHERE pc.conindid = pi.indexrelid) 
+				THEN 'ALTER TABLE "' || psat.schemaname || '"."'|| psat.relname || '" DROP CONSTRAINT "' || i.relname else 'DROP INDEX "' || i.relname END || '";' as "DROP_DDL_SCRIPT"
+		FROM pg_stat_all_tables psat
+				JOIN pg_index pi ON pi.indrelid = psat.relid
+				JOIN pg_class c ON c.oid = pi.indrelid
+				JOIN pg_class i ON i.oid = pi.indexrelid
+				JOIN information_schema.role_table_grants rtg ON psat.schemaname = rtg.table_schema AND psat.relname = rtg.table_name				     
+				LEFT JOIN pg_namespace n ON n.oid = c.relnamespace
+				LEFT JOIN pg_tablespace t ON t.oid = CASE WHEN i.reltablespace = 0::oid THEN (SELECT dattablespace FROM pg_database WHERE datname=current_database()) ELSE i.reltablespace END
+		WHERE rtg.privilege_type = 'SELECT' AND rtg.table_schema = current_schema()
+		<choose>
+            <when test="indexTable.size != 0">
+				AND rtg.table_name in
+				<foreach collection="indexTable" item="item" index="index" separator="," open="(" close=")">
+						 #{item}
+			   </foreach> 
+	   		</when>
+	   </choose>
 		ORDER BY psat.relname, i.relname
 	</select>
 	<select id="getPgCurrentSchema" resultType="java.lang.String" databaseId="POG">

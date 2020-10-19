@@ -10,8 +10,8 @@ public class NormalKey extends Key<NormalKey> {
 		type = Key.Type.NORMAL;
 	}
 	
-	public NormalKey(String tableSchema, String table,String keySchema, String name, ArrayList<String> columns) {
-		super(tableSchema, table,keySchema,name,columns);
+	public NormalKey(String tableSchema, String table,String keySchema, String name, ArrayList<String> columns,String indexName) {
+		super(tableSchema, table,keySchema,name,columns,indexName);
 		type = Key.Type.NORMAL;
 	}
 }

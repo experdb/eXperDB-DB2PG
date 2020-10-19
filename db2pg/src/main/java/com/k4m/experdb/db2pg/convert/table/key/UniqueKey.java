@@ -9,8 +9,8 @@ public class UniqueKey extends Key<UniqueKey> {
 		type = Key.Type.UNIQUE;
 	}
 	
-	public UniqueKey(String tableSchema, String table,String keySchema, String name, ArrayList<String> columns) {
-		super(tableSchema, table,keySchema,name,columns);
+	public UniqueKey(String tableSchema, String table,String keySchema, String name, ArrayList<String> columns, String indexName) {
+		super(tableSchema, table,keySchema,name,columns,indexName);
 		type = Key.Type.UNIQUE;
 	}
 

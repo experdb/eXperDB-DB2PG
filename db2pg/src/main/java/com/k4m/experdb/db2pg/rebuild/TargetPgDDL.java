@@ -22,6 +22,7 @@ public class TargetPgDDL {
 	private List<String> fkDropList;
 	
 	public TargetPgDDL(){
+
 		idxCreateList = new ArrayList<String>();
 		idxDropList = new ArrayList<String>();
 		fkCreateList = new ArrayList<String>();

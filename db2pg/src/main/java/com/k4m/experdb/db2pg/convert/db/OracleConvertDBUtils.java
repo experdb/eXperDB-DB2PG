@@ -1,5 +1,6 @@
 package com.k4m.experdb.db2pg.convert.db;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -253,6 +254,7 @@ public class OracleConvertDBUtils {
 					if (obj != null)
 						ordinalPosition = Integer.valueOf(obj.toString());
 					String indexType = (obj = result.get("index_type")) != null ? obj.toString() : null;
+					String indexName = (obj = result.get("index_name")) != null ? obj.toString() : null;
 					PrimaryKey pkey = new PrimaryKey();
 					boolean isAdded = false;
 					for (int i = 0; i < table.getKeys().size(); i++) {
@@ -284,6 +286,7 @@ public class OracleConvertDBUtils {
 					pkey.setTableName(tableName);
 					pkey.setKeySchema(keySchema);
 					pkey.setName(keyName);
+					pkey.setIndexName(indexName);
 					
 					if (indexType == null) {
 						pkey.setIndexType(IndexType.NORMAL);
@@ -683,6 +686,9 @@ public class OracleConvertDBUtils {
 				obj = result.get("seq_min_value");
 				if (obj != null)
 					sequence.setSeqMinValue(Long.valueOf(obj.toString()));
+				obj = result.get("seq_max_value");
+				if (obj != null)
+					sequence.setSeqMaxalue(new BigDecimal(obj.toString()));
 				obj = result.get("seq_inc_value");
 				if (obj != null)
 					sequence.setSeqIncValue(Long.valueOf(obj.toString()));

@@ -165,12 +165,11 @@ public class PgDDLMaker<T> {
 		}//end column
 		
 		//ORA -> Sequence
-		if(ConfigInfo.SRC_DB_CONFIG.DB_TYPE.equals(Constant.DB_TYPE.ORA) && table.getSequence() !=null){
+		if(ConfigInfo.SRC_DB_CONFIG.DB_TYPE.equals(Constant.DB_TYPE.ORA) || ConfigInfo.SRC_DB_CONFIG.DB_TYPE.equals(Constant.DB_TYPE.TBR) && table.getSequence() !=null){
 			for(Sequence sequence : table.getSequence()) {
 				tmpsb.append("CREATE SEQUENCE ");
 				tmpsb.append(DevUtils.classifyString(sequence.getSeqName(),ConfigInfo.SRC_CLASSIFY_STRING));
-				tmpsb.append(String.format(" INCREMENT %d MINVALUE %d START %d;", sequence.getSeqIncValue(), sequence.getSeqMinValue(), sequence.getSeqStart()));
-				
+				tmpsb.append(String.format(" INCREMENT %d MINVALUE %d START %d MAXVALUE %s;", sequence.getSeqIncValue(), sequence.getSeqMinValue(), sequence.getSeqStart(), sequence.getSeqMaxalue()));
 				tmpsb.append("\nALTER SEQUENCE ");
 				tmpsb.append(DevUtils.classifyString(sequence.getSeqName(),ConfigInfo.SRC_CLASSIFY_STRING));
 				tmpsb.append(String.format(" RESTART WITH %d", sequence.getSeqStart()));
@@ -182,15 +181,23 @@ public class PgDDLMaker<T> {
 		
 		for(Key<?> key : table.getKeys()) {
 			switch(key.getType()) {
+			
 			case PRIMARY:
 				try {
 					PrimaryKey pkey = key.unwrap(PrimaryKey.class);
 					tmpsb.append("ALTER TABLE ");
 					tmpsb.append(DevUtils.classifyString(pkey.getTableName(),ConfigInfo.SRC_CLASSIFY_STRING));
-					tmpsb.append(" ADD PRIMARY KEY (");
+					
+					/*tmpsb.append(" ADD PRIMARY KEY (");
 					String columns = DevUtils.classifyString(pkey.getColumns().toString(),ConfigInfo.SRC_CLASSIFY_STRING);
 					tmpsb.append(columns.substring(columns.indexOf("[")+1,columns.indexOf("]")));
-					tmpsb.append(")");
+					tmpsb.append(")");*/
+					
+					tmpsb.append(" ADD PRIMARY KEY USING INDEX ");
+					tmpsb.append(DevUtils.classifyString(pkey.getTableName(),ConfigInfo.SRC_CLASSIFY_STRING));
+					tmpsb.append("_");
+					tmpsb.append(DevUtils.classifyString(pkey.getIndexName(),ConfigInfo.SRC_CLASSIFY_STRING));
+								
 					tmpStringVOs.add(new DDLString().setString(tmpsb.toString()).setDDLType(DDL_TYPE.CREATE)
 							.setCommandType(COMMAND_TYPE.PRIMARY_KEY).setPriority(1));
 					tmpsb.setLength(0);
@@ -198,6 +205,7 @@ public class PgDDLMaker<T> {
 					e.printStackTrace();
 				}
 				break;
+								
 			case FOREIGN:
 				try {
 					ForeignKey fkey = key.unwrap(ForeignKey.class);
@@ -211,8 +219,13 @@ public class PgDDLMaker<T> {
 					tmpsb.append(columns.substring(columns.indexOf("[")+1,columns.indexOf("]")));
 					tmpsb.append(") REFERENCES ");
 					if(ConfigInfo.SRC_DB_CONFIG.DB_TYPE.equals(Constant.DB_TYPE.MSS)){
-						String[] values = fkey.getRefTable().split("_");
-						tmpsb.append(values[1]);
+
+						//System.out.println(fkey.getRefTable());
+
+						/*String[] values = fkey.getRefTable().split("_");
+						tmpsb.append(values[1])*/;
+						
+						tmpsb.append(fkey.getRefTable());
 						tmpsb.append(" (");
 						columns = fkey.getRefColumns().toString();
 					}else{
@@ -250,6 +263,7 @@ public class PgDDLMaker<T> {
 					e.printStackTrace();
 				}
 				break;
+				
 			case UNIQUE:
 				try {
 					UniqueKey ukey = key.unwrap(UniqueKey.class);
@@ -270,6 +284,7 @@ public class PgDDLMaker<T> {
 					e.printStackTrace();
 				}
 				break;
+				
 			case NORMAL:
 				try {
 					NormalKey nkey = key.unwrap(NormalKey.class);
@@ -290,6 +305,7 @@ public class PgDDLMaker<T> {
 					e.printStackTrace();
 				}
 				break;
+				
 			case CLUSTER:
 				try {
 					Cluster cluster = key.unwrap(Cluster.class);
