@@ -58,7 +58,9 @@ public class DBCPPoolManager {
     		switch (configInfo.DB_TYPE) {
 				case Constant.DB_TYPE.ORA :
 					driver = "oracle.jdbc.driver.OracleDriver";
-					connectURI = "jdbc:oracle:thin:@"+configInfo.SERVERIP+":"+configInfo.PORT+"/"+configInfo.DBNAME;
+					connectURI = "jdbc:oracle:thin:@"+configInfo.SERVERIP+":"+configInfo.PORT+"/"+configInfo.DBNAME;				
+					props.put("validationQuery", "select 1 from dual");
+					LogUtils.info("validationQuery : validationQuery=select 1 from dual",DBCPPoolManager.class);					
 					break;
 				case Constant.DB_TYPE.POG :
 					driver = "org.postgresql.Driver" ;
@@ -93,6 +95,8 @@ public class DBCPPoolManager {
 					driver = "com.mysql.jdbc.Driver" ;
 					// mysql jdbc의 ResultSet fetch size 설정을 활성화 하려면 아래의 useCursorFetch 설정을 true로 변경하여야 한다.
 					connectURI = "jdbc:mysql://"+configInfo.SERVERIP+":"+configInfo.PORT+"/"+configInfo.DBNAME+"?useCursorFetch=true";
+					props.put("validationQuery", "select 1l");
+					LogUtils.info("validationQuery : validationQuery=select 1",DBCPPoolManager.class);		
 					break;
 				case Constant.DB_TYPE.CUB :
 					driver = "cubrid.jdbc.driver.CUBRIDDriver" ;
@@ -144,8 +148,10 @@ public class DBCPPoolManager {
 	        connectionPool.setMaxTotal(maxActive);		        
 	        connectionPool.setMaxWaitMillis(300000);  //사용할 커넥션이 없을 때 무한 대기
 	        connectionPool.setMinEvictableIdleTimeMillis(30 * 1000);
-	        connectionPool.setTimeBetweenEvictionRunsMillis(30 * 1000);
+	        //connectionPool.setTimeBetweenEvictionRunsMillis(30 * 1000);
+	        connectionPool.setTimeBetweenEvictionRunsMillis(60000);
 	        
+
 	        poolableConnectionFactory.setPool(connectionPool);	        
 	        
             //PoolingDriver 자신을 로딩
@@ -153,6 +159,7 @@ public class DBCPPoolManager {
             PoolingDriver pDriver = (PoolingDriver) DriverManager.getDriver("jdbc:apache:commons:dbcp:");
             PoolingDataSource<PoolableConnection> dataSource=  new PoolingDataSource<PoolableConnection> (connectionPool);
             dataSource.setAccessToUnderlyingConnectionAllowed(true);
+            
             
             Environment env = new Environment(poolName, (TransactionFactory)new ManagedTransactionFactory(), dataSource);
 			Configuration config = new Configuration(env); 
