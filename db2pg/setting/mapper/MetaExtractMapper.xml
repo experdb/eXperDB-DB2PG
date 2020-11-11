@@ -307,7 +307,8 @@
 		SELECT 
 				LOWER(name) as table_name
 		FROM sys.objects 
-		WHERE schema_id=(SELECT schema_id FROM sys.schemas WHERE name=#{TABLE_SCHEMA})
+		WHERE  1=1
+		<!-- schema_id=(SELECT schema_id FROM sys.schemas WHERE name=#{TABLE_SCHEMA}) -->
 		<choose>
 			<when test="SRC_TABLE_DDL == true">
 				AND type in ('U')
