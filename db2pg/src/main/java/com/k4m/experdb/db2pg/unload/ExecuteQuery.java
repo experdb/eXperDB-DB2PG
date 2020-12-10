@@ -359,10 +359,10 @@ public class ExecuteQuery implements Runnable{
 				
 					return "";	
 				}
-			case Types.VARBINARY:
+			/*case Types.VARBINARY:
 				bytes = rs.getBytes(index);
-				return bytes == null ? "\\N" : bytes.toString();
-			case Types.LONGVARBINARY:
+				return bytes == null ? "\\N" : bytes.toString();*/
+			case Types.LONGVARBINARY: case Types.VARBINARY : case Types.BINARY :
 				in = rs.getBinaryStream(index);
 				if(in == null) {
 					return "\\N";
