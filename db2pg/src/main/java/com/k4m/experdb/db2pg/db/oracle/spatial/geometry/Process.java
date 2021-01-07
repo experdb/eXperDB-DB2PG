@@ -472,8 +472,7 @@ public class Process {
 					}
 					poly.append("))");
 				} else {
-					//poly.append(String.format("CURVEPOLYGON%s (", oGeometry.suffix));
-					poly.append(String.format("POLYGON%s (", oGeometry.suffix));
+					poly.append(String.format("CURVEPOLYGON%s (", oGeometry.suffix));
 					for(int i=0;i<rings.size();i++){
 						poly.append(rings.get(i));
 						if(i<rings.size()-1){
