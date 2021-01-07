@@ -20,6 +20,7 @@ import com.k4m.experdb.db2pg.common.StrUtil;
 import com.k4m.experdb.db2pg.config.ConfigInfo;
 import com.k4m.experdb.db2pg.config.MsgCode;
 import com.k4m.experdb.db2pg.db.DBCPPoolManager;
+import com.k4m.experdb.db2pg.unload.ExecuteDataTransfer;
 import com.k4m.experdb.db2pg.unload.ExecuteQuery;
 import com.k4m.experdb.db2pg.unload.UnloadSummary;
 
@@ -137,7 +138,7 @@ public class DBWriter {
 				}
 				
 				//call back
-				errDataHandling(lineStr, table_nm, intErrLine);
+				errDataHandling(lineStr, table_nm, intErrLine,errCount);
 	
 			}catch(Exception ee){
 				//throw ee;
@@ -177,7 +178,7 @@ public class DBWriter {
 	 * @param intErrLine
 	 * @throws Exception
 	 */
-	private void errDataHandling(String lineStr, String table_nm, int intErrLine) throws Exception {
+	private void errDataHandling(String lineStr, String table_nm, int intErrLine, int errCount) throws Exception {
 		String strOrgString = lineStr;
 		
 		//System.out.println("@@@ strOrgString : " + strOrgString);
@@ -195,7 +196,7 @@ public class DBWriter {
 
 			//String strTransString = replaceSpecialChar(strOrgString).replaceAll(replaceSpecialChar(strDelString + Constant.R) , "");
 			
-			errDataFileWrite(strDelString, table_nm, intErrLine);
+			errDataFileWrite(strDelString, table_nm, intErrLine, errCount);
 			
 			if(!strTransString.equals("")) {
 				DBWrite(strTransString, table_nm);
@@ -220,12 +221,13 @@ public class DBWriter {
 		return strContent;
 	}
 	
-	private void errDataFileWrite(String strErrLine, String tableName, int intErrLine) throws Exception {
+	private void errDataFileWrite(String strErrLine, String tableName, int intErrLine,int errCount) throws Exception {
 		if(ConfigInfo.TAR_TABLE_BAD) {
-			FileWriter fileWriter = new FileWriter(tableName);
+			FileWriter fileWriter = new FileWriter();
 			fileWriter.badFileCreater(ConfigInfo.SRC_FILE_OUTPUT_PATH + tableName + ".bad");
 			fileWriter.badFileWrite(strErrLine);
-			LogUtils.debug(String.format(msgCode.getCode("C0203"),intErrLine,strErrLine), DBWriter.class);
+			fileWriter.closeBadFileChannels();
+			LogUtils.debug(String.format(msgCode.getCode("C0203"),errCount,intErrLine,strErrLine), DBWriter.class);
 		}
 	}
 	
@@ -300,11 +302,11 @@ public class DBWriter {
 	private void writeError(String table_nm, Exception e) throws Exception {
 
 		LogUtils.error(
-				"\""
+				"\"CharSet:"
 				+ ( ConfigInfo.TAR_DB_CONFIG.CHARSET != null && !ConfigInfo.TAR_DB_CONFIG.CHARSET.equals("")
-					? DevUtils.classifyString(ConfigInfo.TAR_DB_CONFIG.CHARSET,ConfigInfo.SRC_CLASSIFY_STRING) + "\".\""
+					? DevUtils.classifyString(ConfigInfo.TAR_DB_CONFIG.CHARSET,ConfigInfo.SRC_CLASSIFY_STRING) + "\", \"Table:"
 					: "")
-				+ table_nm + "\"",ExecuteQuery.class,e);
+				+ table_nm + "\"",ExecuteDataTransfer.class,e);			
 	}
 
 }

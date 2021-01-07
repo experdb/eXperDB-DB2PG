@@ -15,7 +15,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.k4m.experdb.db2pg.config.MsgCode;
-
+import com.k4m.experdb.db2pg.config.ConfigInfo;
 
 
 public class Process {
@@ -43,13 +43,20 @@ public class Process {
 			} else {
 				oGeometry.suffix="";
 			}
-//			try {
-				oGeometry.srid = 4326;
-//				oGeometry.srid = pridOraToPg(oraConn,jGeometry.getSRID());
-//			} catch(SQLException sqle) {
-//				logger.error("ERROR: Fail get srid");
-//				return "";
-//			}
+			
+			// yoonjh 2020-10-22 modify
+			if(jGeometry.getSRID() > 0) {
+				try {
+					oGeometry.srid = pridOraToPg(oraConn,jGeometry.getSRID());
+				} catch(SQLException sqle) {
+					logger.error("ERROR: Fail get srid");
+					//return "";
+					oGeometry.srid = ConfigInfo.SRC_SRID;
+				}
+			}else{
+				oGeometry.srid = ConfigInfo.SRC_SRID;
+			}
+			
 			oGeometry.point = jGeometry.getPoint();
 			oGeometry.sdoElemInfoList = parseSdoElemInfo(jGeometry.getElemInfo());
 			oGeometry.ordinates = jGeometry.getOrdinatesArray();
@@ -217,7 +224,8 @@ public class Process {
 			if(interpretation != 1) {
 				return String.format("CIRCULARSTRING%s (%s)", oGeometry.suffix,setCoordicates(oGeometry.coords, start+1, end));
 			}
-			return String.format("LINESTRING%s (%s)", oGeometry.suffix,setCoordicates(oGeometry.coords, start+1, end));
+			// yoonjh modify
+			return String.format("LINESTRING%s (%s)", oGeometry.suffix,setCoordicates(oGeometry.coords, start+1, end,"LINESTRING"));
 		}
 		//endregion
 		
@@ -384,7 +392,14 @@ public class Process {
 				}
 				String coordicates = setCoordicates(oGeometry.coords, start+1, end);
 				ring.append(coordicates);
-				if( interpretation == 4 ){
+				
+				if( interpretation == 4){
+					ring.append(", ");
+					ring.append(setCoordicates(oGeometry.coords, start+1, start+1));
+				}
+				
+				// yoonjh add
+				if( interpretation == 1 && end < 4){
 					ring.append(", ");
 					ring.append(setCoordicates(oGeometry.coords, start+1, start+1));
 				}
@@ -457,7 +472,8 @@ public class Process {
 					}
 					poly.append("))");
 				} else {
-					poly.append(String.format("CURVEPOLYGON%s (", oGeometry.suffix));
+					//poly.append(String.format("CURVEPOLYGON%s (", oGeometry.suffix));
+					poly.append(String.format("POLYGON%s (", oGeometry.suffix));
 					for(int i=0;i<rings.size();i++){
 						poly.append(rings.get(i));
 						if(i<rings.size()-1){
@@ -943,6 +959,32 @@ public class Process {
 			}
 			return str.toString();
 		}
+		
+		public static String setCoordicates(List<double[]> coords,int start,int end,String Etype) {
+			
+			StringBuffer str = new StringBuffer("");
+			if(start==0) start = 1;
+			if(end <= 0) {
+				end = coords.size();
+			}
+			if(Etype.equals("LINESTRING") && coords.size() == 1) {
+				double[] coord = coords.get(0);
+				str.append(coord[0]+" "+coord[1]+", "+coord[0]+" "+coord[1]);
+			}else {
+				for(int i=start-1;i<end && (i<coords.size());i++) {
+					double[] coord = coords.get(i);
+					for(int j=0;j<coord.length;j++){
+						str.append(coord[j]);
+						if(j<coord.length-1)
+							str.append(" ");
+					}
+					if(i<end-1&&i<coords.size()-1) {
+						str.append(", ");
+					}
+				}
+			}
+			return str.toString();
+		}
 		//endregion
 		
 		public static int eType (OracleGeometry oGeometry, int elemIndex) {
@@ -979,7 +1021,7 @@ public class Process {
 				rs.next();
 				pgPrid = rs.getInt("PRID");
 				if (pgPrid == 0)
-					pgPrid = 4326;
+					pgPrid = ConfigInfo.SRC_SRID;
 				pridMap.put(oraPrid, pgPrid);
 				rs.close();
 				pstat.close();

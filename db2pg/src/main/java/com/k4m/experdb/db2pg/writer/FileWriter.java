@@ -28,7 +28,7 @@ public class FileWriter {
 		fileCreater(outputDirectory + table_nm+ ".out");			
 	}
 	
-	public boolean dataWriteToFile(String lineStr, String table_nm) throws IOException {
+	public boolean dataWriteToFile(String lineStr, String table_nm) throws Exception {
 		table_nm = table_nm.replace("\"", "");
 		byte[] inputBytes = (lineStr).getBytes();
 		ByteBuffer byteBuffer = ByteBuffer.wrap(inputBytes);
@@ -36,12 +36,14 @@ public class FileWriter {
 			///if (lineStr.contains("시스템명")) {
 			//	throw new Exception();
 			//}
-			successByteCount += fileChannels.write(byteBuffer);
+			fileChannels.write(byteBuffer);
+			successByteCount++;
 		} catch (Exception e) {
 			// bad파일 생성
 			badFileCreater(outputDirectory + table_nm + ".bad");
 			badFileWrite(lineStr);
 			e.printStackTrace();
+			closeBadFileChannels();
 			return false;
 		}
 		return true;
@@ -71,7 +73,7 @@ public class FileWriter {
 
 	public void badFileCreater(String file_nm) throws IOException {
 		File file = new File(file_nm);
-		if(ConfigInfo.TAR_FILE_APPEND && file.isFile()) {
+		if(file.isFile()) {
 			badFileChannels = FileChannel.open(file.toPath(), StandardOpenOption.APPEND);
 		} else {
 			badFileChannels = FileChannel.open(file.toPath(), StandardOpenOption.CREATE, StandardOpenOption.WRITE, StandardOpenOption.TRUNCATE_EXISTING);
@@ -102,4 +104,9 @@ public class FileWriter {
 		}
 	}
 	
+	public void closeBadFileChannels() throws Exception {
+		if (badFileChannels != null && badFileChannels.isOpen()) {
+			badFileChannels.close();
+		}
+	}
 }

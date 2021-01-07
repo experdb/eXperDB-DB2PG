@@ -216,11 +216,11 @@ public class ExecuteQuery implements Runnable{
 				LogUtils.error(String.format(msgCode.getCode("C0141"),outputFileName)+".error",ExecuteQuery.class);
 			}
 			LogUtils.error(
-					"\""
+					"\"CharSet:"
 					+ ( ConfigInfo.TAR_DB_CONFIG.CHARSET != null && !ConfigInfo.TAR_DB_CONFIG.CHARSET.equals("")
-						? DevUtils.classifyString(ConfigInfo.TAR_DB_CONFIG.CHARSET,ConfigInfo.SRC_CLASSIFY_STRING) + "\".\""
+						? DevUtils.classifyString(ConfigInfo.TAR_DB_CONFIG.CHARSET,ConfigInfo.SRC_CLASSIFY_STRING) + "\", \"Table:"
 						: "")
-					+ this.tableName + "\"",ExecuteQuery.class,e);
+					+ this.tableName + "\"",ExecuteDataTransfer.class,e);			
 		} finally {
 			CloseConn(SrcConn, preSrcStmt);
 			status = 0;

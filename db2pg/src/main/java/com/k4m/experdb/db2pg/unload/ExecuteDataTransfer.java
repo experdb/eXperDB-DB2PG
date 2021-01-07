@@ -154,7 +154,7 @@ public class ExecuteDataTransfer implements Runnable{
 		try {
 			//stopWatch.start();
 			
-			LogUtils.debug(String.format("%s : %s", this.tableName, selectQuery),ExecuteQuery.class);
+			LogUtils.debug(String.format("%s : %s", this.tableName, selectQuery),ExecuteDataTransfer.class);
 			
 			SrcConn = DBCPPoolManager.getConnection(srcPoolName);
 			preSrcStmt = SrcConn.prepareStatement(selectQuery);
@@ -173,18 +173,18 @@ public class ExecuteDataTransfer implements Runnable{
         		columnNames.add(rsmd.getColumnName(i));
         	}
         	
-        	//LogUtils.debug(String.format(msgCode.getCode("C0131"),this.tableName),ExecuteQuery.class);
-        	LogUtils.debug(String.format(msgCode.getCode("C0132"),this.tableName),ExecuteQuery.class);
+        	//LogUtils.debug(String.format(msgCode.getCode("C0131"),this.tableName),ExecuteDataTransfer.class);
+        	LogUtils.debug(String.format(msgCode.getCode("C0132"),this.tableName),ExecuteDataTransfer.class);
         	
 			if(ConfigInfo.DB_WRITER_MODE) {
-				LogUtils.debug(String.format(msgCode.getCode("C0131"),this.tableName),ExecuteQuery.class);
+				LogUtils.debug(String.format(msgCode.getCode("C0131"),this.tableName),ExecuteDataTransfer.class);
 				if (ConfigInfo.TAR_TRUNCATE) {
 					execTruncTable(Constant.POOLNAME.TARGET.name(), this.tableName);
 				}
 				dbWriter = new DBWriter(Constant.POOLNAME.TARGET.name());
 			}
 			if(ConfigInfo.FILE_WRITER_MODE) {
-				LogUtils.debug(String.format(msgCode.getCode("C0133"),outputFileName),ExecuteQuery.class);
+				LogUtils.debug(String.format(msgCode.getCode("C0133"),outputFileName),ExecuteDataTransfer.class);
 				fileWriter = new FileWriter(this.tableName);
 			}
 			
@@ -231,9 +231,6 @@ public class ExecuteDataTransfer implements Runnable{
         		
         	}
         	
-        	afterTime = System.currentTimeMillis();
-        	this.migTime = (afterTime - beforeTime)/1000;
-        	
         	if (bf.length() != 0){
 	    		if(ConfigInfo.DB_WRITER_MODE) {
 	       			if(!(intErrCnt > ConfigInfo.TAR_LIMIT_ERROR)) {
@@ -249,10 +246,13 @@ public class ExecuteDataTransfer implements Runnable{
         	if(intErrCnt > 0) {
         		this.success = false;
         	}
-        	     	
+
+        	afterTime = System.currentTimeMillis();
+        	this.migTime = (afterTime - beforeTime)/1000;
+        	
         	//stopWatch.stop();
         	//this.migTime = stopWatch.getTime();
-        	LogUtils.debug(String.format(msgCode.getCode("C0134"),tableName,this.migTime),ExecuteQuery.class);
+        	LogUtils.debug(String.format(msgCode.getCode("C0134"),tableName,this.migTime),ExecuteDataTransfer.class);
         	
 		} catch(Exception e) {
 			this.success = false;
@@ -282,9 +282,9 @@ public class ExecuteDataTransfer implements Runnable{
 			CloseConn(SrcConn, preSrcStmt);
 			status = 0;
 			if(ConfigInfo.FILE_WRITER_MODE) {
-				LogUtils.debug(String.format(msgCode.getCode("C0136"),outputFileName),ExecuteQuery.class);
+				LogUtils.debug(String.format(msgCode.getCode("C0136"),outputFileName),ExecuteDataTransfer.class);
 			}
-			LogUtils.info(String.format(msgCode.getCode("C0137"),tableName,rowCnt),ExecuteQuery.class);
+			LogUtils.info(String.format(msgCode.getCode("C0137"),tableName,rowCnt),ExecuteDataTransfer.class);
 		}
 	}
 	
@@ -307,11 +307,11 @@ public class ExecuteDataTransfer implements Runnable{
 		ps.close();
 
 		LogUtils.error(
-				"\""
+				"\"CharSet:"
 				+ ( ConfigInfo.TAR_DB_CONFIG.CHARSET != null && !ConfigInfo.TAR_DB_CONFIG.CHARSET.equals("")
-					? DevUtils.classifyString(ConfigInfo.TAR_DB_CONFIG.CHARSET,ConfigInfo.SRC_CLASSIFY_STRING) + "\".\""
+					? DevUtils.classifyString(ConfigInfo.TAR_DB_CONFIG.CHARSET,ConfigInfo.SRC_CLASSIFY_STRING) + "\", \"Table:"
 					: "")
-				+ this.tableName + "\"",ExecuteQuery.class,e);
+				+ this.tableName + "\"",ExecuteDataTransfer.class,e);
 	}
 	
 	private String ConvertDataToString(Connection SrcConn,int columnType, ResultSet rs, int index) throws SQLException, Exception {
@@ -545,7 +545,7 @@ public class ExecuteDataTransfer implements Runnable{
 				conn = null;
 			}	
 		}catch(Exception e){
-			LogUtils.error(e.getMessage(),ExecuteQuery.class,e);
+			LogUtils.error(e.getMessage(),ExecuteDataTransfer.class,e);
 		}
 	}
 	
@@ -560,7 +560,7 @@ public class ExecuteDataTransfer implements Runnable{
 				conn = null;
 			}	
 		}catch(Exception e){
-			LogUtils.error(e.getMessage(),ExecuteQuery.class,e);
+			LogUtils.error(e.getMessage(),ExecuteDataTransfer.class,e);
 		}
 	}
 	
@@ -575,7 +575,7 @@ public class ExecuteDataTransfer implements Runnable{
 				conn = null;
 			}	
 		}catch(Exception e){
-			LogUtils.error(e.getMessage(),ExecuteQuery.class,e);
+			LogUtils.error(e.getMessage(),ExecuteDataTransfer.class,e);
 		}
 	}
 	
