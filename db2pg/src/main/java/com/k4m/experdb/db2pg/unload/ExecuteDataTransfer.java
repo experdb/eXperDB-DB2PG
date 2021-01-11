@@ -60,7 +60,7 @@ public class ExecuteDataTransfer implements Runnable{
 	private DBConfigInfo dbConfigInfo;
 
 
-	private StopWatch stopWatch = new StopWatch();
+	//private StopWatch stopWatch = new StopWatch();
 	
 	public ExecuteDataTransfer(String srcPoolName, String selectQuery,String outputFileName,DBConfigInfo dbConfigInfo){
 		this.srcPoolName = srcPoolName;
@@ -267,7 +267,7 @@ public class ExecuteDataTransfer implements Runnable{
 				if(ConfigInfo.FILE_WRITER_MODE) fileWriter.closeFileChannels(this.tableName);
 				
 				if(ConfigInfo.DB_WRITER_MODE) {
-					LogUtils.info(String.format(msgCode.getCode("C0135"),tableName, dbWriter.getProcessLines(), dbWriter.getProcessBytes(), dbWriter.getProcessErrorLInes(),stopWatch.getTime()),ExecuteQuery.class);
+					LogUtils.info(String.format(msgCode.getCode("C0135"),tableName, dbWriter.getProcessLines(), dbWriter.getProcessBytes(), dbWriter.getProcessErrorLInes(),this.migTime),ExecuteQuery.class);
 					if(dbWriter.getProcessErrorLInes() > 0) {
 						this.success = false;
 					}

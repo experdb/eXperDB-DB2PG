@@ -222,7 +222,7 @@ public class Unloader {
     			sb.append(String.valueOf(jobList.get(i).getRowCnt()));
     			sb.append(", MIGTIME : ");
     			sb.append(jobList.get(i).getMigTime());
-    			sb.append("ms, STATE : ");
+    			sb.append(" Sec, STATE : ");
     			if(jobList.get(i).isSuccess()){
     				sb.append("SUCCESS");
     				// 파일로 데이터 추출시 import.sql 파일에 psql을 이용한 데이터 적재가 가능하도록 구문 생성
