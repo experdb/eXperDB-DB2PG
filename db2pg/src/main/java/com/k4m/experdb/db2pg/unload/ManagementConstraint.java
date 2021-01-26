@@ -88,7 +88,7 @@ public class ManagementConstraint {
 				conn = null;
 			}	
 		}catch(Exception e){
-			LogUtils.error(e.getMessage(),ExecuteQuery.class,e);
+			LogUtils.error(e.getMessage(),ManagementConstraint.class,e);
 		}
 	}
 }

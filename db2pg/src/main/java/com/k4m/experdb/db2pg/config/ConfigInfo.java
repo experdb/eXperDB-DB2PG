@@ -81,6 +81,8 @@ public class ConfigInfo {
 	
 	public static boolean SRC_DDL_EXT_DBMS;
 	
+	public static int SRC_SRID;
+	
 	
 	public static class Loader {
 		public static void load(String configFilePath) {
@@ -108,6 +110,8 @@ public class ConfigInfo {
 				ConfigInfo.SRC_LOB_BUFFER_SIZE = (int)propertyCheck(trimCheck(prop.getProperty("SRC_LOB_BUFFER_SIZE")),100,Integer.class);
 				ConfigInfo.SRC_LOB_BUFFER_SIZE = ConfigInfo.SRC_LOB_BUFFER_SIZE>0?ConfigInfo.SRC_LOB_BUFFER_SIZE:100;
 				ConfigInfo.SRC_LOB_BUFFER_SIZE = ConfigInfo.SRC_LOB_BUFFER_SIZE * 1024 * 1024;
+				
+				ConfigInfo.SRC_SRID = (int)propertyCheck(trimCheck(prop.getProperty("SRC_SRID")),4326,Integer.class);
 				
 				ConfigInfo.SRC_STATEMENT_FETCH_SIZE = (int)propertyCheck(trimCheck(prop.getProperty("SRC_STATEMENT_FETCH_SIZE")),3000,Integer.class);
 				ConfigInfo.SRC_SELECT_ON_PARALLEL = (int)propertyCheck(trimCheck(prop.getProperty("SRC_SELECT_ON_PARALLEL")),1,Integer.class);
@@ -165,7 +169,7 @@ public class ConfigInfo {
 				ConfigInfo.TAR_LIMIT_ERROR = (int)propertyCheck(trimCheck(prop.getProperty("TAR_LIMIT_ERROR")),0,Integer.class);
 				
 				ConfigInfo.FILE_WRITER_MODE = (boolean)propertyCheck(trimCheck(prop.getProperty("FILE_WRITER_MODE")),false,Boolean.class);
-				ConfigInfo.TAR_FILE_APPEND = (boolean)propertyCheck(trimCheck(prop.getProperty("TAR_FILE_APPEND")),false,Boolean.class);
+				ConfigInfo.TAR_FILE_APPEND = (boolean)propertyCheck(trimCheck(prop.getProperty("TAR_FILE_APPEND")),true,Boolean.class);
 				ConfigInfo.DB_WRITER_MODE = (boolean)propertyCheck(trimCheck(prop.getProperty("DB_WRITER_MODE")),false,Boolean.class);
 				
 				ConfigInfo.TAR_CONSTRAINT_REBUILD = (boolean)propertyCheck(trimCheck(prop.getProperty("TAR_CONSTRAINT_REBUILD")),true,Boolean.class);
