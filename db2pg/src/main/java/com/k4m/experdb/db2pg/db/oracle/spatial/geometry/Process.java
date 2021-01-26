@@ -377,14 +377,15 @@ public class Process {
 				}
 			} else {
 				int eOffset = getStartOffset(oGeometry, elemIndex+1);
-				int end = eOffset > -1?(eOffset-1) / oGeometry.dim:oGeometry.coords.size();
+				//int end = eOffset > -1?(eOffset-1) / oGeometry.dim:oGeometry.coords.size();
+				int end = eOffset != -1?(eOffset-1) / oGeometry.dim:oGeometry.coords.size();
 				
 				if (etype != SDO_ETYPE.POLYGON || interpretation != 1) {
 					//end++;
 				}
 				if(interpretation ==2) {
 					if(etype==SDO_ETYPE.LINESTRING || etype == SDO_ETYPE.POLYGON_EXTERIOR || etype == SDO_ETYPE.POLYGON_INTERIOR) {
-						end++;
+						//end++;
 					}
 				}
 				if(oGeometry.sdoElemInfoList.get(0).SDO_ETYPE == SDO_ETYPE.COMPOUND_POLYGON_INTERIOR || oGeometry.sdoElemInfoList.get(0).SDO_ETYPE == SDO_ETYPE.COMPOUND_POLYGON_EXTERIOR){
@@ -409,7 +410,7 @@ public class Process {
 				return String.format("CIRCULARSTRING%s (%s)", oGeometry.suffix,ring);
 			} else if(etype==SDO_ETYPE.COMPOUND_POLYGON_EXTERIOR && interpretation ==2) {
 				return String.format("COMPOUNDCURVE%s (%s)", oGeometry.suffix,ring);
-			} else if(etype==SDO_ETYPE.LINESTRING) {
+			} else if(etype==SDO_ETYPE.LINESTRING && interpretation == 2) {
 				return String.format("CIRCULARSTRING%s (%s)", oGeometry.suffix,ring);
 			}
 			return String.format("(%s)",ring);
@@ -456,7 +457,8 @@ public class Process {
 			}
 			
 			StringBuffer poly = new StringBuffer("");
-			if(interpretation ==2 || interpretation == 4) {
+			//if(interpretation ==2 || interpretation == 4) {
+			if(interpretation > 1) {
 				if(oGeometry.sdoElemInfoList.get(0).SDO_ETYPE == SDO_ETYPE.COMPOUND_POLYGON_EXTERIOR) {
 					String tmp = removeStr(rings.get(0),String.format("CIRCULARSTRING%s ", oGeometry.suffix));
 					if(tmp!=null) {
