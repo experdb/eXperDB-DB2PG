@@ -12,4 +12,4 @@ chmod +x $JAVA
 sleep 3
 
 cd "${DB2PG_HOME}"
-mkdir ddl config trans
+mkdir ddl config trans xml
