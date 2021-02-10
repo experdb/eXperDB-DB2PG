@@ -365,13 +365,13 @@ public class Process {
 					double[] max = oGeometry.coords.get(start+1);
 					ring.append(join(" ",min));
 					ring.append(", "); 
-					ring.append(min[0]); ring.append(" "); ring.append(max[1]);
-//					ring.append(max[0]); ring.append(" "); ring.append(min[1]); 
+//					ring.append(min[0]); ring.append(" "); ring.append(max[1]);
+					ring.append(max[0]); ring.append(" "); ring.append(min[1]); 
 					ring.append(", ");
 					ring.append(join(" ",max));
 					ring.append(", "); 
-					ring.append(max[0]); ring.append(" "); ring.append(min[1]); 
-//					ring.append(min[0]); ring.append(" "); ring.append(max[1]);
+//					ring.append(max[0]); ring.append(" "); ring.append(min[1]); 
+					ring.append(min[0]); ring.append(" "); ring.append(max[1]);
 					ring.append(", ");
 					ring.append(join(" ",min));
 				}
@@ -400,9 +400,10 @@ public class Process {
 				}
 				
 				// yoonjh add
-				if( interpretation == 1 && end < 4){
+				if( interpretation == 1 && end == 3){
 					ring.append(", ");
 					ring.append(setCoordicates(oGeometry.coords, start+1, start+1));
+					System.out.println("end : "+end);
 				}
 			}
 			
@@ -457,8 +458,16 @@ public class Process {
 			}
 			
 			StringBuffer poly = new StringBuffer("");
-			//if(interpretation ==2 || interpretation == 4) {
-			if(interpretation > 1) {
+			if( (interpretation ==1 || interpretation == 3) && oGeometry.sdoElemInfoList.get(0).SDO_ETYPE != SDO_ETYPE.COMPOUND_POLYGON_EXTERIOR) {
+				poly.append(String.format("POLYGON%s (", oGeometry.suffix));
+				for(int i=0;i<rings.size();i++){
+					poly.append(rings.get(i));
+					if(i<rings.size()-1){
+						poly.append(", ");
+					}
+				}
+				poly.append(")");
+			} else {
 				if(oGeometry.sdoElemInfoList.get(0).SDO_ETYPE == SDO_ETYPE.COMPOUND_POLYGON_EXTERIOR) {
 					String tmp = removeStr(rings.get(0),String.format("CIRCULARSTRING%s ", oGeometry.suffix));
 					if(tmp!=null) {
@@ -483,16 +492,7 @@ public class Process {
 					}
 					poly.append(")");
 				}
-			} else {
-				poly.append(String.format("POLYGON%s (", oGeometry.suffix));
-				for(int i=0;i<rings.size();i++){
-					poly.append(rings.get(i));
-					if(i<rings.size()-1){
-						poly.append(", ");
-					}
-				}
-				poly.append(")");
-			}
+			} 
 			return poly.toString();
 		}
 		//endregion
@@ -534,6 +534,7 @@ public class Process {
 				
 				if(etype == SDO_ETYPE.POLYGON || etype == SDO_ETYPE.POLYGON_EXTERIOR ) {
 					String poly = removeStr(createPolygon(oGeometry,i),String.format("POLYGON%s ", oGeometry.suffix));
+					poly = poly.replace("CURVE","");
 					if(etype != eType(oGeometry, i-1)) {
 						if(etype == SDO_ETYPE.POLYGON_INTERIOR && SDO_ETYPE.POLYGON_EXTERIOR == eType(oGeometry,i-1)) {
 							poly = poly.substring(poly.indexOf("(")+1);
