@@ -219,6 +219,9 @@ public class CreateDbStmt {
 											  int CACHE_SIZE, int LAST_NUMBER) {		
 		StringBuilder builder = new StringBuilder();
 		
+		// bigint fix
+		if(MAX_VALUE.length() > 18) MAX_VALUE = "999999999999999999";
+		
 		try{
 			switch(DB_TYPE){
 			case Constant.DB_TYPE.ORA : 

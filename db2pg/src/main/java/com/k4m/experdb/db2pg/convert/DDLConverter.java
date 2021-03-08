@@ -115,6 +115,15 @@ public class DDLConverter {
 			ConvertDBUtils.setConstraintInform(table, Constant.POOLNAME.SOURCE.name(), dbConfigInfo);
 			ConvertDBUtils.setKeyInform(table, Constant.POOLNAME.SOURCE.name(), dbConfigInfo);
 			
+			// Oracle Partition Table
+			if(ConfigInfo.SRC_DB_CONFIG.DB_TYPE.equals(Constant.DB_TYPE.ORA) && table.getPtCnt() > 0){
+				ConvertDBUtils.setPartitionTableColumnInform(table, Constant.POOLNAME.SOURCE.name(), dbConfigInfo);
+				if(table.getPtSubCnt() > 0 ) {
+					ConvertDBUtils.setSubPartitionTableColumnInform(table, Constant.POOLNAME.SOURCE.name(), dbConfigInfo);
+				}
+				//System.out.println("Partition convert!!!");
+			}
+			
 			tableConvert(table);
 
 			maker.setting(table);
@@ -125,7 +134,7 @@ public class DDLConverter {
 			while ((ddlStrVO = ddlQueue.poll()) != null) {
 				if (ddlStrVO.getDDLType() == DDL_TYPE.CREATE) {
 					switch (ddlStrVO.getCommandType()) {
-					case TYPE: case TABLE: case COMMENT: 
+					case TYPE: case TABLE: case COMMENT: case PARTITION: 
 						tableQueue.add(ddlStrVO);
 						break;
 					case SEQUENCE:

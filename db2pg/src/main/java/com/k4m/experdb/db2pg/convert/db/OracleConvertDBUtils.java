@@ -4,6 +4,7 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
@@ -54,24 +55,35 @@ public class OracleConvertDBUtils {
 			} else {
 				params.put("TABLE_LIST", "");
 			}
-			MetaExtractWorker mew = new MetaExtractWorker(srcPoolName,
-					new MetaExtractWork(WORK_TYPE.GET_TABLE_INFORM, params));
+			MetaExtractWorker mew = new MetaExtractWorker(srcPoolName, new MetaExtractWork(WORK_TYPE.GET_TABLE_INFORM, params));
 			mew.run();
 			List<Map<String, Object>> results = (List<Map<String, Object>>) mew.getListResult();
-			LogUtils.info(msgCode.getCode("C0032") + results, OracleConvertDBUtils.class);
-			LogUtils.info(msgCode.getCode("C0033") + results, OracleConvertDBUtils.class);
+			//LogUtils.info(msgCode.getCode("C0032") + results, OracleConvertDBUtils.class);
+			//LogUtils.info(msgCode.getCode("C0033") + results, OracleConvertDBUtils.class);
 			Object obj = null;
 			for (Map<String, Object> result : results) {
 				Table table = new Table();
 				obj = result.get("schema_name");
-				if (obj != null)
-					table.setSchemaName(obj.toString());
+				if (obj != null) table.setSchemaName(obj.toString());
 				obj = result.get("table_name");
-				if (obj != null)
-					table.setName(obj.toString());
+				if (obj != null) table.setName(obj.toString());
 				obj = result.get("table_comment");
-				if (obj != null)
-					table.setComment(obj.toString());
+				if (obj != null) table.setComment(obj.toString());
+				
+				// Oracle Partition Table
+				obj = result.get("pt_cnt");
+				if(obj != null) table.setPtCnt(Integer.valueOf(obj.toString()));
+				obj = result.get("pt_sub_cnt");
+				if(obj != null) table.setPtSubCnt(Integer.valueOf(obj.toString()));
+				obj = result.get("pt_type");
+				if (obj != null) table.setPtType(obj.toString());
+				obj = result.get("pt_sub_type");
+				if (obj != null) table.setPtSubType(obj.toString());
+				obj = result.get("pt_key_column");
+				if(obj != null) table.setPartKeyColumn(obj.toString());
+				obj = result.get("pt_sub_key_column");
+				if(obj != null) table.setPartSubKeyColumn(obj.toString());
+				
 				tables.add(table);
 			}
 		} catch (Exception e) {
@@ -114,8 +126,7 @@ public class OracleConvertDBUtils {
 			for (Map<String, Object> result : results) {
 				Column column = new Column();
 				obj = result.get("ordinal_position");
-				if (obj != null)
-					column.setOrdinalPosition(Integer.valueOf(obj.toString()));
+				if (obj != null) column.setOrdinalPosition(Integer.valueOf(obj.toString()));
 				obj = result.get("column_name");
 				column.setName(obj != null ? obj.toString() : null);
 				obj = result.get("column_default");
@@ -123,27 +134,21 @@ public class OracleConvertDBUtils {
 				obj = result.get("type_length");
         		if(obj != null) column.setTypeLength(Integer.valueOf(obj.toString()));
 				obj = result.get("is_null");
-				if (obj != null)
-					column.setNotNull(!Boolean.valueOf(obj.toString()));
+				if (obj != null) column.setNotNull(!Boolean.valueOf(obj.toString()));
 				obj = result.get("numeric_precision");
-				if (obj != null)
-					column.setNumericPrecision(Integer.valueOf(obj.toString()));
+				if (obj != null) column.setNumericPrecision(Integer.valueOf(obj.toString()));
 				obj = result.get("numeric_scale");
-				if (obj != null)
-					column.setNumericScale(Long.valueOf(obj.toString()));
+				if (obj != null) column.setNumericScale(Long.valueOf(obj.toString()));
 				obj = result.get("column_type");
 				column.setType(obj != null ? obj.toString() : null);
 				obj = result.get("column_comment");
 				column.setComment(obj != null ? obj.toString() : null);
 				obj = result.get("seq_start");
-				if (obj != null)
-					column.setSeqStart(Long.valueOf(obj.toString()));
+				if (obj != null) column.setSeqStart(Long.valueOf(obj.toString()));
 				obj = result.get("seq_min_value");
-				if (obj != null)
-					column.setSeqMinValue(Long.valueOf(obj.toString()));
+				if (obj != null) column.setSeqMinValue(Long.valueOf(obj.toString()));
 				obj = result.get("seq_inc_value");
-				if (obj != null)
-					column.setSeqIncValue(Long.valueOf(obj.toString()));
+				if (obj != null) column.setSeqIncValue(Long.valueOf(obj.toString()));
 				obj = result.get("extra");
 				column.setExtra(obj != null ? obj.toString() : null);
 				table.getColumns().add(column);
@@ -152,6 +157,78 @@ public class OracleConvertDBUtils {
 			LogUtils.info(msgCode.getCode("C0037"), OracleConvertDBUtils.class);
 		} catch (Exception e) {
 			LogUtils.error(e.getMessage(), OracleConvertDBUtils.class);
+		}
+		return table;
+	}
+	// Partition Table Column Inform
+	public static Table setPartitionTableColumnInform(Table table, String srcPoolName, DBConfigInfo dbConfigInfo) {
+		try {
+			Map<String, Object> params = new HashMap<String, Object>();
+			params.put("TABLE_SCHEMA", table.getSchemaName());
+			params.put("TABLE_NAME", table.getName());
+			
+			MetaExtractWorker mew = new MetaExtractWorker(srcPoolName, new MetaExtractWork(WORK_TYPE.GET_PARTITION_TABLE_COLUMN_INFORM, params));
+			mew.run();
+			List<Map<String, Object>> results = (List<Map<String, Object>>) mew.getListResult();
+			Object obj = null;
+			for (Map<String, Object> result : results) {
+				Column column = new Column();
+				obj = result.get("partition_position");
+				if (obj != null)
+					column.setPartitionPosition(Integer.valueOf(obj.toString()));
+				obj = result.get("partition_name");
+				column.setPartitionName(obj != null ? obj.toString() : null);
+				obj = result.get("high_value");
+				column.setHighValue(obj != null ? obj.toString() : null);
+				obj = result.get("partitioning_type");
+				column.setPartitioningType(obj != null ? obj.toString() : null);
+				obj = result.get("partition_column_name");
+				column.setPartitionColumnName(obj != null ? obj.toString() : null);
+				obj = result.get("partition_column_position");
+        		if(obj != null) column.setPartitionColumnPosition(Integer.valueOf(obj.toString()));
+        		column.setPartitionTableName(table.getName());
+
+				table.getPartColumns().add(column);
+			}
+		} catch (Exception e) {
+			LogUtils.error(e.getMessage(), OracleConvertDBUtils.class);
+			System.out.println(e);
+		}
+		return table;
+	}
+	
+	// Sub Partition Table Column Inform
+	public static Table setSubPartitionTableColumnInform(Table table, String srcPoolName, DBConfigInfo dbConfigInfo) {
+		try {
+			Map<String, Object> params = new HashMap<String, Object>();
+			params.put("TABLE_SCHEMA", table.getSchemaName());
+			params.put("TABLE_NAME", table.getName());
+			
+			MetaExtractWorker mew = new MetaExtractWorker(srcPoolName, new MetaExtractWork(WORK_TYPE.GET_SUBPARTITION_TABLE_COLUMN_INFORM, params));
+			mew.run();
+			List<Map<String, Object>> results = (List<Map<String, Object>>) mew.getListResult();
+			Object obj = null;
+			for (Map<String, Object> result : results) {
+				Column column = new Column();
+				obj = result.get("subpartition_position");
+				if (obj != null) column.setSubPartitionPosition(Integer.valueOf(obj.toString()));
+				obj = result.get("subpartition_name");
+				column.setSubPartitionName(obj != null ? obj.toString() : null);
+				obj = result.get("high_value");
+				column.setHighValue(obj != null ? obj.toString() : null);
+				obj = result.get("subpartitioning_type");
+				column.setSubPartitioningType(obj != null ? obj.toString() : null);
+				obj = result.get("partition_column_name");
+				column.setPartitionColumnName(obj != null ? obj.toString() : null);
+				obj = result.get("partition_column_position");
+        		if(obj != null) column.setPartitionColumnPosition(Integer.valueOf(obj.toString()));
+        		column.setPartitionTableName(result.get("partition_name").toString());
+    			
+				table.getSubPartColumns().add(column);
+			}
+		} catch (Exception e) {
+			LogUtils.error(e.getMessage(), OracleConvertDBUtils.class);
+			System.out.println(e);
 		}
 		return table;
 	}
@@ -239,7 +316,7 @@ public class OracleConvertDBUtils {
 			MetaExtractWorker mew = new MetaExtractWorker(srcPoolName, new MetaExtractWork(WORK_TYPE.GET_CONSTRAINT_INFORM, params));
 			mew.run();
 			List<Map<String, Object>> results = (List<Map<String, Object>>) mew.getListResult();
-			LogUtils.info(msgCode.getCode("C0039") + results, ConvertDBUtils.class);
+			//LogUtils.info(msgCode.getCode("C0039") + results, ConvertDBUtils.class);
 			Object obj = null;
 			for (Map<String, Object> result : results) {
 				String constraintType = (obj = result.get("constraint_type")) != null ? obj.toString() : null;
@@ -491,7 +568,7 @@ public class OracleConvertDBUtils {
 			MetaExtractWorker mew = new MetaExtractWorker(srcPoolName, new MetaExtractWork(WORK_TYPE.GET_KEY_INFORM, params));
 			mew.run();
 			List<Map<String, Object>> results = (List<Map<String, Object>>) mew.getListResult();
-			LogUtils.info(msgCode.getCode("C0042") + results, ConvertDBUtils.class);
+			//LogUtils.info(msgCode.getCode("C0042") + results, ConvertDBUtils.class);
 			Object obj = null;
 			for (Map<String, Object> result : results) {
 				obj = result.get("index_schema");
@@ -676,7 +753,7 @@ public class OracleConvertDBUtils {
 			MetaExtractWorker mew = new MetaExtractWorker(srcPoolName, new MetaExtractWork(WORK_TYPE.GET_SEQUENCE_INFORM, params));
 			mew.run();
 			List<Map<String, Object>> results = (List<Map<String, Object>>) mew.getListResult();
-			LogUtils.info(msgCode.getCode("C0048") + results, OracleConvertDBUtils.class);
+			//LogUtils.info(msgCode.getCode("C0048") + results, OracleConvertDBUtils.class);
 			Object obj = null;
 			for (Map<String, Object> result : results) {
 				Sequence sequence = new Sequence();

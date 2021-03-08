@@ -9,20 +9,91 @@ public class Table {
 	private String schemaName;
 	private String tableName;
 	private String comment;
+	private Integer ptCnt;
+	private String ptType;
+	private String ptSubType;
+	private Integer ptSubCnt;
+	private String partKeyColumn;
+	private String partSubKeyColumn;
+ 
 	private List<String> alertComments;
 	private List<Column> columns;
+	private List<Column> partColumns;
+	private List<Column> subPartColumns;
 	private List<Sequence> sequence;
 	private List<Key<?>> keys;
 	private List<View> views;
 	private boolean checkColumn;
 
+/*    PT.PARTITIONING_TYPE AS PT_TYPE,
+    PT.SUBPARTITIONING_TYPE AS PT_SUB_TYPE,
+    PT.PARTITION_COUNT AS PT_CNT,
+    PT.DEF_SUBPARTITION_COUNT AS PT_SUB_CNT,
+    PT.PARTITIONING_KEY_COUNT AS PT_KEY_CNT,
+    PT.SUBPARTITIONING_KEY_COUNT AS PT_SUB_KEY_CNT*/
+    
 	public Table() {
 		this.views = new LinkedList<View>();
 		this.columns = new LinkedList<Column>();
+		this.partColumns = new LinkedList<Column>();
+		this.subPartColumns = new LinkedList<Column>();
 		this.sequence = new LinkedList<Sequence>();
 		this.keys = new LinkedList<Key<?>>();
 		this.alertComments = new LinkedList<String>();
 		this.checkColumn = false;
+	}
+	
+	
+	public String getPartSubKeyColumn() {
+		return partSubKeyColumn;
+	}
+
+
+	public void setPartSubKeyColumn(String partSubKeyColumn) {
+		this.partSubKeyColumn = partSubKeyColumn;
+	}
+
+
+	public String getPartKeyColumn() {
+		return partKeyColumn;
+	}
+
+
+	public void setPartKeyColumn(String partKeyColumn) {
+		this.partKeyColumn = partKeyColumn;
+	}
+
+
+	public int getPtCnt() {
+		return ptCnt;
+	}
+
+	public void setPtCnt(int ptCnt) {
+		this.ptCnt = ptCnt;
+	}
+
+	public String getPtType() {
+		return ptType;
+	}
+
+	public void setPtType(String ptType) {
+		this.ptType = ptType;
+	}
+
+	public String getPtSubType() {
+		return ptSubType;
+	}
+
+	public void setPtSubType(String ptSubType) {
+		this.ptSubType = ptSubType;
+	}
+
+	public int getPtSubCnt() {
+		return ptSubCnt;
+	}
+
+	public void setPtSubCnt(int ptSubCnt) {
+		this.ptSubCnt = ptSubCnt;
 	}
 
 	public boolean isCheckColumn() {
@@ -60,6 +131,14 @@ public class Table {
 	public List<Column> getColumns() {
 		return columns;
 	}
+	
+	public List<Column> getPartColumns() {
+		return partColumns;
+	}
+	
+	public List<Column> getSubPartColumns() {
+		return subPartColumns;
+	}
 
 	public String getComment() {
 		return comment;
@@ -76,6 +155,7 @@ public class Table {
 	public List<Key<?>> getKeys() {
 		return keys;
 	}
+	
 	
 	public void setCheckColumn(boolean checkColumn) {
 		this.checkColumn = checkColumn;

@@ -74,7 +74,10 @@ public class Main {
 		makeDirectory();
 		
 		// Target DB Charset different vs config Charset
-		String pgCharSet = DBUtils.getCharSet(Constant.POOLNAME.TARGET.name(), ConfigInfo.TAR_DB_CONFIG);
+		String pgCharSet = null;
+		if(!ConfigInfo.SRC_DDL_EXPORT) {
+			pgCharSet = DBUtils.getCharSet(Constant.POOLNAME.TARGET.name(), ConfigInfo.TAR_DB_CONFIG);
+		}
 	
 		if( (ConfigInfo.DB_WRITER_MODE || ConfigInfo.FILE_WRITER_MODE) && ConfigInfo.SRC_INCLUDE_DATA_EXPORT) {
 			if(pgCharSet != null && !pgCharSet.toUpperCase().equals(ConfigInfo.TAR_DB_CONFIG.CHARSET.toUpperCase())) {
@@ -83,7 +86,7 @@ public class Main {
 			}
 		}
 		
-		if(ConfigInfo.SRC_DDL_EXPORT) {	
+		if(ConfigInfo.SRC_DDL_EXPORT) {
 			LogUtils.debug(msgCode.getCode("M0002"),Main.class);
 			DDLConverter ddlConv = DDLConverter.getInstance();
 			ddlConv.start();

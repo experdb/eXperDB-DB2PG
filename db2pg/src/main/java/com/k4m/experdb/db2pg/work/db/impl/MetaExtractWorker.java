@@ -58,8 +58,14 @@ public final class MetaExtractWorker extends DBWorker {
 				result = mapper.getKeyInform(work.params);
 				break;
 			case GET_TABLE_INFORM:
-				System.out.println(work.params);
+				//System.out.println(work.params);
 				result = mapper.getTableInform(work.params);
+				break;
+			case GET_PARTITION_TABLE_COLUMN_INFORM:
+				result = mapper.getPartitionTableColumnInform(work.params);
+				break;
+			case GET_SUBPARTITION_TABLE_COLUMN_INFORM:
+				result = mapper.getSubPartitionTableColumnInform(work.params);
 				break;
 			case GET_TABLE_NAMES:
 				result = mapper.getTableNames(work.params);
@@ -119,6 +125,7 @@ public final class MetaExtractWorker extends DBWorker {
 			stop();
 		} catch (Exception e) {
 			this.exception = e;
+			System.out.println(e);
 			hasException = true;
 		} finally {
 			isRunning = false;
