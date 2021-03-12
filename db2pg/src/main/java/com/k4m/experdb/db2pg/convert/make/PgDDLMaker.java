@@ -23,6 +23,10 @@ import com.k4m.experdb.db2pg.convert.table.key.UniqueKey;
 import com.k4m.experdb.db2pg.convert.table.key.exception.TableKeyException;
 import com.k4m.experdb.db2pg.convert.type.COMMAND_TYPE;
 import com.k4m.experdb.db2pg.convert.type.DDL_TYPE;
+import com.k4m.experdb.db2pg.db.DBUtils;
+import com.k4m.experdb.db2pg.work.db.impl.MetaExtractWork;
+import com.k4m.experdb.db2pg.work.db.impl.MetaExtractWorker;
+import com.k4m.experdb.db2pg.work.db.impl.WORK_TYPE;
 
 public class PgDDLMaker<T> {
 	private T t;
@@ -345,41 +349,91 @@ public class PgDDLMaker<T> {
 		ctsb.append(")");
 
 		// Oracle partition DDL 
-		if(ConfigInfo.SRC_DB_CONFIG.DB_TYPE.equals(Constant.DB_TYPE.ORA)) {
-			if(table.getPtCnt() > 0) {
-				ctsb.append(" PARTITION BY "+table.getPtType() + " (" + table.getPartKeyColumn() + ");\n");
+		if(ConfigInfo.SRC_DB_CONFIG.DB_TYPE.equals(Constant.DB_TYPE.ORA) && table.getPtCnt() > 0) {
+			// Partition Function Create
+			//DBUtils.getCreateFnLong();
+			
+			ctsb.append(" PARTITION BY "+table.getPtType() + " (" + table.getPartKeyColumn() + ");\n");
+			
+			int k=0;
+			String rangeStart = "MINVALUE";
+			for(Column column : table.getPartColumns()) {
+				ctsb.append("CREATE TABLE ");
+				ctsb.append(DevUtils.classifyString(column.getPartitionName(),ConfigInfo.SRC_CLASSIFY_STRING));
+				ctsb.append(" PARTITION OF " + DevUtils.classifyString(column.getPartitionTableName(),ConfigInfo.SRC_CLASSIFY_STRING));
+				if(column.getHighValue() != null && !column.getHighValue().toLowerCase().contains("default")) {
+					ctsb.append(" FOR VALUES ");	
+				}
+				if(column.getPartitioningType().toUpperCase().equals("LIST")) {
+					if(column.getHighValue() != null && column.getHighValue().toLowerCase().contains("default")) {
+						ctsb.append(" DEFAULT");
+					}else {
+						ctsb.append("IN  (" + column.getHighValue() + ")");
+					}
+				}else if(column.getPartitioningType().toUpperCase().equals("RANGE")){
+					if(column.getHighValue() != null && column.getHighValue().toLowerCase().contains("default")) {
+						ctsb.append(" DEFAULT");
+					}else {
+						/*Pattern p = Pattern.compile("(\\d{4})-(\\d{2})-(\\d{2})");
+						Matcher m = p.matcher(column.getHighValue());
+						String d = "";
+						while (m.find()) {
+							d = "'"+m.group()+"'";
+						}
+						if(d.equals("")) d = column.getHighValue();*/
+						String d = column.getHighValue();
+						if(column.getType().toUpperCase().equals("DATE") && !d.toUpperCase().equals("MAXVALUE") && !d.toUpperCase().equals("MINVALUE")) d = "'"+d+"'";
+						ctsb.append("FROM("+rangeStart+") TO (" + d +")");
+						rangeStart = d;
+					}
+				}else if(column.getPartitioningType().toUpperCase().equals("HASH")) {
+					if(column.getHighValue() != null && column.getHighValue().toLowerCase().contains("default")) {
+						ctsb.append(" DEFAULT");
+					}else {
+						int remainder = column.getPartitionPosition() - 1;
+						ctsb.append("WITH (modulus "+table.getPtCnt()+", remainder "+ remainder +")");
+					}
+				}
 				
-				int k=0;
-				String rangeStart = "MINVALUE";
-				for(Column column : table.getPartColumns()) {
+				// Sub Partition Exist
+				if(table.getPtSubCnt() > 0) {
+					ctsb.append(" PARTITION BY "+table.getPtSubType() + " (" + table.getPartSubKeyColumn() + ")");
+				}
+				k++;
+				if(table.getPartColumns().size() != k) {
+					ctsb.append(";\n");
+				}
+			}
+			
+			// Sub Partition
+			if(table.getPtSubCnt() > 0) {
+   			
+				k=0;
+				rangeStart = "MINVALUE";
+				for(Column column : table.getSubPartColumns()) {
+					if(k == 0) ctsb.append(";\n");
 					ctsb.append("CREATE TABLE ");
-					ctsb.append(DevUtils.classifyString(column.getPartitionName(),ConfigInfo.SRC_CLASSIFY_STRING));
+					ctsb.append(DevUtils.classifyString(column.getSubPartitionName(),ConfigInfo.SRC_CLASSIFY_STRING));
 					ctsb.append(" PARTITION OF " + DevUtils.classifyString(column.getPartitionTableName(),ConfigInfo.SRC_CLASSIFY_STRING));
 					if(column.getHighValue() != null && !column.getHighValue().toLowerCase().contains("default")) {
 						ctsb.append(" FOR VALUES ");	
 					}
-					if(column.getPartitioningType().equals("LIST")) {
+					if(column.getSubPartitioningType().toUpperCase().equals("LIST")) {
 						if(column.getHighValue() != null && column.getHighValue().toLowerCase().contains("default")) {
 							ctsb.append(" DEFAULT");
 						}else {
 							ctsb.append("IN  (" + column.getHighValue() + ")");
 						}
-					}else if(column.getPartitioningType().equals("RANGE")){
+					}else if(column.getSubPartitioningType().toUpperCase().equals("RANGE")){
 						if(column.getHighValue() != null && column.getHighValue().toLowerCase().contains("default")) {
 							ctsb.append(" DEFAULT");
 						}else {
-							Pattern p = Pattern.compile("(\\d{4})-(\\d{2})-(\\d{2})");
-							Matcher m = p.matcher(column.getHighValue());
-							String d = "";
-							while (m.find()) {
-								d = "'"+m.group()+"'";
-							}
-							if(d.equals("")) d = column.getHighValue();
-							
+							String d = column.getHighValue();
+							if(column.getType().toUpperCase().equals("DATE") && !d.toUpperCase().equals("MAXVALUE") && !d.toUpperCase().equals("MINVALUE")) d = "'"+d+"'";
 							ctsb.append("FROM("+rangeStart+") TO (" + d +")");
 							rangeStart = d;
 						}
-					}else if(column.getPartitioningType().equals("HASH")) {
+					}else if(column.getSubPartitioningType().toUpperCase().equals("HASH")) {
 						if(column.getHighValue() != null && column.getHighValue().toLowerCase().contains("default")) {
 							ctsb.append(" DEFAULT");
 						}else {
@@ -387,65 +441,15 @@ public class PgDDLMaker<T> {
 							ctsb.append("WITH (modulus "+table.getPtCnt()+", remainder "+ remainder +")");
 						}
 					}
-					
-					// Sub Partition Exist
-					if(table.getPtSubCnt() > 0) {
-						ctsb.append(" PARTITION BY "+table.getPtSubType() + " (" + table.getPartSubKeyColumn() + ")");
-					}
 					k++;
-					if(table.getPartColumns().size() != k) {
+					if(table.getSubPartColumns().size() != k) {
 						ctsb.append(";\n");
 					}
 				}
-				
-				// Sub Partition
-				if(table.getPtSubCnt() > 0) {
-					k=0;
-					rangeStart = "MINVALUE";
-					for(Column column : table.getSubPartColumns()) {
-						if(k == 0) ctsb.append(";\n");
-						ctsb.append("CREATE TABLE ");
-						ctsb.append(DevUtils.classifyString(column.getSubPartitionName(),ConfigInfo.SRC_CLASSIFY_STRING));
-						ctsb.append(" PARTITION OF " + DevUtils.classifyString(column.getPartitionTableName(),ConfigInfo.SRC_CLASSIFY_STRING));
-						if(column.getHighValue() != null && !column.getHighValue().toLowerCase().contains("default")) {
-							ctsb.append(" FOR VALUES ");	
-						}
-						if(column.getSubPartitioningType().equals("LIST")) {
-							if(column.getHighValue() != null && column.getHighValue().toLowerCase().contains("default")) {
-								ctsb.append(" DEFAULT");
-							}else {
-								ctsb.append("IN  (" + column.getHighValue() + ")");
-							}
-						}else if(column.getSubPartitioningType().equals("RANGE")){
-							if(column.getHighValue() != null && column.getHighValue().toLowerCase().contains("default")) {
-								ctsb.append(" DEFAULT");
-							}else {
-								Pattern p = Pattern.compile("(\\d{4})-(\\d{2})-(\\d{2})");
-								Matcher m = p.matcher(column.getHighValue());
-								String d = "";
-								while (m.find()) {
-									d = "'"+m.group()+"'";
-								}
-								if(d.equals("")) d = column.getHighValue();
-								
-								ctsb.append("FROM("+rangeStart+") TO (" + d +")");
-								rangeStart = d;
-							}
-						}else if(column.getSubPartitioningType().equals("HASH")) {
-							if(column.getHighValue() != null && column.getHighValue().toLowerCase().contains("default")) {
-								ctsb.append(" DEFAULT");
-							}else {
-								int remainder = column.getPartitionPosition() - 1;
-								ctsb.append("WITH (modulus "+table.getPtCnt()+", remainder "+ remainder +")");
-							}
-						}
-						k++;
-						if(table.getSubPartColumns().size() != k) {
-							ctsb.append(";\n");
-						}
-					}
-				}
 			}
+			
+			// Partition Function Drop
+			//DBUtils.getDropFnLong();
 		}
 		
 		ddlStringVOs.add(new DDLString().setString(ctsb.toString()).setDDLType(ddlType)

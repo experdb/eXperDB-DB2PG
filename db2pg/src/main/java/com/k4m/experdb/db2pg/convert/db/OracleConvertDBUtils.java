@@ -187,6 +187,17 @@ public class OracleConvertDBUtils {
 				obj = result.get("partition_column_position");
         		if(obj != null) column.setPartitionColumnPosition(Integer.valueOf(obj.toString()));
         		column.setPartitionTableName(table.getName());
+        		obj = result.get("data_type");
+        		column.setType(obj != null ? obj.toString() : null);
+        		//System.out.println("DATA_TYPE:"+result.get("data_type").toString()+":"+column.getPartitionPosition());
+        		if(column.getType().equals("DATE") && !column.getHighValue().equals("MAXVALUE") && !column.getHighValue().equals("MINVALUE")) {
+        			params.put("value", column.getHighValue());
+        			MetaExtractWorker mew2 = new MetaExtractWorker(srcPoolName, new MetaExtractWork(WORK_TYPE.GET_FROM_DUAL, params));
+        			mew2.run();
+        			String high_value = (String)mew2.getResult();
+        			column.setHighValue(high_value);
+        			//System.out.println("HIGH_VALUE:"+result.get("high_value").toString()+":"+high_value);
+        		}
 
 				table.getPartColumns().add(column);
 			}
@@ -223,7 +234,18 @@ public class OracleConvertDBUtils {
 				obj = result.get("partition_column_position");
         		if(obj != null) column.setPartitionColumnPosition(Integer.valueOf(obj.toString()));
         		column.setPartitionTableName(result.get("partition_name").toString());
-    			
+        		obj = result.get("data_type");
+        		column.setType(obj != null ? obj.toString() : null);
+        		//System.out.println("DATA_TYPE:"+result.get("data_type").toString()+":"+column.getPartitionPosition());
+        		if(column.getType().equals("DATE") && !column.getHighValue().equals("MAXVALUE") && !column.getHighValue().equals("MINVALUE")) {
+        			params.put("value", column.getHighValue());
+        			MetaExtractWorker mew2 = new MetaExtractWorker(srcPoolName, new MetaExtractWork(WORK_TYPE.GET_FROM_DUAL, params));
+        			mew2.run();
+        			String high_value = (String)mew2.getResult();
+        			column.setHighValue(high_value);
+        			//System.out.println("HIGH_VALUE:"+result.get("high_value").toString()+":"+high_value);
+        		}
+        		
 				table.getSubPartColumns().add(column);
 			}
 		} catch (Exception e) {

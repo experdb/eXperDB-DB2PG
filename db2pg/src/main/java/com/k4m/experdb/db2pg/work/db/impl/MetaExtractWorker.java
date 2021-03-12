@@ -70,6 +70,9 @@ public final class MetaExtractWorker extends DBWorker {
 			case GET_TABLE_NAMES:
 				result = mapper.getTableNames(work.params);
 				break;
+			case GET_FROM_DUAL:
+				result = mapper.getFromDual(work.params);
+				break;
 			case GET_VIEW_INFORM:
 				result = mapper.getViewInform(work.params);
 				break;
