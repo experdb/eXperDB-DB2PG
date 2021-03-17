@@ -447,9 +447,6 @@ public class PgDDLMaker<T> {
 					}
 				}
 			}
-			
-			// Partition Function Drop
-			//DBUtils.getDropFnLong();
 		}
 		
 		ddlStringVOs.add(new DDLString().setString(ctsb.toString()).setDDLType(ddlType)
