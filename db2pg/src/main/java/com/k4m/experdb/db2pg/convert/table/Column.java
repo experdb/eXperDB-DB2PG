@@ -16,7 +16,102 @@ public class Column {
 	private long seqMinValue;
 	private long seqIncValue;
 	private Integer typeLength;
+	private Integer srid;
+	private Integer dims;
+	private Integer gtype;
 	
+	private Integer partitionPosition;
+	private String partitionName;
+	private String highValue;
+	private String partitioningType;
+	private String partitionColumnName;
+	private Integer partitionColumnPosition;
+	private String partitionTableName;
+
+	private Integer subPartitionPosition;
+	private String subPartitionName;
+	private String subPartitioningType;
+	
+	public Integer getSubPartitionPosition() {
+		return subPartitionPosition;
+	}
+	public void setSubPartitionPosition(Integer subPartitionPosition) {
+		this.subPartitionPosition = subPartitionPosition;
+	}
+	public String getSubPartitionName() {
+		return subPartitionName;
+	}
+	public void setSubPartitionName(String subPartitionName) {
+		this.subPartitionName = subPartitionName;
+	}
+	public String getSubPartitioningType() {
+		return subPartitioningType;
+	}
+	public void setSubPartitioningType(String subPartitioningType) {
+		this.subPartitioningType = subPartitioningType;
+	}
+
+	public String getPartitionTableName() {
+		return partitionTableName;
+	}
+	public void setPartitionTableName(String partitionTableName) {
+		this.partitionTableName = partitionTableName;
+	}
+	public Integer getPartitionPosition() {
+		return partitionPosition;
+	}
+	public void setPartitionPosition(Integer partitionPosition) {
+		this.partitionPosition = partitionPosition;
+	}
+	public String getPartitionName() {
+		return partitionName;
+	}
+	public void setPartitionName(String partitionName) {
+		this.partitionName = partitionName;
+	}
+	public String getHighValue() {
+		return highValue;
+	}
+	public void setHighValue(String highValue) {
+		this.highValue = highValue;
+	}
+	public String getPartitioningType() {
+		return partitioningType;
+	}
+	public void setPartitioningType(String partitioningType) {
+		this.partitioningType = partitioningType;
+	}
+	public String getPartitionColumnName() {
+		return partitionColumnName;
+	}
+	public void setPartitionColumnName(String partitionColumnName) {
+		this.partitionColumnName = partitionColumnName;
+	}
+	public Integer getPartitionColumnPosition() {
+		return partitionColumnPosition;
+	}
+	public void setPartitionColumnPosition(Integer partitionColumnPosition) {
+		this.partitionColumnPosition = partitionColumnPosition;
+	}
+	
+	public Integer getSrid() {
+		return srid;
+	}
+	public void setSrid(Integer srid) {
+		this.srid = srid;
+	}
+	public Integer getDims() {
+		return dims;
+	}
+	public void setDims(Integer dims) {
+		this.dims = dims;
+	}
+	public Integer getGtype() {
+		return gtype;
+	}
+	public void setGtype(Integer gtype) {
+		this.gtype = gtype;
+	}
 	public Integer getTypeLength() {
 		return typeLength;
 	}
@@ -127,6 +222,21 @@ public class Column {
 		sb.append(seqMinValue);
 		sb.append(" seqIncValue=");
 		sb.append(seqIncValue);
+		sb.append(" partitionPosition=");
+		sb.append(partitionPosition);
+		sb.append(" partitionName=");
+		sb.append(partitionName);
+		sb.append(" highValue=");
+		sb.append(highValue);
+		sb.append(" partitioningType=");
+		sb.append(partitioningType);
+		sb.append(" partitionColumnName=");
+		sb.append(partitionColumnName);
+		sb.append(" partitionColumnPosition=");
+		sb.append(partitionColumnPosition);
+		sb.append(" partitionTableName=");
+		sb.append(partitionTableName);
+
 		sb.append(" ]");
 		return sb.toString();
 	}

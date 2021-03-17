@@ -82,6 +82,53 @@ public class ConvertDBUtils {
 		return table;
 	}
 
+	public static Table setPartitionTableColumnInform(Table table, String srcPoolName, DBConfigInfo dbConfigInfo) {
+		try {
+			String dbtype = dbConfigInfo.DB_TYPE;
+			if (dbtype.equals(Constant.DB_TYPE.ORA)) {
+				table = OracleConvertDBUtils.setPartitionTableColumnInform(table, srcPoolName, dbConfigInfo);
+			} else if (dbtype.equals(Constant.DB_TYPE.TBR)) {
+				
+			} else if (dbtype.equals(Constant.DB_TYPE.MSS)) {
+				
+			} else if (dbtype.equals(Constant.DB_TYPE.MYS)) {
+				
+			} else if (dbtype.equals(Constant.DB_TYPE.ALT)) {
+				
+			} else {
+
+			}
+		} catch (Exception e) {
+			LogUtils.error(e.getMessage(), ConvertDBUtils.class);
+			System.out.println(e);
+		} 
+		return table;
+	}
+	
+	public static Table setSubPartitionTableColumnInform(Table table, String srcPoolName, DBConfigInfo dbConfigInfo) {
+		try {
+			String dbtype = dbConfigInfo.DB_TYPE;
+			if (dbtype.equals(Constant.DB_TYPE.ORA)) {
+				table = OracleConvertDBUtils.setSubPartitionTableColumnInform(table, srcPoolName, dbConfigInfo);
+			} else if (dbtype.equals(Constant.DB_TYPE.TBR)) {
+				
+			} else if (dbtype.equals(Constant.DB_TYPE.MSS)) {
+				
+			} else if (dbtype.equals(Constant.DB_TYPE.MYS)) {
+				
+			} else if (dbtype.equals(Constant.DB_TYPE.ALT)) {
+				
+			} else {
+
+			}
+		} catch (Exception e) {
+			LogUtils.error(e.getMessage(), ConvertDBUtils.class);
+			System.out.println(e);
+		} 
+		return table;
+	}
+
+	
 	public static Table checkColumnInform(Table table, String srcPoolName, DBConfigInfo dbConfigInfo) {
 		try {
 			String dbtype = dbConfigInfo.DB_TYPE;

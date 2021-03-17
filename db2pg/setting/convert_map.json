@@ -195,6 +195,13 @@
 			"^(?i)NCLOB$"
 		]
 	},
+	"geo_case": {
+		"postgres": "GEOMETRY",
+		"ora" :[
+			"^(?i)SDO_GEOMETRY$",
+			"^(?i)SDO_GEOMETRY\\s*\\(?[0-9]*\\)?$"
+		]
+	},
 	"char_case_1": {
 		"postgres": "CHAR",
 		"mys": [
