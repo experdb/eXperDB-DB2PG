@@ -21,8 +21,6 @@ import com.k4m.experdb.db2pg.config.ConfigInfo;
 import com.k4m.experdb.db2pg.config.MsgCode;
 import com.k4m.experdb.db2pg.db.DBCPPoolManager;
 import com.k4m.experdb.db2pg.unload.ExecuteDataTransfer;
-import com.k4m.experdb.db2pg.unload.ExecuteQuery;
-import com.k4m.experdb.db2pg.unload.UnloadSummary;
 
 public class DBWriter {
 	static MsgCode msgCode = new MsgCode();

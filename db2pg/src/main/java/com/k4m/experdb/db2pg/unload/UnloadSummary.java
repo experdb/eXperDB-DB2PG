@@ -34,7 +34,7 @@ public class UnloadSummary {
 	}
 	
 	public void run() {
-		LogUtils.debug(msgCode.getCode("C0162"),UnloadSummary.class);
+		//LogUtils.debug(msgCode.getCode("C0162"),UnloadSummary.class);
 		try {
 			BufferedReader br = new BufferedReader(new FileReader(logFile));
 			FileOutputStream fos = new FileOutputStream(outputDirectory+summaryFile);
@@ -103,7 +103,7 @@ public class UnloadSummary {
     	} catch (Exception e) {
     		LogUtils.error(msgCode.getCode("C0167"),UnloadSummary.class,e);
 		}
-		LogUtils.debug(msgCode.getCode("C0168"),UnloadSummary.class);
+		//LogUtils.debug(msgCode.getCode("C0168"),UnloadSummary.class);
 	}
 	private class ProcessedInfo {
 		long selectCount, copyCount, elapsedTime;

@@ -48,11 +48,15 @@ import oracle.spatial.geometry.JGeometry;
 public class ExecuteDataTransfer implements Runnable{
 	static MsgCode msgCode = new MsgCode();
 	private String srcPoolName, selectQuery, outputFileName, tableName;
-	private Long migTime;
-	private Long beforeTime;
-	private Long afterTime; 
+	private long migTime;
+	private long startTime;
+	private long endTime;
+	private long processBytes = 0;
+	private long processLines = 0;
+	private long processErrorLInes = 0;
+	
 	private int status=1;
-	long  rowCnt = 0;
+	long rowCnt = 0;
 	private boolean success;
 	private StringBuffer bf = new StringBuffer();
 	List<String> columnNames;
@@ -108,13 +112,42 @@ public class ExecuteDataTransfer implements Runnable{
 		return success;
 	}
 
-
-	
 	public long getRowCnt() {
 		return rowCnt;
 	}
 	
+	public long getStartTime() {
+		return startTime;
+	}
 	
+	public long getEndTime() {
+		return endTime;
+	}
+	
+	public long getProcessBytes() {
+		return processBytes;
+	}
+
+	public void setProcessBytes(long processBytes) {
+		this.processBytes = processBytes;
+	}
+
+	public long getProcessLines() {
+		return processLines;
+	}
+
+	public void setProcessLines(long processLines) {
+		this.processLines = processLines;
+	}
+
+	public long getProcessErrorLInes() {
+		return processErrorLInes;
+	}
+
+	public void setProcessErrorLInes(long processErrorLInes) {
+		this.processErrorLInes = processErrorLInes;
+	}
+
 	private void execTruncTable(String poolName, String strTableName) throws Exception {
 		PreparedStatement psmt = null;
 		
@@ -188,7 +221,7 @@ public class ExecuteDataTransfer implements Runnable{
 				fileWriter = new FileWriter(this.tableName);
 			}
 			
-			beforeTime = System.currentTimeMillis();
+			this.startTime = System.currentTimeMillis();
 			
 			int intErrCnt = 0;
 			
@@ -247,8 +280,8 @@ public class ExecuteDataTransfer implements Runnable{
         		this.success = false;
         	}
 
-        	afterTime = System.currentTimeMillis();
-        	this.migTime = (afterTime - beforeTime)/1000;
+        	this.endTime = System.currentTimeMillis();
+        	this.migTime = (this.endTime - this.startTime)/1000;
         	
         	//stopWatch.stop();
         	//this.migTime = stopWatch.getTime();
@@ -271,6 +304,11 @@ public class ExecuteDataTransfer implements Runnable{
 					if(dbWriter.getProcessErrorLInes() > 0) {
 						this.success = false;
 					}
+					
+					processBytes = dbWriter.getProcessBytes();
+					processLines = dbWriter.getProcessLines();
+					processErrorLInes = dbWriter.getProcessErrorLInes();
+					
 					//dbWriter Closed
 					dbWriter.shutdown();
 				}

@@ -75,7 +75,7 @@ public class Main {
 		
 		// Target DB Charset different vs config Charset
 		String pgCharSet = null;
-		if(!ConfigInfo.SRC_DDL_EXPORT) {
+		if(ConfigInfo.DB_WRITER_MODE) {
 			pgCharSet = DBUtils.getCharSet(Constant.POOLNAME.TARGET.name(), ConfigInfo.TAR_DB_CONFIG);
 		}
 	
