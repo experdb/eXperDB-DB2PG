@@ -131,11 +131,13 @@ public class UnloadReport {
 			String startDate = tf.format(startTime);
 			String endDate = tf.format(endTime);
 			Long st = (endTime-startTime)/1000;
-			Long mig_sp;
+			Long mig_sp1, mig_sp2;
 			if(st>0) {
-				mig_sp = totalByte/st;
+				mig_sp1 = totalByte/st;
+				mig_sp2 = successCnt/st;
 			}else {
-				mig_sp = totalByte;
+				mig_sp1 = totalByte;
+				mig_sp2 = successCnt;
 			}
 			
 			sb.append(" 	<H2><a NAME=db2>Migration statistics</a></H2>\r\n" +
@@ -146,9 +148,10 @@ public class UnloadReport {
 					" 			<th>Start Date</th>\r\n" + 
 					" 			<th>End Date</th>\r\n" + 
 					" 			<th>Total Time</th>\r\n" + 
-					" 			<th>Mig Byte</th>\r\n" + 
-					" 			<th>Byte/Sec</th>\r\n" + 
-					" 			<th>Success Cnt</th>\r\n" + 
+					" 			<th>Mig Byte</th>\r\n" +
+					" 			<th>Byte/Sec</th>\r\n" +					
+					" 			<th>Success Cnt</th>\r\n" +
+					" 			<th>Cnt/Sec</th>\r\n" +
 					" 			<th>Fail Cnt</th>\r\n" + 
 					" 		</tr>\r\n" + 
 					" 		<tr>\r\n" + 
@@ -157,9 +160,10 @@ public class UnloadReport {
 					" 			<td class=\"value\">" + startDate + "</td>\r\n" + 
 					" 			<td class=\"value\">" + endDate + "</td>\r\n" + 
 					" 			<td class=\"value\">" + StrUtil.makeElapsedTimeString((endTime-startTime)/1000) + "</td>\r\n" + 
-					" 			<td class=\"value\" align=right>" + StrUtil.strToComma(Long.toString(totalByte)) + "</td>\r\n" + 
-					" 			<td class=\"value\" align=right>" + StrUtil.strToComma(Long.toString(mig_sp)) + "</td>\r\n" + 
-					" 			<td class=\"value\" align=right>" + StrUtil.strToComma(Long.toString(successCnt)) + "</td>\r\n" + 
+					" 			<td class=\"value\" align=right>" + StrUtil.strToComma(Long.toString(totalByte)) + "</td>\r\n" +
+					" 			<td class=\"value\" align=right>" + StrUtil.strToComma(Long.toString(mig_sp1)) + "</td>\r\n" +					
+					" 			<td class=\"value\" align=right>" + StrUtil.strToComma(Long.toString(successCnt)) + "</td>\r\n" +
+					" 			<td class=\"value\" align=right>" + StrUtil.strToComma(Long.toString(mig_sp2)) + "</td>\r\n" +
 					" 			<td class=\"value\" align=right>" + StrUtil.strToComma(Long.toString(failCnt)) + "</td>\r\n" + 
 					" 		</tr>\r\n" + 
 					" 	</table>");
