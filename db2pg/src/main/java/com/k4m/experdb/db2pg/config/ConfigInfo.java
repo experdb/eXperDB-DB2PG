@@ -83,6 +83,8 @@ public class ConfigInfo {
 	
 	public static int SRC_SRID;
 	
+	//public static boolean DB_MIG_REPORT;
+	
 	
 	public static class Loader {
 		public static void load(String configFilePath) {
@@ -91,6 +93,7 @@ public class ConfigInfo {
 				prop.load(new FileInputStream(configFilePath));
 				ConfigInfo.SRC_INCLUDE_DATA_EXPORT = (boolean)propertyCheck(trimCheck(prop.getProperty("SRC_INCLUDE_DATA_EXPORT")),false,Boolean.class);
 				ConfigInfo.SRC_DDL_EXPORT = (boolean)propertyCheck(trimCheck(prop.getProperty("SRC_DDL_EXPORT")),false,Boolean.class);
+				//ConfigInfo.DB_MIG_REPORT = (boolean)propertyCheck(trimCheck(prop.getProperty("DB_MIG_REPORT")),true,Boolean.class);
 				ConfigInfo.TAR_CONSTRAINT_DDL = (boolean)propertyCheck(trimCheck(prop.getProperty("TAR_CONSTRAINT_DDL")),false,Boolean.class);
 				SRC_DB_CONFIG.SERVERIP 		= trimCheck(prop.getProperty("SRC_HOST"));
 				SRC_DB_CONFIG.USERID 		= trimCheck(prop.getProperty("SRC_USER"));

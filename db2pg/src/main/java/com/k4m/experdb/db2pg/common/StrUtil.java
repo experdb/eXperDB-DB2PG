@@ -1,6 +1,7 @@
 package com.k4m.experdb.db2pg.common;
 
 import java.sql.Timestamp;
+import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.StringTokenizer;
@@ -223,5 +224,9 @@ public class StrUtil {
 		}
 		
 		return strLine;
+	}
+	public static String strToComma(String str) {
+		DecimalFormat format = new DecimalFormat("###,###");
+		return format.format(Long.parseLong(str));
 	}
 }

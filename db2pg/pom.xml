@@ -3,7 +3,7 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<groupId>com.k4m</groupId>
-	<version>v2.2.8</version>
+	<version>v2.2.9</version>
 	<artifactId>db2pg</artifactId>
 	<packaging>jar</packaging>
 	<name>db2pg</name>

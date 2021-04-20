@@ -30,13 +30,14 @@ import com.k4m.experdb.db2pg.config.ConfigInfo;
 import com.k4m.experdb.db2pg.config.MsgCode;
 import com.k4m.experdb.db2pg.convert.db.ConvertDBUtils;
 import com.k4m.experdb.db2pg.convert.table.Column;
+import com.k4m.experdb.db2pg.convert.table.CustomSql;
 import com.k4m.experdb.db2pg.convert.table.Table;
 import com.k4m.experdb.db2pg.db.DBUtils;
 
 public class Unloader {
 	static MsgCode msgCode = new MsgCode();
 	private File impSql = null;
-	List<SelectQuery> selectQuerys = new ArrayList<SelectQuery>();
+	List<CustomSql> selectQuerys = new ArrayList<CustomSql>();
 
 	long startTime;
 	
@@ -140,10 +141,12 @@ public class Unloader {
 					String schema = ConfigInfo.SRC_DB_CONFIG.SCHEMA_NAME!=null && !ConfigInfo.SRC_DB_CONFIG.SCHEMA_NAME.equals("") 
 										? getConvertObjectName(ConfigInfo.SRC_DB_CONFIG.SCHEMA_NAME)+"." 
 										: "" ;
-
-					table.setSchemaName(ConfigInfo.SRC_DB_CONFIG.SCHEMA_NAME);
-					table.setName(tableName);
-					ConvertDBUtils.checkColumnInform(table, Constant.POOLNAME.SOURCE.name(), ConfigInfo.SRC_DB_CONFIG);
+					
+					if(Constant.POOLNAME.SOURCE.name().equals("ORA") || Constant.POOLNAME.SOURCE.name().equals("TBR")) {
+						table.setSchemaName(ConfigInfo.SRC_DB_CONFIG.SCHEMA_NAME);
+						table.setName(tableName);
+						ConvertDBUtils.checkColumnInform(table, Constant.POOLNAME.SOURCE.name(), ConfigInfo.SRC_DB_CONFIG);
+					}
 					
 					// XMLTYPE Check
 					String replaceTableName = getConvertObjectName(tableName);
@@ -191,7 +194,7 @@ public class Unloader {
 			
 			if(selectQuerys != null) {
 				for(int i=0; i<selectQuerys.size(); i++) {
-					ExecuteDataTransfer eq = new ExecuteDataTransfer(Constant.POOLNAME.SOURCE.name(), selectQuerys.get(i).query, selectQuerys.get(i).name, ConfigInfo.SRC_DB_CONFIG);
+					ExecuteDataTransfer eq = new ExecuteDataTransfer(Constant.POOLNAME.SOURCE.name(), selectQuerys.get(i).getQuery(), selectQuerys.get(i).getName(), ConfigInfo.SRC_DB_CONFIG);
 	        		jobList.add(eq);
 	        		executorService.execute(eq);
 				}
@@ -211,6 +214,10 @@ public class Unloader {
         	impSql = new File(ConfigInfo.SRC_FILE_OUTPUT_PATH + "data/import.sql");
         	PrintWriter pw = new PrintWriter(impSql);
         	
+        	// Migration Report Create
+        	if(ConfigInfo.DB_WRITER_MODE || ConfigInfo.FILE_WRITER_MODE) {
+        		new UnloadReport(jobList,selectQuerys, startTime, System.currentTimeMillis()).run();
+        	}
         	
         	StringBuffer sb = new StringBuffer(), impsb = new StringBuffer();
         	int failCnt = 0;
@@ -269,7 +276,7 @@ public class Unloader {
 
 	private void makeSummaryFile(List<ExecuteDataTransfer> jobList, long estimatedTime) {
 		LogUtils.debug("\n",Unloader.class);
-		LogUtils.debug(msgCode.getCode("C0149"),UnloadSummary.class);
+		//LogUtils.debug(msgCode.getCode("C0149"),Unloader.class);
 		
 		Calendar calendar = Calendar.getInstance();
         java.util.Date date = calendar.getTime();
@@ -329,7 +336,7 @@ public class Unloader {
 		} catch ( Exception e ) {
 			LogUtils.error(msgCode.getCode("C0155"),Unloader.class,e);
 		} finally {
-			LogUtils.debug(msgCode.getCode("C0156"),Unloader.class);
+			//LogUtils.debug(msgCode.getCode("C0156"),Unloader.class);
 		}
 			
 		
@@ -394,7 +401,9 @@ public class Unloader {
 								if(queryName!=null && query!=null) break;
 							}
 							if(queryName!=null && query!=null) {
-								SelectQuery selectQuery = new SelectQuery(queryName, query);
+								CustomSql selectQuery = new CustomSql();
+								selectQuery.setName(queryName);
+								selectQuery.setQuery(query);
 								selectQuerys.add(selectQuery);
 							}
 						}
@@ -411,18 +420,6 @@ public class Unloader {
 		}
 	}
 
-	private class SelectQuery {
-		String name,query;
-
-		public SelectQuery(String name, String query) {
-			super();
-			this.name = name;
-			this.query = query;
-		}
-		
-	}
-	
-	
 	/**
 	 * PG CharSet 조회
 	 * @throws Exception
