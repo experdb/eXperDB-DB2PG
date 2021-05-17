@@ -201,11 +201,6 @@ public class UnloadReport {
 			fos.close();
 		} catch ( Exception e ) {
 			LogUtils.error(msgCode.getCode("C0174"),Unloader.class,e);
-		//} finally {
-		//	LogUtils.debug(msgCode.getCode("C0175"),Unloader.class);
 		}
-		
-		//System.out.println(sb.toString());
-		
 	}
 }

@@ -151,6 +151,30 @@ public class OracleConvertDBUtils {
 				if (obj != null) column.setSeqIncValue(Long.valueOf(obj.toString()));
 				obj = result.get("extra");
 				column.setExtra(obj != null ? obj.toString() : null);
+
+				if(column.getType().indexOf("GEOMETRY") > -1) {
+        			params.put("COLUMN_NAME", "C."+column.getName()+".SDO_GTYPE");
+        			//System.out.println("Cname:"+Cname+", TNAME:"+table.getName());
+        			MetaExtractWorker mew2 = new MetaExtractWorker(srcPoolName, new MetaExtractWork(WORK_TYPE.GET_GTYPE, params));
+        			mew2.run();
+        			String gtype = (String)mew2.getResult();
+        			if(gtype != null) column.setGtype(gtype);
+        			
+        			params.put("COLUMN_NAME", column.getName());
+        			mew2 = new MetaExtractWorker(srcPoolName, new MetaExtractWork(WORK_TYPE.GET_SRID, params));
+        			mew2.run();
+        			String srid = (String)mew2.getResult();
+        			if(srid != null) column.setSrid(srid);
+        			
+        			// Dimension
+        			/*params.put("COLUMN_NAME", column.getName());
+        			mew2 = new MetaExtractWorker(srcPoolName, new MetaExtractWork(WORK_TYPE.GET_DIMNAME, params));
+        			mew2.run();
+        			String dims = (String)mew2.getResult();
+        			if(dims != null) column.setDims(dims);*/
+        			//System.out.println("DIMNAME:"+dims);
+        		}
+				
 				table.getColumns().add(column);
 			}
 			Collections.sort(table.getColumns(), Column.getComparator());
@@ -255,10 +279,11 @@ public class OracleConvertDBUtils {
 		return table;
 	}
 	
-	// XMLTYPE Check
+	// XMLTYPE, GEOMETRY Check
 	public static Table checkColumnInform(Table table, String srcPoolName, DBConfigInfo dbConfigInfo) {
 		try {
 			Boolean checkColumn = false;
+			Boolean hasGeometry = false;
 			Map<String, Object> params = new HashMap<String, Object>();
 			params.put("TABLE_SCHEMA", table.getSchemaName());
 			params.put("TABLE_NAME", table.getName());
@@ -272,6 +297,7 @@ public class OracleConvertDBUtils {
 				Column column = new Column();
 				
 				if(((String)result.get("column_type")).contains("XMLTYPE")) checkColumn=true;
+				if(((String)result.get("column_type")).contains("SDO_GEOMETRY")) hasGeometry=true;
 
 				obj = result.get("column_name");
 				column.setName(obj != null ? obj.toString() : null);
@@ -282,6 +308,7 @@ public class OracleConvertDBUtils {
 				table.getColumns().add(column);
 			}
 			table.setCheckColumn(checkColumn);
+			table.setHasGeometry(hasGeometry);
 			//Collections.sort(table.getColumns(), Column.getComparator());
 			
 		} catch (Exception e) {

@@ -82,6 +82,15 @@ public final class MetaExtractWorker extends DBWorker {
 			case GET_PG_CURRENT_SCHEMA:
 				result = mapper.getPgCurrentSchema();
 				break;
+			case GET_GTYPE:
+				result = mapper.getGtype(work.params);
+				break;
+			case GET_DIMNAME:
+				result = mapper.getDimname(work.params);
+				break;
+			case GET_SRID:
+				result = mapper.getSrid(work.params);
+				break;				
 			case GET_PG_FK_DDL:			
 				/*테이블 별 GET_PG_IDX_DDL*/
 				Map<String, Object> fkParam = new HashMap<String, Object>();

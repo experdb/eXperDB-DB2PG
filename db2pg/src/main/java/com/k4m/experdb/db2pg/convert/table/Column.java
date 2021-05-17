@@ -16,9 +16,9 @@ public class Column {
 	private long seqMinValue;
 	private long seqIncValue;
 	private Integer typeLength;
-	private Integer srid;
-	private Integer dims;
-	private Integer gtype;
+	private String srid;
+	private String dims;
+	private String gtype;
 	
 	private Integer partitionPosition;
 	private String partitionName;
@@ -94,22 +94,22 @@ public class Column {
 		this.partitionColumnPosition = partitionColumnPosition;
 	}
 	
-	public Integer getSrid() {
+	public String getSrid() {
 		return srid;
 	}
-	public void setSrid(Integer srid) {
+	public void setSrid(String srid) {
 		this.srid = srid;
 	}
-	public Integer getDims() {
+	public String getDims() {
 		return dims;
 	}
-	public void setDims(Integer dims) {
+	public void setDims(String dims) {
 		this.dims = dims;
 	}
-	public Integer getGtype() {
+	public String getGtype() {
 		return gtype;
 	}
-	public void setGtype(Integer gtype) {
+	public void setGtype(String gtype) {
 		this.gtype = gtype;
 	}
 	public Integer getTypeLength() {
@@ -236,6 +236,12 @@ public class Column {
 		sb.append(partitionColumnPosition);
 		sb.append(" partitionTableName=");
 		sb.append(partitionTableName);
+		sb.append(" srid=");
+		sb.append(srid);
+		sb.append(" dims=");
+		sb.append(dims);
+		sb.append(" gtype=");
+		sb.append(gtype);
 
 		sb.append(" ]");
 		return sb.toString();
