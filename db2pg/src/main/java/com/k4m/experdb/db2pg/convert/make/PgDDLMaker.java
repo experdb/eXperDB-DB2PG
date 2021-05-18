@@ -360,7 +360,7 @@ public class PgDDLMaker<T> {
 		ctsb.append(")");
 
 		// Oracle partition DDL 
-		if(ConfigInfo.SRC_DB_CONFIG.DB_TYPE.equals(Constant.DB_TYPE.ORA) && table.getPtCnt() > 0) {
+		if(ConfigInfo.SRC_DB_CONFIG.DB_TYPE.equals(Constant.DB_TYPE.ORA) && table.getPtCnt() > 0 && table.getPartKeyColumn() != null) {
 			// Partition Function Create
 			//DBUtils.getCreateFnLong();
 			
