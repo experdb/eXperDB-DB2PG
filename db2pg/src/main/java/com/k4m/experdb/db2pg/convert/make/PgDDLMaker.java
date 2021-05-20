@@ -372,14 +372,12 @@ public class PgDDLMaker<T> {
 				ctsb.append("CREATE TABLE ");
 				ctsb.append(DevUtils.classifyString(column.getPartitionName(),ConfigInfo.SRC_CLASSIFY_STRING));
 				ctsb.append(" PARTITION OF " + DevUtils.classifyString(column.getPartitionTableName(),ConfigInfo.SRC_CLASSIFY_STRING));
-				if(column.getHighValue() != null && !column.getHighValue().toLowerCase().contains("default")) {
-					ctsb.append(" FOR VALUES ");	
-				}
+
 				if(column.getPartitioningType().toUpperCase().equals("LIST")) {
 					if(column.getHighValue() != null && column.getHighValue().toLowerCase().contains("default")) {
 						ctsb.append(" DEFAULT");
 					}else {
-						ctsb.append("IN  (" + column.getHighValue() + ")");
+						ctsb.append(" FOR VALUES IN (" + column.getHighValue() + ")");
 					}
 				}else if(column.getPartitioningType().toUpperCase().equals("RANGE")){
 					if(column.getHighValue() != null && column.getHighValue().toLowerCase().contains("default")) {
@@ -394,7 +392,7 @@ public class PgDDLMaker<T> {
 						if(d.equals("")) d = column.getHighValue();*/
 						String d = column.getHighValue();
 						if(column.getType().toUpperCase().equals("DATE") && !d.toUpperCase().equals("MAXVALUE") && !d.toUpperCase().equals("MINVALUE")) d = "'"+d+"'";
-						ctsb.append("FROM("+rangeStart+") TO (" + d +")");
+						ctsb.append(" FOR VALUES FROM("+rangeStart+") TO (" + d +")");
 						rangeStart = d;
 					}
 				}else if(column.getPartitioningType().toUpperCase().equals("HASH")) {
@@ -402,7 +400,7 @@ public class PgDDLMaker<T> {
 						ctsb.append(" DEFAULT");
 					}else {
 						int remainder = column.getPartitionPosition() - 1;
-						ctsb.append("WITH (modulus "+table.getPtCnt()+", remainder "+ remainder +")");
+						ctsb.append(" FOR VALUES WITH (modulus "+table.getPtCnt()+", remainder "+ remainder +")");
 					}
 				}
 				
@@ -426,14 +424,12 @@ public class PgDDLMaker<T> {
 					ctsb.append("CREATE TABLE ");
 					ctsb.append(DevUtils.classifyString(column.getSubPartitionName(),ConfigInfo.SRC_CLASSIFY_STRING));
 					ctsb.append(" PARTITION OF " + DevUtils.classifyString(column.getPartitionTableName(),ConfigInfo.SRC_CLASSIFY_STRING));
-					if(column.getHighValue() != null && !column.getHighValue().toLowerCase().contains("default")) {
-						ctsb.append(" FOR VALUES ");	
-					}
+
 					if(column.getSubPartitioningType().toUpperCase().equals("LIST")) {
 						if(column.getHighValue() != null && column.getHighValue().toLowerCase().contains("default")) {
 							ctsb.append(" DEFAULT");
 						}else {
-							ctsb.append("IN  (" + column.getHighValue() + ")");
+							ctsb.append(" FOR VALUES IN (" + column.getHighValue() + ")");
 						}
 					}else if(column.getSubPartitioningType().toUpperCase().equals("RANGE")){
 						if(column.getHighValue() != null && column.getHighValue().toLowerCase().contains("default")) {
@@ -441,7 +437,7 @@ public class PgDDLMaker<T> {
 						}else {
 							String d = column.getHighValue();
 							if(column.getType().toUpperCase().equals("DATE") && !d.toUpperCase().equals("MAXVALUE") && !d.toUpperCase().equals("MINVALUE")) d = "'"+d+"'";
-							ctsb.append("FROM("+rangeStart+") TO (" + d +")");
+							ctsb.append(" FOR VALUES FROM("+rangeStart+") TO (" + d +")");
 							rangeStart = d;
 						}
 					}else if(column.getSubPartitioningType().toUpperCase().equals("HASH")) {
@@ -449,7 +445,7 @@ public class PgDDLMaker<T> {
 							ctsb.append(" DEFAULT");
 						}else {
 							int remainder = column.getPartitionPosition() - 1;
-							ctsb.append("WITH (modulus "+table.getPtCnt()+", remainder "+ remainder +")");
+							ctsb.append(" FOR VALUES WITH (modulus "+table.getPtCnt()+", remainder "+ remainder +")");
 						}
 					}
 					k++;
