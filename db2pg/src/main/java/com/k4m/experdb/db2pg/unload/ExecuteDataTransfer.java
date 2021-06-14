@@ -54,6 +54,8 @@ public class ExecuteDataTransfer implements Runnable{
 	private long processBytes = 0;
 	private long processLines = 0;
 	private long processErrorLInes = 0;
+	private int total = 0;
+	private int cnt = 0;
 	
 	private int status=1;
 	long rowCnt = 0;
@@ -82,7 +84,21 @@ public class ExecuteDataTransfer implements Runnable{
 	public ExecuteDataTransfer() {
 	}
 	
-	
+	public int getTotal() {
+		return total;
+	}
+
+	public void setTotal(int total) {
+		this.total = total;
+	}
+
+	public int getCnt() {
+		return cnt;
+	}
+
+	public void setCnt(int cnt) {
+		this.cnt = cnt;
+	}
 	
 	public String getSrcPoolName() {
 		return srcPoolName;
@@ -286,7 +302,6 @@ public class ExecuteDataTransfer implements Runnable{
         	//stopWatch.stop();
         	//this.migTime = stopWatch.getTime();
         	LogUtils.debug(String.format(msgCode.getCode("C0134"),tableName,this.migTime),ExecuteDataTransfer.class);
-        	
 		} catch(Exception e) {
 			this.success = false;
 
@@ -323,6 +338,12 @@ public class ExecuteDataTransfer implements Runnable{
 				LogUtils.debug(String.format(msgCode.getCode("C0136"),outputFileName),ExecuteDataTransfer.class);
 			}
 			LogUtils.info(String.format(msgCode.getCode("C0137"),tableName,rowCnt),ExecuteDataTransfer.class);
+			try {
+				progressFileWrite(total+","+cnt+","+tableName+","+rowCnt);
+			} catch (Exception e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 		}
 	}
 	
@@ -617,6 +638,11 @@ public class ExecuteDataTransfer implements Runnable{
 		}
 	}
 	
-
+	private void progressFileWrite(String proData) throws Exception {
+		FileWriter fileWriter = new FileWriter();
+		fileWriter.progressFile(ConfigInfo.SRC_FILE_OUTPUT_PATH + "result/progress.txt");
+		fileWriter.progressFileWrite(proData);
+		fileWriter.closeProgressFileChannels();
+	}
 
 }

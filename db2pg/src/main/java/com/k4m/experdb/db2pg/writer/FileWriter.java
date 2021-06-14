@@ -17,6 +17,7 @@ public class FileWriter {
 	protected String outputDirectory = ConfigInfo.SRC_FILE_OUTPUT_PATH + "data/";
 	private  FileChannel fileChannels;
 	private  FileChannel badFileChannels ;
+	private  FileChannel progressFileChannels ;
 	private static long successByteCount; // Writer가 처리한 총 Byte 수
 	private static long errByteCount = 0; // 
 	public static ConcurrentHashMap<String, ConfigInfo> ConnInfoList = new ConcurrentHashMap<String, ConfigInfo>();
@@ -61,7 +62,7 @@ public class FileWriter {
 			e1.printStackTrace();
 		}
 	}
-	
+
 	public void fileCreater(String file_nm) throws IOException {
 		File file = new File(file_nm);
 		if(ConfigInfo.TAR_FILE_APPEND && file.isFile()) {
@@ -80,6 +81,31 @@ public class FileWriter {
 		}
 	}
 	
+	public void progressFile(String file_nm) throws IOException {
+		File file = new File(file_nm);
+		if(file.isFile()) {
+			progressFileChannels = FileChannel.open(file.toPath(), StandardOpenOption.APPEND);
+		} else {
+			progressFileChannels = FileChannel.open(file.toPath(), StandardOpenOption.CREATE, StandardOpenOption.WRITE, StandardOpenOption.TRUNCATE_EXISTING);
+		}
+	}
+	
+	public void progressFileWrite(String lineStr) throws IOException {
+		// Constant.R : LINUX = '\n', WINDOWS = '\r\n'
+		byte[] inputBytes = (Constant.R + lineStr).getBytes();
+		ByteBuffer byteBuffer = ByteBuffer.wrap(inputBytes);
+		try {
+			progressFileChannels.write(byteBuffer);
+		} catch (IOException e1) {
+			e1.printStackTrace();
+		}
+	}
+	
+	public void closeProgressFileChannels() throws Exception {
+		if (progressFileChannels != null && progressFileChannels.isOpen()) {
+			progressFileChannels.close();
+		}
+	}
 	
 	public void closeFileChannels(String table_nm) throws Exception {
 		if (fileChannels != null && fileChannels.isOpen()) {

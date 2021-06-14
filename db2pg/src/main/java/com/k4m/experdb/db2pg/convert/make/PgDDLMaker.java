@@ -392,7 +392,7 @@ public class PgDDLMaker<T> {
 						if(d.equals("")) d = column.getHighValue();*/
 						String d = column.getHighValue();
 						if(column.getType().toUpperCase().equals("DATE") && !d.toUpperCase().equals("MAXVALUE") && !d.toUpperCase().equals("MINVALUE")) d = "'"+d+"'";
-						ctsb.append(" FOR VALUES FROM("+rangeStart+") TO (" + d +")");
+						ctsb.append(" FOR VALUES FROM("+rangeStart+") TO(" + d +")");
 						rangeStart = d;
 					}
 				}else if(column.getPartitioningType().toUpperCase().equals("HASH")) {
