@@ -33,6 +33,7 @@ import com.k4m.experdb.db2pg.common.Constant;
 import com.k4m.experdb.db2pg.common.CreateDbStmt;
 import com.k4m.experdb.db2pg.common.DevUtils;
 import com.k4m.experdb.db2pg.common.LogUtils;
+import com.k4m.experdb.db2pg.common.StrUtil;
 import com.k4m.experdb.db2pg.config.ConfigInfo;
 import com.k4m.experdb.db2pg.config.MsgCode;
 import com.k4m.experdb.db2pg.db.DBCPPoolManager;
@@ -48,6 +49,7 @@ import oracle.spatial.geometry.JGeometry;
 public class ExecuteDataTransfer implements Runnable{
 	static MsgCode msgCode = new MsgCode();
 	private String srcPoolName, selectQuery, outputFileName, tableName;
+	private long migStartTime;
 	private long migTime;
 	private long startTime;
 	private long endTime;
@@ -79,6 +81,14 @@ public class ExecuteDataTransfer implements Runnable{
 
 		//this.byteBuffer = ByteBuffer.allocateDirect(ConfigInfo.SRC_BUFFER_SIZE);
 		this.success = true;
+	}
+	
+	public long getMigStartTime() {
+		return migStartTime;
+	}
+
+	public void setMigStartTime(long migStartTime) {
+		this.migStartTime = migStartTime;
 	}
 	
 	public ExecuteDataTransfer() {
@@ -339,7 +349,7 @@ public class ExecuteDataTransfer implements Runnable{
 			}
 			LogUtils.info(String.format(msgCode.getCode("C0137"),tableName,rowCnt),ExecuteDataTransfer.class);
 			try {
-				progressFileWrite(total+","+cnt+","+tableName+","+rowCnt);
+				progressFileWriter(total+","+cnt+","+tableName+","+rowCnt+","+StrUtil.makeElapsedTimeString((this.endTime-this.migStartTime)/1000));
 			} catch (Exception e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -638,7 +648,7 @@ public class ExecuteDataTransfer implements Runnable{
 		}
 	}
 	
-	private void progressFileWrite(String proData) throws Exception {
+	private void progressFileWriter(String proData) throws Exception {
 		FileWriter fileWriter = new FileWriter();
 		fileWriter.progressFile(ConfigInfo.SRC_FILE_OUTPUT_PATH + "result/progress.txt");
 		fileWriter.progressFileWrite(proData);

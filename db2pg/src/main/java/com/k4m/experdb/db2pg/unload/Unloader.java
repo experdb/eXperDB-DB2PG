@@ -184,7 +184,7 @@ public class Unloader {
 				jobSize += selectQuerys.size();
 			}
 			
-			progressFileWrite(jobSize+",0,,0");
+			progressFileWriter(jobSize+",0,,0,0");
 			List<ExecuteDataTransfer> jobList = new ArrayList<ExecuteDataTransfer>(jobSize);
 			
 			int nowCnt = 1;
@@ -193,10 +193,10 @@ public class Unloader {
 	        		ExecuteDataTransfer eq = new ExecuteDataTransfer(Constant.POOLNAME.SOURCE.name(), selSqlList.get(i), tableNameList.get(i), ConfigInfo.SRC_DB_CONFIG);
 	        		eq.setCnt(nowCnt);
 	        		eq.setTotal(jobSize);
+	        		eq.setMigStartTime(startTime);
 	        		jobList.add(eq);
 	        		executorService.execute(eq);
 	        		nowCnt++;
-	        		//progressFileWrite(jobSize+","+nowCnt+","+eq.getTableName()+","+eq.getRowCnt());
 				}
 			}
 			
@@ -205,10 +205,10 @@ public class Unloader {
 					ExecuteDataTransfer eq = new ExecuteDataTransfer(Constant.POOLNAME.SOURCE.name(), selectQuerys.get(i).getQuery(), selectQuerys.get(i).getName(), ConfigInfo.SRC_DB_CONFIG);
 					eq.setCnt(nowCnt);
 	        		eq.setTotal(jobSize);
+	        		eq.setMigStartTime(startTime);
 	        		jobList.add(eq);
 	        		executorService.execute(eq);
 	        		nowCnt++;
-	        		//progressFileWrite(jobSize+","+nowCnt+","+eq.getTableName()+","+eq.getRowCnt());
 				}
 			}
 			
@@ -445,7 +445,7 @@ public class Unloader {
 		return pgCharSet;
 	}
 	
-	private void progressFileWrite(String proData) throws Exception {
+	private void progressFileWriter(String proData) throws Exception {
 		FileWriter fileWriter = new FileWriter();
 		fileWriter.progressFile(ConfigInfo.SRC_FILE_OUTPUT_PATH + "result/progress.txt");
 		fileWriter.progressFileWrite(proData);
