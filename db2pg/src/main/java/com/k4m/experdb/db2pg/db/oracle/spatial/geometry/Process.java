@@ -51,10 +51,10 @@ public class Process {
 				} catch(SQLException sqle) {
 					logger.error("ERROR: Fail get srid");
 					//return "";
-					oGeometry.srid = ConfigInfo.SRC_SRID;
+					oGeometry.srid = ConfigInfo.DEF_SRID;
 				}
 			}else{
-				oGeometry.srid = ConfigInfo.SRC_SRID;
+				oGeometry.srid = ConfigInfo.DEF_SRID;
 			}
 			
 			oGeometry.point = jGeometry.getPoint();
@@ -1023,7 +1023,7 @@ public class Process {
 				rs.next();
 				pgPrid = rs.getInt("PRID");
 				if (pgPrid == 0)
-					pgPrid = ConfigInfo.SRC_SRID;
+					pgPrid = ConfigInfo.DEF_SRID;
 				pridMap.put(oraPrid, pgPrid);
 				rs.close();
 				pstat.close();

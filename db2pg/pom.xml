@@ -3,7 +3,7 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<groupId>com.k4m</groupId>
-	<version>v2.2.9</version>
+	<version>v2.2.10</version>
 	<artifactId>db2pg</artifactId>
 	<packaging>jar</packaging>
 	<name>db2pg</name>
@@ -180,7 +180,7 @@
 		<dependency>
 			<groupId>org.mybatis</groupId>
 			<artifactId>mybatis</artifactId>
-			<version>3.5.6</version>
+			<version>3.5.7</version>
 		</dependency>
 
 		<!-- Logger -->

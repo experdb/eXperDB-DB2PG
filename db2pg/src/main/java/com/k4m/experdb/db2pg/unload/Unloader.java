@@ -33,6 +33,7 @@ import com.k4m.experdb.db2pg.convert.table.Column;
 import com.k4m.experdb.db2pg.convert.table.CustomSql;
 import com.k4m.experdb.db2pg.convert.table.Table;
 import com.k4m.experdb.db2pg.db.DBUtils;
+import com.k4m.experdb.db2pg.writer.FileWriter;
 
 public class Unloader {
 	static MsgCode msgCode = new MsgCode();
@@ -182,21 +183,32 @@ public class Unloader {
 			if(selectQuerys != null) {
 				jobSize += selectQuerys.size();
 			}
+			
+			progressFileWriter(jobSize+",0,,0,0");
 			List<ExecuteDataTransfer> jobList = new ArrayList<ExecuteDataTransfer>(jobSize);
 			
+			int nowCnt = 1;
 			if(selSqlList != null) {
 				for(int i=0; i<selSqlList.size(); i++){
 	        		ExecuteDataTransfer eq = new ExecuteDataTransfer(Constant.POOLNAME.SOURCE.name(), selSqlList.get(i), tableNameList.get(i), ConfigInfo.SRC_DB_CONFIG);
+	        		eq.setCnt(nowCnt);
+	        		eq.setTotal(jobSize);
+	        		eq.setMigStartTime(startTime);
 	        		jobList.add(eq);
 	        		executorService.execute(eq);
+	        		nowCnt++;
 				}
 			}
 			
 			if(selectQuerys != null) {
 				for(int i=0; i<selectQuerys.size(); i++) {
 					ExecuteDataTransfer eq = new ExecuteDataTransfer(Constant.POOLNAME.SOURCE.name(), selectQuerys.get(i).getQuery(), selectQuerys.get(i).getName(), ConfigInfo.SRC_DB_CONFIG);
+					eq.setCnt(nowCnt);
+	        		eq.setTotal(jobSize);
+	        		eq.setMigStartTime(startTime);
 	        		jobList.add(eq);
 	        		executorService.execute(eq);
+	        		nowCnt++;
 				}
 			}
 			
@@ -433,4 +445,10 @@ public class Unloader {
 		return pgCharSet;
 	}
 	
+	private void progressFileWriter(String proData) throws Exception {
+		FileWriter fileWriter = new FileWriter();
+		fileWriter.progressFile(ConfigInfo.SRC_FILE_OUTPUT_PATH + "result/progress.txt");
+		fileWriter.progressFileWrite(proData);
+		fileWriter.closeProgressFileChannels();
+	}
 }

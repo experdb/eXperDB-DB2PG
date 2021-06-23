@@ -33,6 +33,7 @@ import com.k4m.experdb.db2pg.common.Constant;
 import com.k4m.experdb.db2pg.common.CreateDbStmt;
 import com.k4m.experdb.db2pg.common.DevUtils;
 import com.k4m.experdb.db2pg.common.LogUtils;
+import com.k4m.experdb.db2pg.common.StrUtil;
 import com.k4m.experdb.db2pg.config.ConfigInfo;
 import com.k4m.experdb.db2pg.config.MsgCode;
 import com.k4m.experdb.db2pg.db.DBCPPoolManager;
@@ -48,12 +49,15 @@ import oracle.spatial.geometry.JGeometry;
 public class ExecuteDataTransfer implements Runnable{
 	static MsgCode msgCode = new MsgCode();
 	private String srcPoolName, selectQuery, outputFileName, tableName;
+	private long migStartTime;
 	private long migTime;
 	private long startTime;
 	private long endTime;
 	private long processBytes = 0;
 	private long processLines = 0;
 	private long processErrorLInes = 0;
+	private int total = 0;
+	private int cnt = 0;
 	
 	private int status=1;
 	long rowCnt = 0;
@@ -79,10 +83,32 @@ public class ExecuteDataTransfer implements Runnable{
 		this.success = true;
 	}
 	
+	public long getMigStartTime() {
+		return migStartTime;
+	}
+
+	public void setMigStartTime(long migStartTime) {
+		this.migStartTime = migStartTime;
+	}
+	
 	public ExecuteDataTransfer() {
 	}
 	
-	
+	public int getTotal() {
+		return total;
+	}
+
+	public void setTotal(int total) {
+		this.total = total;
+	}
+
+	public int getCnt() {
+		return cnt;
+	}
+
+	public void setCnt(int cnt) {
+		this.cnt = cnt;
+	}
 	
 	public String getSrcPoolName() {
 		return srcPoolName;
@@ -286,7 +312,6 @@ public class ExecuteDataTransfer implements Runnable{
         	//stopWatch.stop();
         	//this.migTime = stopWatch.getTime();
         	LogUtils.debug(String.format(msgCode.getCode("C0134"),tableName,this.migTime),ExecuteDataTransfer.class);
-        	
 		} catch(Exception e) {
 			this.success = false;
 
@@ -323,6 +348,12 @@ public class ExecuteDataTransfer implements Runnable{
 				LogUtils.debug(String.format(msgCode.getCode("C0136"),outputFileName),ExecuteDataTransfer.class);
 			}
 			LogUtils.info(String.format(msgCode.getCode("C0137"),tableName,rowCnt),ExecuteDataTransfer.class);
+			try {
+				progressFileWriter(total+","+cnt+","+tableName+","+rowCnt+","+StrUtil.makeElapsedTimeString((this.endTime-this.migStartTime)/1000));
+			} catch (Exception e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 		}
 	}
 	
@@ -617,6 +648,11 @@ public class ExecuteDataTransfer implements Runnable{
 		}
 	}
 	
-
+	private void progressFileWriter(String proData) throws Exception {
+		FileWriter fileWriter = new FileWriter();
+		fileWriter.progressFile(ConfigInfo.SRC_FILE_OUTPUT_PATH + "result/progress.txt");
+		fileWriter.progressFileWrite(proData);
+		fileWriter.closeProgressFileChannels();
+	}
 
 }

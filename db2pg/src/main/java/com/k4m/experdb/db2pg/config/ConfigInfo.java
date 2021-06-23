@@ -81,7 +81,9 @@ public class ConfigInfo {
 	
 	public static boolean SRC_DDL_EXT_DBMS;
 	
-	public static int SRC_SRID;
+	public static int DEF_SRID;
+	
+	public static boolean DEF_GEOMETRY_TYPE;
 	
 	//public static boolean DB_MIG_REPORT;
 	
@@ -114,7 +116,8 @@ public class ConfigInfo {
 				ConfigInfo.SRC_LOB_BUFFER_SIZE = ConfigInfo.SRC_LOB_BUFFER_SIZE>0?ConfigInfo.SRC_LOB_BUFFER_SIZE:100;
 				ConfigInfo.SRC_LOB_BUFFER_SIZE = ConfigInfo.SRC_LOB_BUFFER_SIZE * 1024 * 1024;
 				
-				ConfigInfo.SRC_SRID = (int)propertyCheck(trimCheck(prop.getProperty("SRC_SRID")),4326,Integer.class);
+				ConfigInfo.DEF_SRID = (int)propertyCheck(trimCheck(prop.getProperty("DEF_SRID")),4326,Integer.class);
+				ConfigInfo.DEF_GEOMETRY_TYPE = (boolean)propertyCheck(trimCheck(prop.getProperty("DEF_GEOMETRY_TYPE")),false,Boolean.class);
 				
 				ConfigInfo.SRC_STATEMENT_FETCH_SIZE = (int)propertyCheck(trimCheck(prop.getProperty("SRC_STATEMENT_FETCH_SIZE")),3000,Integer.class);
 				ConfigInfo.SRC_SELECT_ON_PARALLEL = (int)propertyCheck(trimCheck(prop.getProperty("SRC_SELECT_ON_PARALLEL")),1,Integer.class);

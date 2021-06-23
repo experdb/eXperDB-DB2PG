@@ -124,6 +124,17 @@ public class PgDDLMaker<T> {
 						+ "\n * But, PostgresQL has needed enum type create."
 						+ "\n * So, eXperDB-DB2PG is automatically enum type create."
 						+ "\n * TypeName : {1}_{2}\n */", table.getSchemaName(),table.getName(),column.getName()));
+			}else if(ConfigInfo.SRC_DB_CONFIG.DB_TYPE.equals(Constant.DB_TYPE.ORA) && column.getType().indexOf("GEOMETRY") > -1){
+				String gtype = column.getGtype();
+				if(gtype == null || ConfigInfo.DEF_GEOMETRY_TYPE) gtype="GEOMETRY";
+				else gtype = getGtype(gtype);
+				
+				if(column.getSrid() != null) {
+					ctsb.append(column.getType().toLowerCase()+"("+gtype+","+column.getSrid()+")");
+				}else {
+					ctsb.append(column.getType().toLowerCase()+"("+gtype+","+ConfigInfo.DEF_SRID+")");
+				}
+				//System.out.println("COLUMN NAME:"+column.getName()+", TYPE:"+column.getType().toLowerCase()+", srid:["+column.getSrid()+"]");
 			}else {
 				ctsb.append(column.getType().toLowerCase());
 			}
@@ -349,7 +360,7 @@ public class PgDDLMaker<T> {
 		ctsb.append(")");
 
 		// Oracle partition DDL 
-		if(ConfigInfo.SRC_DB_CONFIG.DB_TYPE.equals(Constant.DB_TYPE.ORA) && table.getPtCnt() > 0) {
+		if(ConfigInfo.SRC_DB_CONFIG.DB_TYPE.equals(Constant.DB_TYPE.ORA) && table.getPtCnt() > 0 && table.getPartKeyColumn() != null) {
 			// Partition Function Create
 			//DBUtils.getCreateFnLong();
 			
@@ -361,14 +372,12 @@ public class PgDDLMaker<T> {
 				ctsb.append("CREATE TABLE ");
 				ctsb.append(DevUtils.classifyString(column.getPartitionName(),ConfigInfo.SRC_CLASSIFY_STRING));
 				ctsb.append(" PARTITION OF " + DevUtils.classifyString(column.getPartitionTableName(),ConfigInfo.SRC_CLASSIFY_STRING));
-				if(column.getHighValue() != null && !column.getHighValue().toLowerCase().contains("default")) {
-					ctsb.append(" FOR VALUES ");	
-				}
+
 				if(column.getPartitioningType().toUpperCase().equals("LIST")) {
 					if(column.getHighValue() != null && column.getHighValue().toLowerCase().contains("default")) {
 						ctsb.append(" DEFAULT");
 					}else {
-						ctsb.append("IN  (" + column.getHighValue() + ")");
+						ctsb.append(" FOR VALUES IN (" + column.getHighValue() + ")");
 					}
 				}else if(column.getPartitioningType().toUpperCase().equals("RANGE")){
 					if(column.getHighValue() != null && column.getHighValue().toLowerCase().contains("default")) {
@@ -383,7 +392,7 @@ public class PgDDLMaker<T> {
 						if(d.equals("")) d = column.getHighValue();*/
 						String d = column.getHighValue();
 						if(column.getType().toUpperCase().equals("DATE") && !d.toUpperCase().equals("MAXVALUE") && !d.toUpperCase().equals("MINVALUE")) d = "'"+d+"'";
-						ctsb.append("FROM("+rangeStart+") TO (" + d +")");
+						ctsb.append(" FOR VALUES FROM("+rangeStart+") TO(" + d +")");
 						rangeStart = d;
 					}
 				}else if(column.getPartitioningType().toUpperCase().equals("HASH")) {
@@ -391,7 +400,7 @@ public class PgDDLMaker<T> {
 						ctsb.append(" DEFAULT");
 					}else {
 						int remainder = column.getPartitionPosition() - 1;
-						ctsb.append("WITH (modulus "+table.getPtCnt()+", remainder "+ remainder +")");
+						ctsb.append(" FOR VALUES WITH (modulus "+table.getPtCnt()+", remainder "+ remainder +")");
 					}
 				}
 				
@@ -415,14 +424,12 @@ public class PgDDLMaker<T> {
 					ctsb.append("CREATE TABLE ");
 					ctsb.append(DevUtils.classifyString(column.getSubPartitionName(),ConfigInfo.SRC_CLASSIFY_STRING));
 					ctsb.append(" PARTITION OF " + DevUtils.classifyString(column.getPartitionTableName(),ConfigInfo.SRC_CLASSIFY_STRING));
-					if(column.getHighValue() != null && !column.getHighValue().toLowerCase().contains("default")) {
-						ctsb.append(" FOR VALUES ");	
-					}
+
 					if(column.getSubPartitioningType().toUpperCase().equals("LIST")) {
 						if(column.getHighValue() != null && column.getHighValue().toLowerCase().contains("default")) {
 							ctsb.append(" DEFAULT");
 						}else {
-							ctsb.append("IN  (" + column.getHighValue() + ")");
+							ctsb.append(" FOR VALUES IN (" + column.getHighValue() + ")");
 						}
 					}else if(column.getSubPartitioningType().toUpperCase().equals("RANGE")){
 						if(column.getHighValue() != null && column.getHighValue().toLowerCase().contains("default")) {
@@ -430,7 +437,7 @@ public class PgDDLMaker<T> {
 						}else {
 							String d = column.getHighValue();
 							if(column.getType().toUpperCase().equals("DATE") && !d.toUpperCase().equals("MAXVALUE") && !d.toUpperCase().equals("MINVALUE")) d = "'"+d+"'";
-							ctsb.append("FROM("+rangeStart+") TO (" + d +")");
+							ctsb.append(" FOR VALUES FROM("+rangeStart+") TO (" + d +")");
 							rangeStart = d;
 						}
 					}else if(column.getSubPartitioningType().toUpperCase().equals("HASH")) {
@@ -438,7 +445,7 @@ public class PgDDLMaker<T> {
 							ctsb.append(" DEFAULT");
 						}else {
 							int remainder = column.getPartitionPosition() - 1;
-							ctsb.append("WITH (modulus "+table.getPtCnt()+", remainder "+ remainder +")");
+							ctsb.append(" FOR VALUES WITH (modulus "+table.getPtCnt()+", remainder "+ remainder +")");
 						}
 					}
 					k++;
@@ -456,6 +463,24 @@ public class PgDDLMaker<T> {
 		}
 		ctsb.setLength(0);
 		return ddlStringVOs;
+	}
+	
+	public String getGtype(String gtype) {
+		String retVal = "GEOMETRY";
+		if(gtype.length()==4) {
+			gtype=gtype.substring(3);
+		}
+		if(gtype.equals("1")) retVal = "POINT";
+		else if(gtype.equals("2")) retVal = "LINESTRING";
+		else if(gtype.equals("3")) retVal = "POLYGON";
+		else if(gtype.equals("4")) retVal = "GEOMETRYCOLLECTION";
+		else if(gtype.equals("5")) retVal = "MULTIPOINT";
+		else if(gtype.equals("6")) retVal = "MULTILINESTRING";
+		else if(gtype.equals("7")) retVal = "MULTIPOLYGON";
+		else if(gtype.equals("8")) retVal = "SOLID";
+		else if(gtype.equals("9")) retVal = "MULTISOLID";
+		
+		return retVal;
 	}
 
 }

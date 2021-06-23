@@ -24,6 +24,7 @@ public class Table {
 	private List<Key<?>> keys;
 	private List<View> views;
 	private boolean checkColumn;
+	private boolean hasGeometry;
 
 /*    PT.PARTITIONING_TYPE AS PT_TYPE,
     PT.SUBPARTITIONING_TYPE AS PT_SUB_TYPE,
@@ -41,9 +42,20 @@ public class Table {
 		this.keys = new LinkedList<Key<?>>();
 		this.alertComments = new LinkedList<String>();
 		this.checkColumn = false;
+		this.hasGeometry = false;
 	}
 	
 	
+	public boolean isHasGeometry() {
+		return hasGeometry;
+	}
+
+
+	public void setHasGeometry(boolean hasGeometry) {
+		this.hasGeometry = hasGeometry;
+	}
+
+
 	public String getPartSubKeyColumn() {
 		return partSubKeyColumn;
 	}

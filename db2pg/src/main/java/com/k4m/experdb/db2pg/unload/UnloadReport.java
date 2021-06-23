@@ -95,7 +95,8 @@ public class UnloadReport {
 			impsb.append(" 	<H2><a NAME=db3>Statements statistics by table</a></H2>\r\n" + 
 					" 	<table>\r\n" + 
 					" 		<tr>\r\n" + 
-					" 			<th>No</th>\r\n" + 
+					" 			<th>No</th>\r\n" +
+					" 			<th>Result</th>\r\n" +
 					" 			<th>Target Table</th>\r\n" + 
 					" 			<th>Start Date</th>\r\n" + 
 					" 			<th>End Date</th>\r\n" + 
@@ -108,17 +109,26 @@ public class UnloadReport {
 			long successCnt = 0;
 			long totalByte = 0;
 			int no = 1;
-			SimpleDateFormat tf = new SimpleDateFormat("yyyy-MM-dd 24HH:mm:ss");
+			String result = "";
+		
+			SimpleDateFormat tf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 			
 			for(int i=0;i<jobList.size();i++) {
+				String starttime = "";
+				String endtime = "";
 				totalByte += (long)jobList.get(i).getProcessBytes();
 				failCnt += (long)jobList.get(i).getProcessErrorLInes();
 				successCnt += (long)jobList.get(i).getProcessLines();
+				if(jobList.get(i).getStartTime() > 0) starttime = tf.format(jobList.get(i).getStartTime());
+				if(jobList.get(i).getEndTime() > 0) endtime = tf.format(jobList.get(i).getEndTime());
+				if(jobList.get(i).isSuccess()) { result = "Success"; }
+				else { result = "Fail"; }
 				impsb.append(" 		<tr>\r\n" + 
-						" 			<td align=center><b>"+ no +"</b></td>\r\n" + 
+						" 			<td align=center><b>"+ no +"</b></td>\r\n" +
+						" 			<td align=center><b>"+ result +"</b></td>\r\n" +
 						" 			<td class=\"value\">" + jobList.get(i).getTableName() + "</td>\r\n" + 
-						" 			<td class=\"value\">" + tf.format(jobList.get(i).getStartTime()) + "</td>\r\n" + 
-						" 			<td class=\"value\">" + tf.format(jobList.get(i).getEndTime()) + "</td>\r\n" + 
+						" 			<td class=\"value\">" + starttime + "</td>\r\n" + 
+						" 			<td class=\"value\">" + endtime + "</td>\r\n" + 
 						" 			<td class=\"value\" align=right>" + StrUtil.makeElapsedTimeString(jobList.get(i).getMigTime()) + "</td>\r\n" + 
 						" 			<td class=\"value\" align=right>" + StrUtil.strToComma(Long.toString(jobList.get(i).getProcessBytes())) + "</td>\r\n" + 
 						" 			<td class=\"value\" align=right>" + StrUtil.strToComma(Long.toString(jobList.get(i).getProcessLines())) + "</td>\r\n" + 
@@ -201,11 +211,6 @@ public class UnloadReport {
 			fos.close();
 		} catch ( Exception e ) {
 			LogUtils.error(msgCode.getCode("C0174"),Unloader.class,e);
-		//} finally {
-		//	LogUtils.debug(msgCode.getCode("C0175"),Unloader.class);
 		}
-		
-		//System.out.println(sb.toString());
-		
 	}
 }
