@@ -19,12 +19,14 @@ public class UnloadReport {
 	StringBuffer sb = new StringBuffer(), impsb = new StringBuffer();
 	long startTime;
 	long endTime;
+	int tblCnt;
 	
-	public UnloadReport(List<ExecuteDataTransfer> jobList,List<CustomSql> selectQuerys, long startTime, long endTime) {
+	public UnloadReport(List<ExecuteDataTransfer> jobList,List<CustomSql> selectQuerys, long startTime, long endTime, int tblCnt) {
 		this.jobList = jobList;
 		this.startTime = startTime;
 		this.endTime = endTime;
 		this.selectQuerys = selectQuerys;
+		this.tblCnt = tblCnt;
 	}
 	
 	public void run() {
@@ -102,8 +104,8 @@ public class UnloadReport {
 					" 			<th>End Date</th>\r\n" + 
 					" 			<th>Mig Time</th>\r\n" + 
 					" 			<th>Mig Byte</th>\r\n" + 
-					" 			<th>Mig Cnt</th>\r\n" + 
-					" 			<th>Fail Cnt</th>\r\n" + 
+					" 			<th>Mig Count</th>\r\n" + 
+					" 			<th>Fail Count</th>\r\n" + 
 					"		</tr>");
 			long failCnt = 0;
 			long successCnt = 0;
@@ -112,18 +114,20 @@ public class UnloadReport {
 			String result = "";
 		
 			SimpleDateFormat tf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-			
+			String starttime, endtime, titleTag;			
 			for(int i=0;i<jobList.size();i++) {
-				String starttime = "";
-				String endtime = "";
+				starttime = endtime = titleTag = "";
 				totalByte += (long)jobList.get(i).getProcessBytes();
 				failCnt += (long)jobList.get(i).getProcessErrorLInes();
 				successCnt += (long)jobList.get(i).getProcessLines();
 				if(jobList.get(i).getStartTime() > 0) starttime = tf.format(jobList.get(i).getStartTime());
 				if(jobList.get(i).getEndTime() > 0) endtime = tf.format(jobList.get(i).getEndTime());
 				if(jobList.get(i).isSuccess()) { result = "Success"; }
-				else { result = "Fail"; }
-				impsb.append(" 		<tr>\r\n" + 
+				else {
+					result = "Fail";
+					titleTag = " title='None Exist Table in Target DB'";
+				}
+				impsb.append(" 		<tr"+titleTag+">\r\n" + 
 						" 			<td align=center><b>"+ no +"</b></td>\r\n" +
 						" 			<td align=center><b>"+ result +"</b></td>\r\n" +
 						" 			<td class=\"value\">" + jobList.get(i).getTableName() + "</td>\r\n" + 
@@ -154,15 +158,15 @@ public class UnloadReport {
 					"	<table>\r\n" + 
 					" 		<tr>\r\n" + 
 					" 			<th>Database</th>\r\n" + 
-					" 			<th>Table Cnt</th>\r\n" + 
+					" 			<th>Table Count</th>\r\n" + 
 					" 			<th>Start Date</th>\r\n" + 
 					" 			<th>End Date</th>\r\n" + 
 					" 			<th>Total Time</th>\r\n" + 
 					" 			<th>Mig Byte</th>\r\n" +
 					" 			<th>Byte/Sec</th>\r\n" +					
-					" 			<th>Success Cnt</th>\r\n" +
-					" 			<th>Cnt/Sec</th>\r\n" +
-					" 			<th>Fail Cnt</th>\r\n" + 
+					" 			<th>Success Count</th>\r\n" +
+					" 			<th>Count/Sec</th>\r\n" +
+					" 			<th>Fail Count</th>\r\n" + 
 					" 		</tr>\r\n" + 
 					" 		<tr>\r\n" + 
 					" 			<td><b>" + ConfigInfo.TAR_DB_CONFIG.DBNAME + "</b></td>\r\n" + 
@@ -192,7 +196,7 @@ public class UnloadReport {
 			
 			for(int i=0;i<selectQuerys.size();i++) {
 				sb.append(" 		<tr>\r\n" + 
-						" 			<td class=\"value\" align=center><b>"+(i+1)+"</b></td>\r\n" + 
+						" 			<td class=\"value\" align=center><b>"+(i+1+tblCnt)+"</b></td>\r\n" + 
 						" 			<td class=\"value\">" + selectQuerys.get(i).getName() + "</td>\r\n" + 
 						" 			<td class=\"value\">" + selectQuerys.get(i).getQuery().replace("\n", "\n</br>") + "</td>\r\n" + 
 						" 		</tr>\r\n");
