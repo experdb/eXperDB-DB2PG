@@ -123,6 +123,7 @@ public class Unloader {
 			List<String> selSqlList = new ArrayList<String>();
 			List<String> tableNameList =  null;
 			int jobSize = 0;
+			int tblCnt = 0;
 			
 			// Query XML file Check
 			if(!ConfigInfo.SRC_FILE_QUERY_DIR_PATH.equals("")) {
@@ -197,6 +198,7 @@ public class Unloader {
 	        		jobList.add(eq);
 	        		executorService.execute(eq);
 	        		nowCnt++;
+	        		tblCnt++;
 				}
 			}
 			
@@ -228,7 +230,7 @@ public class Unloader {
         	
         	// Migration Report Create
         	if(ConfigInfo.DB_WRITER_MODE || ConfigInfo.FILE_WRITER_MODE) {
-        		new UnloadReport(jobList,selectQuerys, startTime, System.currentTimeMillis()).run();
+        		new UnloadReport(jobList,selectQuerys, startTime, System.currentTimeMillis(), tblCnt).run();
         	}
         	
         	StringBuffer sb = new StringBuffer(), impsb = new StringBuffer();
